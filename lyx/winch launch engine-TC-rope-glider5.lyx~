@@ -1,0 +1,1537 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass revtex4
+\options aps,preprint
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Winch launch simulation model including engine and transmission
+\end_layout
+
+\begin_layout Author
+Bret Hess
+\end_layout
+
+\begin_layout Author Email
+
+bret_hess@byu.edu
+\end_layout
+
+\begin_layout Affiliation
+Physics Department, Brigham Young University, Provo, Utah 84602
+\end_layout
+
+\begin_layout Abstract
+We develop the equations of motion for a glider launched by a winch with
+ a springy rope.
+ The winch is connected to an engine through a torque converter.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Variables 
+\end_layout
+
+\begin_layout Standard
+Fundamental to differential equations:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $t$
+\end_inset
+
+, time
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $x$
+\end_inset
+
+, horizontal glider CG position
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\dot{x}$
+\end_inset
+
+, horizontal glider CG velocity
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $y$
+\end_inset
+
+, vertical glider CG position
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\dot{y}$
+\end_inset
+
+, vertical glider CG velocity
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\theta$
+\end_inset
+
+, glider pitch angle above horizon
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\dot{\theta}$
+\end_inset
+
+, glider pitch rotation rate
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\omega_{w},$
+\end_inset
+
+ winch rotation rate
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\omega_{eng},$
+\end_inset
+
+ engine rotation rate
+\end_layout
+
+\begin_layout Subsection*
+Time-varying quantities derived from model variables
+\end_layout
+
+\begin_layout Standard
+Derived from model variables
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $L,$
+\end_inset
+
+ lift
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $D,$
+\end_inset
+
+ drag
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $M$
+\end_inset
+
+, moment (torque) of air on glider about pitch axis through CG.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $T$
+\end_inset
+
+, rope tension 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $l$
+\end_inset
+
+, rope length in air
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v$
+\end_inset
+
+, glider speed
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v_{r}$
+\end_inset
+
+, glider speed toward winch
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\gamma$
+\end_inset
+
+, climb angle
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\alpha$
+\end_inset
+
+, angle of attack of glider
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\theta_{r}$
+\end_inset
+
+, rope angle above horizon
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\tau_{w}$
+\end_inset
+
+, torque of torque converter on winch (including transmission effective
+ rotating mass)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\tau_{eng,out}$
+\end_inset
+
+, torque of engine on torque converter
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\tau_{pist}$
+\end_inset
+
+, torque of pistons on engine rotating mass
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $P_{a}$
+\end_inset
+
+ , power available from the engine to the torque converter at each engine
+ speed.
+\end_layout
+
+\begin_layout Subsection*
+Inputs
+\end_layout
+
+\begin_layout Standard
+Time-varying:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $S_{th},$
+\end_inset
+
+ throttle setting
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $M_{e}$
+\end_inset
+
+, pilot controlled moment (torque) from elevator
+\end_layout
+
+\begin_layout Subsection*
+Parameters 
+\end_layout
+
+\begin_layout Standard
+Constants:
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Glider
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v_{b}$
+\end_inset
+
+, speed of glider at best glide angle
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $Q$
+\end_inset
+
+, best L/D 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\alpha_{s}$
+\end_inset
+
+= stall angle of attack 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $L_{\alpha}$
+\end_inset
+
+, lift slope of glider as a whole
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $I_{g}$
+\end_inset
+
+, moment of inertia of glider about the pitch axis
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $W$
+\end_inset
+
+, weight of glider 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+, change in air-glider pitch moment with angle of attack 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{v}$
+\end_inset
+
+, drag constant for speed varying away from 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{\alpha},$
+\end_inset
+
+ drag constant for glider angle of attack away from zero
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Rope
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula $Y,$
+\end_inset
+
+ effective Young's modulus for rope
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $A,$
+\end_inset
+
+ rope cross sectional area
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $a$
+\end_inset
+
+, horizontal distance of rope attachment in front of CG
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $b,$
+\end_inset
+
+ vertial distance of rope attachment below CG
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Winch
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $I_{w}$
+\end_inset
+
+, moment of inertia of winch drum and transmission
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $r_{w},$
+\end_inset
+
+ radius of winch drum
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Engine
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $I_{eng}$
+\end_inset
+
+, moment of inertia of engine rotating mass
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $S_{th}$
+\end_inset
+
+, throttle setting
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $p_{e1},\,p_{e2,\,}p_{e3}$
+\end_inset
+
+, engine power curve parameters
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\delta_{eng}$
+\end_inset
+
+, time delay of engine power response to change in engine speed
+\end_layout
+
+\begin_layout Subsection*
+Subsystems
+\end_layout
+
+\begin_layout Standard
+In Simulink model: (Note that the 0utputs here are to other blocks, not
+ for display
+\end_layout
+
+\begin_layout Standard
+Engine.
+ Inputs: 
+\begin_inset Formula $\tau_{w}$
+\end_inset
+
+, 
+\begin_inset Formula $S_{th}$
+\end_inset
+
+.
+ Outputs: 
+\begin_inset Formula $\omega_{eng}$
+\end_inset
+
+,
+\begin_inset Formula $\tau_{eng,out}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Winch.
+ Inputs: 
+\begin_inset Formula $T$
+\end_inset
+
+, 
+\begin_inset Formula $\tau_{w}$
+\end_inset
+
+.
+ Outputs: 
+\begin_inset Formula $\omega_{w}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Glider.
+ Inputs: 
+\begin_inset Formula $M_{e}$
+\end_inset
+
+, 
+\begin_inset Formula $T$
+\end_inset
+
+.
+ Outputs (not for display): 
+\begin_inset Formula $\theta$
+\end_inset
+
+,
+\begin_inset Formula $\dot{\theta}$
+\end_inset
+
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{x},$
+\end_inset
+
+ 
+\begin_inset Formula $y$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{y}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Pilot.
+ Inputs: 
+\begin_inset Formula $\theta$
+\end_inset
+
+,
+\begin_inset Formula $\dot{\theta}$
+\end_inset
+
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{x},$
+\end_inset
+
+ 
+\begin_inset Formula $y$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{y}$
+\end_inset
+
+.
+ Outputs: 
+\begin_inset Formula $M_{e}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Coupling blocks
+\end_layout
+
+\begin_layout Standard
+In Simulink model:
+\end_layout
+
+\begin_layout Standard
+Torque converter — engine<>winch: Inputs: 
+\begin_inset Formula $\omega_{eng}$
+\end_inset
+
+,
+\begin_inset Formula $\tau_{eng,out}$
+\end_inset
+
+,
+\begin_inset Formula $\omega_{w}$
+\end_inset
+
+ .
+ Outputs: 
+\begin_inset Formula $\tau_{w}=\tau_{out,eng}\left(2-\omega_{w}/\omega_{eng}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Rope tension — winch<>glider: Inputs: 
+\begin_inset Formula $T,$
+\end_inset
+
+
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{x}$
+\end_inset
+
+ 
+\begin_inset Formula $y$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{y},$
+\end_inset
+
+
+\begin_inset Formula $\omega_{w}$
+\end_inset
+
+ Outputs: 
+\begin_inset Formula $T$
+\end_inset
+
+ via 
+\begin_inset Formula $\dot{T}=YA\frac{r_{w}\omega_{w}(t)-v_{r}}{l(t)}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Flight equations
+\end_layout
+
+\begin_layout Standard
+The glider's best glide ratio is defined as a quality factor 
+\begin_inset Formula $Q=\left(\frac{L}{D}\right)_{best}$
+\end_inset
+
+ and occurs at 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+, the best glide speed.
+ In this condition the AoA for the 
+\bar under
+glider as a whole
+\bar default
+ is chosen as 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We use a ground-referenced coordinate system with 
+\begin_inset Formula $x$
+\end_inset
+
+ as horizontal, and 
+\begin_inset Formula $y$
+\end_inset
+
+ as vertical.
+ The speed is 
+\begin_inset Formula $v=\sqrt{\dot{x}+\dot{y}}$
+\end_inset
+
+.
+ Lift L is perpendicular to the velocity, in the direction 
+\begin_inset Formula $\hat{z}\times\vec{v}=(-\dot{y}\hat{x}+\dot{x}\hat{y})/v$
+\end_inset
+
+, and drag D is opposite the velocity vector.
+ The glider weight is 
+\begin_inset Formula $W=mg$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The angle of attack of the glider in terms of the glider pitch angle 
+\begin_inset Formula $\theta$
+\end_inset
+
+ (above the horizon) and the glider climb angle 
+\begin_inset Formula $\gamma=tan^{-1}(\dot{y}/\dot{x})$
+\end_inset
+
+ (above the horizon) is 
+\begin_inset Formula 
+\begin{equation}
+\alpha=\theta-\gamma\label{eq:AoA}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The winch is a distance 
+\begin_inset Formula $l_{o}$
+\end_inset
+
+ from the origin where the glider starts, so the initial rope length is
+ 
+\begin_inset Formula $l_{o}.$
+\end_inset
+
+ We assume the rope in the air runs in a straight line to the glider (very
+ little drag or mass) and is at a rope angle 
+\begin_inset Formula $\theta_{r}=tan^{-1}(y/(l_{o}-x)$
+\end_inset
+
+ above the horizon.
+ The tension in the rope is 
+\begin_inset Formula $T$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+We choose to define aerodynamic coefficients for the 
+\bar under
+glider as a whole
+\bar default
+ rather than for wing, elevator, etc.
+ The lift 
+\begin_inset Formula $L=\frac{1}{2}\rho AC_{L}v^{2}=\frac{1}{2}\rho A(C_{o}+2\pi\alpha)v^{2},$
+\end_inset
+
+ where 
+\begin_inset Formula $C_{o}$
+\end_inset
+
+ is the lift coefficient of the glider when 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+.
+ So 
+\begin_inset Formula $L(0)=\frac{1}{2}\rho AC_{o}v_{b}^{2}=W$
+\end_inset
+
+.
+ Then 
+\begin_inset Formula $\frac{1}{2}\rho Av_{o}^{2}=\frac{W}{C_{o}}$
+\end_inset
+
+.
+ So the lift is 
+\begin_inset Formula $L=W(1+\frac{2\pi}{C_{o}}\alpha)\left(\frac{v}{vo}\right)^{2}$
+\end_inset
+
+.
+ In terms of the lift slope 
+\begin_inset Formula $L=(W+L_{\alpha}\alpha)\left(\frac{v}{vo}\right)^{2},$
+\end_inset
+
+ and 
+\begin_inset Formula $L_{\alpha}=\frac{2\pi W}{C_{o}}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The total pitching moment 
+\begin_inset Formula $M(\alpha,t)$
+\end_inset
+
+ of the air on the glider about the center of gravity (CG) is adjustable
+ by the glider angle of attack (
+\begin_inset Formula $\alpha)$
+\end_inset
+
+ and by pilot control of the elevator which we will describe as 
+\begin_inset Formula $M_{e}(t)$
+\end_inset
+
+ .
+ Since the glider is trimmed at 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+, 
+\begin_inset Formula $M(\alpha=0)=0$
+\end_inset
+
+ .
+ To a first approximation 
+\begin_inset Formula $M=(-p_{\alpha}\alpha-M_{e}(t))v^{2}$
+\end_inset
+
+.
+ For an estimate of 
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+, the area of the stabilizer is about 1/10 that of the wing area, at a distance
+ of about 
+\begin_inset Formula $l_{s}=$
+\end_inset
+
+4m from the cg.
+ So the moment is approximately 
+\begin_inset Formula $\frac{l_{s}}{10}\,L_{\alpha}\alpha\approx\frac{4}{10}\,\frac{2\pi W}{Co}\alpha.$
+\end_inset
+
+ Then 
+\begin_inset Formula $p_{\alpha}\approx3W$
+\end_inset
+
+m.
+ 
+\end_layout
+
+\begin_layout Standard
+The drag ratio 
+\begin_inset Formula $D/L$
+\end_inset
+
+ is minimized near the best-glide speed, so we expand it quadratically about
+ 
+\begin_inset Formula $v=v_{b}$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha=$
+\end_inset
+
+0.
+ 
+\begin_inset Formula 
+\begin{equation}
+D/L=\frac{1}{Q}(1+d_{v}(\frac{v}{v_{b}}-1)^{2}+d_{\alpha}\alpha^{2})\label{eq:drag}
+\end{equation}
+
+\end_inset
+
+Where 
+\begin_inset Formula $d_{v},d_{\alpha}$
+\end_inset
+
+ are dimensionless drag constants.
+ We neglect the drag from the elevator itself.
+ From a glider polar, 
+\begin_inset Formula $d_{v}\approx3$
+\end_inset
+
+.
+ From a glider model in xflr5, 
+\begin_inset Formula $d_{\alpha}\approx1.8$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+From Newton's third law using our dimensionless forces and velocities: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\ddot{x}=Tcos\theta_{r}-D\dot{x}/v-L\dot{y}/\label{eq:udot}
+\end{equation}
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\ddot{y}=L\dot{x}/v-Tsin\theta_{r}-D\dot{y}/v-W\label{eq:wdot}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The rope is attached a distance 
+\begin_inset Formula $b$
+\end_inset
+
+ below the CG, and a distance 
+\begin_inset Formula $a$
+\end_inset
+
+ in front of it.
+ Then the attachment point is at an angle from the CG 
+\begin_inset Formula $\phi=tan^{-1}(b/a)$
+\end_inset
+
+ below the glider longitudinal axis.
+ When the rope pulls at an angle 
+\begin_inset Formula $\eta$
+\end_inset
+
+ below the longitudinal axis the torque about the CG is the tension times
+ 
+\begin_inset Formula $\sqrt{a^{2}+b^{2}}sin(\phi-\eta)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+I_{g}\ddot{\theta}=T\sqrt{a^{2}+b^{2}}sin(tan^{-1}(b/a)-\theta-\theta_{r})+M\label{eq:theta diffeq}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $I_{g}$
+\end_inset
+
+ is the glider moment of inertia about the pitch axis.
+ 
+\end_layout
+
+\begin_layout Section
+Winch coupled to glider with elastic rope
+\end_layout
+
+\begin_layout Standard
+The winch drum and the engine transmission have the same rotational speed
+ at the winch 
+\begin_inset Formula $\omega_{w},$
+\end_inset
+
+ and are together considered 
+\begin_inset Quotes eld
+\end_inset
+
+the winch
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Their inertial properties are lumped in one moment of inertia 
+\begin_inset Formula $I_{w}$
+\end_inset
+
+ which includes all the transmission gearing.
+ The rope uptake speed is 
+\begin_inset Formula $r_{w}\omega_{w}$
+\end_inset
+
+ignoring stretch.
+ The torque convertor puts a torque 
+\begin_inset Formula $\tau_{w}$
+\end_inset
+
+ on the winch, and the rope creates a negative torque: 
+\begin_inset Formula 
+\begin{equation}
+I_{w}\dot{\omega}_{w}=\tau_{w}-r_{w}T\label{eq:winch angle diffeq}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If the length of the rope didn't change, the stretch of the rope would be
+ 
+\begin_inset Formula 
+\begin{equation}
+\xi(t)=T(t)\frac{l_{o}}{YA}\label{eq:stretch}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Regardless of the dynamics, the rope is wound on the winch in a stretched
+ state.
+ It's 
+\end_layout
+
+\begin_layout Standard
+We assume a massless rope, so the time to equilibrium is zero.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $Y$
+\end_inset
+
+ is the effective Young's modulus of the rope, and 
+\begin_inset Formula $A$
+\end_inset
+
+ its cross sectional area.
+ or The length 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $l(t)$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ of the rope in the air is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+l(t)\approx l_{o}-r_{w}\int_{o}^{t}\omega_{w}(t)\label{eq: length(t)}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+from rope uptake 
+\begin_inset Formula $\dot{l}=r_{w}\omega_{w}$
+\end_inset
+
+, or
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+l(t)=\sqrt{(l_{o}-x)^{2}+y^{2}}\label{eq: length(t)-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+from geometry.
+ 
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: length(t)"
+
+\end_inset
+
+ we neglect 
+\begin_inset Formula $\xi$
+\end_inset
+
+ because the stretch is always much less than 
+\begin_inset Formula $l(t)$
+\end_inset
+
+ and its change 
+\begin_inset Formula $\dot{\xi}\ll r_{w}\omega_{w}$
+\end_inset
+
+.
+ Either version of 
+\begin_inset Formula $l(t)$
+\end_inset
+
+ above will be accurate enough below.
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+change
+\emph default
+ in stretch connects the glider motion to the winch motion:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\dot{\xi}=r_{w}\omega_{w}-v_{r}\label{eq:stretch velocity}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $v_{r}$
+\end_inset
+
+ is the 
+\begin_inset Quotes eld
+\end_inset
+
+radial
+\begin_inset Quotes erd
+\end_inset
+
+ speed of the glider i.e.
+ the velocity in the direction from the glider to the winch.
+ The stretch will change if the rope uptake speed is different than the
+ glider radial speed i.e.
+ the velocity in the direction pointing from the glider to the winch.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+v_{r}=\frac{\dot{x}(l_{o}-x)-\dot{y}y}{l(t)}\label{eq:radial speed}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So we combine eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:stretch"
+
+\end_inset
+
+, and eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:stretch velocity"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: length(t)"
+
+\end_inset
+
+ (differentiating both sides)to get 
+\begin_inset Formula 
+\[
+\dot{T}\,l(t)=YA(r_{w}\omega_{w}-v_{r})-T\dot{l}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=YA\frac{r_{w}\omega_{w}(t)-v_{r}}{l(t)}+T\frac{r_{w}\omega_{w}(t)}{l(t)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The term on the right of the above equation is not physical because it neglects
+ the fact that the rope is being wound on the drum under tension, and the
+ tension already established in the rope does not adjust itself for a shortening
+ rope.
+ So the correct relation is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\dot{T}=YA\frac{r_{w}\omega_{w}(t)-v_{r}}{l(t)}\label{eq: Tension derivative}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So we've eliminated the stretch 
+\begin_inset Formula $\xi$
+\end_inset
+
+, and will use eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:winch angle diffeq"
+
+\end_inset
+
+ as an additional equation of motion, with the auxiliary function 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: Tension derivative"
+
+\end_inset
+
+ to couple the winch and glider motions.
+ 
+\end_layout
+
+\begin_layout Section
+Torque converter and engine and models
+\end_layout
+
+\begin_layout Standard
+A typical automotive torque converter in a hydraulic transmission has a
+ torque ratio that varies from about two to about one.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\tau_{w}\approx\tau_{out,eng}\left(2-\omega_{w}/\omega_{eng}\right)\label{eq:torque ratio}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula $.$
+\end_inset
+
+ The torque applied by the engine to the torque converter impeller is 
+\begin_inset Formula $\tau_{out,eng}$
+\end_inset
+
+, the impeller's (engine's) rotational speed is 
+\begin_inset Formula $\omega_{eng}$
+\end_inset
+
+, and the winch speed is 
+\begin_inset Formula $\omega_{w}.$
+\end_inset
+
+ So the torque converter acts as a continuously changing lower gear from
+ 2:1 at very low rotational speed to 1:1 when the transmission is turning
+ near engine rotation rate.
+ The power efficiency is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\eta(\omega_{w})=\frac{P_{out}}{P_{eng}}=\frac{\omega_{w}\tau_{w}}{\omega_{eng}\tau_{out,eng}}=\frac{\omega_{w}}{\omega_{eng}}(2-\frac{\omega_{w}}{\omega_{eng}})
+\]
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The efficiency is zero at stall (
+\begin_inset Formula $\omega_{w}=0)$
+\end_inset
+
+ and grows to about 100% at full speed (
+\begin_inset Formula $\omega_{w}=\omega_{eng})$
+\end_inset
+
+.
+ We won't use this efficiency explicitly below, but the physics is captured
+ with the torques used.
+ 
+\end_layout
+
+\begin_layout Standard
+The engine rotation is determined by its moment of inertia 
+\begin_inset Formula $I_{eng}$
+\end_inset
+
+ (driveshaft, flywheel, pistons) and the torques on it.
+ The pistons create a positive torque, and the torque at the impeller (the
+ load) a negative one:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+I_{eng}\dot{\omega}_{eng}=\tau_{pist}-\tau_{out,eng}\label{eq:engine diffeq}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The power curve 
+\begin_inset Formula $P_{a}(\omega_{eng})$
+\end_inset
+
+ is the power available from the engine to the torque converter at each
+ speed.
+ It peaks at 
+\begin_inset Formula $P_{max}$
+\end_inset
+
+.
+ The throttle setting 
+\begin_inset Formula $S_{th}$
+\end_inset
+
+ determines actual power applied: 
+\begin_inset Formula $S_{th}P_{a}(\omega_{eng})$
+\end_inset
+
+.
+ 
+\begin_inset Formula 
+\[
+S_{th}P_{a}(\omega_{eng})=\omega_{eng}\tau_{pistons}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then 
+\begin_inset Formula 
+\begin{equation}
+\tau_{pistons}=\frac{S_{th}P_{a}(\omega_{eng})}{\omega_{eng}}\label{eq:piston torque}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:engine diffeq"
+
+\end_inset
+
+ is another equation of motion, and eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:torque ratio"
+
+\end_inset
+
+ connects it to the winch equation.
+ Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:piston torque"
+
+\end_inset
+
+ describes the torque in terms of engine speed.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Variables fundamental to differential equations
+\end_layout
+
+\begin_layout Subsection*
+Parameters 
+\end_layout
+
+\begin_layout Standard
+under construction!
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v_{b}=30m/s$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\alpha_{s}$
+\end_inset
+
+= 6 stall angle degrees glider AoA (degrees beyond wing AoA at best glide
+ which is 2 degrees)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $L_{\alpha}=2\pi W/C_{o}.$
+\end_inset
+
+ For a model in xflr5, 
+\begin_inset Formula $C_{o}=0.75$
+\end_inset
+
+, so 
+\begin_inset Formula $L_{\alpha}=8.4$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $Q=\left(\frac{L}{D}\right)_{best}=20$
+\end_inset
+
+, including the effects of rope and parachute
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $I=$
+\end_inset
+
+ 
+\begin_inset Formula $600$
+\end_inset
+
+kgm
+\begin_inset Formula $^{2}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $W=$
+\end_inset
+
+4000 N 
+\begin_inset Formula $\approx$
+\end_inset
+
+ 400 kgF)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $p_{\alpha}=3.0$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{v}=3.0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{\alpha}=1.8/rad$
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

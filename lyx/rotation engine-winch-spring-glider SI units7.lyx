@@ -1,0 +1,1377 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass revtex4
+\options aps,preprint
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Spring-coupled winch and glider during rotation
+\end_layout
+
+\begin_layout Author
+Bret Hess
+\end_layout
+
+\begin_layout Author Email
+
+bret_hess@byu.edu
+\end_layout
+
+\begin_layout Affiliation
+Physics Department, Brigham Young University, Provo, Utah 84602
+\end_layout
+
+\begin_layout Abstract
+A winch supplied with constant torque launches glider towed horizontally
+ with a springy rope.
+ We explore effects due to stretch in the rope, and a pilot control of constant
+ pitch rate during rotation
+\end_layout
+
+\begin_layout Section
+Flight equations
+\end_layout
+
+\begin_layout Standard
+The glider's best glide ratio is defined as a quality factor 
+\begin_inset Formula $Q=\left(\frac{L}{D}\right)_{best}$
+\end_inset
+
+ and occurs at 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+, the best glide speed.
+ In this condition the AoA for the 
+\bar under
+glider as a whole
+\bar default
+ is chosen as 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We use a ground-referenced coordinate system with 
+\begin_inset Formula $x$
+\end_inset
+
+ as horizontal, and 
+\begin_inset Formula $y$
+\end_inset
+
+ as vertical.
+ The speed is 
+\begin_inset Formula $v=\sqrt{\dot{x}+\dot{y}}$
+\end_inset
+
+.
+ Lift L is perpendicular to the velocity, in the direction 
+\begin_inset Formula $\hat{z}\times\vec{v}=(-\dot{y}\hat{x}+\dot{x}\hat{y})/v$
+\end_inset
+
+, and drag D is opposite the velocity vector.
+ The glider weight is 
+\begin_inset Formula $W=mg$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The angle of attack of the glider in terms of the glider pitch angle 
+\begin_inset Formula $\theta$
+\end_inset
+
+ (above the horizon) and the glider climb angle 
+\begin_inset Formula $tan^{-1}(\dot{y}/\dot{x})$
+\end_inset
+
+ (above the horizon) is 
+\begin_inset Formula 
+\begin{equation}
+\alpha=\theta-tan^{-1}(\dot{y}/\dot{x})\label{eq:AoA}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The winch is a distance 
+\begin_inset Formula $l_{o}$
+\end_inset
+
+from the origin where the glider starts, hence the initial rope length is
+ 
+\begin_inset Formula $l_{o}.$
+\end_inset
+
+ We assume the rope in the air runs in a straight line to the glider and
+ is at an angle 
+\begin_inset Formula $\theta_{r}=tan^{-1}(y/(l_{o}-x)$
+\end_inset
+
+ above the horizon.
+ The tension in the rope is 
+\begin_inset Formula $T$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+We choose to define aerodynamic coefficients for the 
+\bar under
+glider as a whole
+\bar default
+ rather than for wing, elevator, etc.
+ The lift 
+\begin_inset Formula $L=\frac{1}{2}\rho AC_{L}v^{2}=\frac{1}{2}\rho A(C_{o}+2\pi\alpha)v^{2},$
+\end_inset
+
+where 
+\begin_inset Formula $C_{o}$
+\end_inset
+
+ is the lift coefficient of the glider when 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+.
+ So 
+\begin_inset Formula $L(0)=\frac{1}{2}\rho AC_{o}v_{b}^{2}=W$
+\end_inset
+
+.
+ Then 
+\begin_inset Formula $\frac{1}{2}\rho Av_{o}^{2}=\frac{W}{C_{o}}$
+\end_inset
+
+.
+ So the lift is 
+\begin_inset Formula $L=W(1+\frac{2\pi}{Co}\alpha)\left(\frac{v}{vo}\right)^{2}$
+\end_inset
+
+.
+ In terms of the lift slope 
+\begin_inset Formula $L=(W+L_{\alpha}\alpha)\left(\frac{v}{vo}\right)^{2},$
+\end_inset
+
+ and 
+\begin_inset Formula $L_{\alpha}=\frac{2\pi W}{Co}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The total pitching moment 
+\begin_inset Formula $M(\alpha,t)$
+\end_inset
+
+ of the air on the glider about the center of gravity (CG) is adjustable
+ by the glider angle of attack (
+\begin_inset Formula $\alpha)$
+\end_inset
+
+ and by pilot control of the elevator which we will describe as 
+\begin_inset Formula $M_{e}(t)$
+\end_inset
+
+ .
+ Since the glider is trimmed at 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+, 
+\begin_inset Formula $M(\alpha=0)=0$
+\end_inset
+
+ .
+ To a first approximation 
+\begin_inset Formula $M=(-p_{\alpha}\alpha-M_{e}(t))v^{2}$
+\end_inset
+
+.
+ For an estimate of 
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+, the area of the stabilizer is about 1/10 that of the wing area, at a distance
+ of about 
+\begin_inset Formula $l_{s}=$
+\end_inset
+
+4m from the cg.
+ So the moment is approximately 
+\begin_inset Formula $\frac{l_{s}}{10}\,L_{\alpha}\alpha\approx\frac{4}{10}\,\frac{2\pi W}{Co}\alpha.$
+\end_inset
+
+ Then 
+\begin_inset Formula $p_{\alpha}\approx3W$
+\end_inset
+
+m.
+ 
+\end_layout
+
+\begin_layout Standard
+The drag ratio 
+\begin_inset Formula $D/L$
+\end_inset
+
+ is minimized near the best-glide speed, so we expand it quadratically about
+ 
+\begin_inset Formula $v=v_{b}$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha=$
+\end_inset
+
+0.
+ 
+\begin_inset Formula 
+\begin{equation}
+D/L=\frac{1}{Q}(1+d_{v}(\frac{v}{v_{b}}-1)^{2}+d_{\alpha}\alpha^{2})\label{eq:drag}
+\end{equation}
+
+\end_inset
+
+Where 
+\begin_inset Formula $d_{v},d_{\alpha}$
+\end_inset
+
+ are dimensionless drag constants.
+ We neglect the drag from the elevator itself.
+ From a glider polar, 
+\begin_inset Formula $d_{v}\approx3$
+\end_inset
+
+.
+ From a glider model in xflr5, 
+\begin_inset Formula $d_{\alpha}\approx1.8$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+From Newton's third law using our dimensionless forces and velocities: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\ddot{x}=Tcos\theta_{r}-D\dot{x}/v-L\dot{y}/\label{eq:udot}
+\end{equation}
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\ddot{y}=L\dot{x}/v-Tsin\theta_{r}-D\dot{y}/v-W\label{eq:wdot}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The rope is attached a distance 
+\begin_inset Formula $b$
+\end_inset
+
+ below the CG, and a distance 
+\begin_inset Formula $a$
+\end_inset
+
+ in front of it.
+ Then the attachment point is at an angle from the CG 
+\begin_inset Formula $\phi=tan^{-1}(b/a)$
+\end_inset
+
+ below the glider longitudinal axis.
+ When the rope pulls at an angle 
+\begin_inset Formula $\eta$
+\end_inset
+
+ below the longitudinal axis, then the torque about the CG is the force
+ times 
+\begin_inset Formula $\sqrt{a^{2}+b^{2}}sin(\phi-\eta)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+I\ddot{\theta}=T\sqrt{a^{2}+b^{2}}sin(tan^{-1}(b/a)-\theta)+P\label{eq:theta diffeq}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+I is the glider moment of inertia.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Parameters 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v_{best}=30m/s$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\alpha_{s}$
+\end_inset
+
+= 6 stall angle degrees glider AoA (degrees beyond wing AoA at best glide
+ which is 2 degrees)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $L_{\alpha}=2\pi/C_{o}.$
+\end_inset
+
+ For a model in xflr5, 
+\begin_inset Formula $C_{o}=0.75$
+\end_inset
+
+, so 
+\begin_inset Formula $L_{\alpha}=8.4$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $Q=\left(\frac{L}{D}\right)_{best}=20$
+\end_inset
+
+, including the effects of rope and parachute
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $I=$
+\end_inset
+
+ 
+\begin_inset Formula $600$
+\end_inset
+
+kgm
+\begin_inset Formula $^{2}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $W=$
+\end_inset
+
+4000 N 
+\begin_inset Formula $\approx$
+\end_inset
+
+ 400 kgF)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $p_{\alpha}=3.0$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{v}=3.0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{alpha}=1.8/rad$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "stretch"
+
+\end_inset
+
+Winch coupled with elastic rope
+\end_layout
+
+\begin_layout Standard
+The winch drum and the rotational inertia of the engine transmission have
+ the same speed 
+\begin_inset Formula $\omega_{w},$
+\end_inset
+
+ and are both considered the 
+\begin_inset Quotes eld
+\end_inset
+
+winch
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Their inertial properties are lumped in one moment of inertia 
+\begin_inset Formula $I_{w}$
+\end_inset
+
+ .
+ The torque convertor puts a torque 
+\begin_inset Formula $\tau_{w}$
+\end_inset
+
+ on the winch, and the rope a negative torque: 
+\begin_inset Formula 
+\begin{equation}
+I_{w}\dot{\omega}_{w}=\tau_{w}-r_{w}T\label{eq:winch angle diffeq}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When the rope has a tension 
+\begin_inset Formula $T$
+\end_inset
+
+, the spring stretches by a distance 
+\begin_inset Formula 
+\begin{equation}
+\xi=T(t)\frac{l(t)}{YA}\label{eq:stretch}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $Y$
+\end_inset
+
+ is the effective Young's modulus of the rope, and 
+\begin_inset Formula $A$
+\end_inset
+
+ its cross sectional area.
+ The length of the rope in the air is 
+\begin_inset Formula $l(t)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The change in stretch connects the glider motion to the winch motion:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\dot{\xi}=r_{w}\omega_{w}-v\label{eq:stretch velocity}
+\end{equation}
+
+\end_inset
+
+=
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $v$
+\end_inset
+
+ is the horizontal velocity of the glider.
+ The rope uptake speed is 
+\begin_inset Formula $r_{w}\omega_{w}$
+\end_inset
+
+ignoring stretch.
+ The length of the rope in the air is 
+\begin_inset Formula $ $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+l(t)\approx l_{o}-r_{w}\int_{o}^{t}\omega_{w}(t)\label{eq: length(t)}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here we neglect 
+\begin_inset Formula $\xi$
+\end_inset
+
+ because the stretch is always much less than 
+\begin_inset Formula $l(t)$
+\end_inset
+
+ and its change 
+\begin_inset Formula $\dot{\xi}\ll r_{w}\omega_{w}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+So we combine eqns 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:stretch"
+
+\end_inset
+
+,
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:stretch velocity"
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: length(t)"
+
+\end_inset
+
+ to get 
+\begin_inset Formula 
+\[
+\dot{T}\,l(t)=YA(r_{w}\omega_{w}-v)-T\dot{l}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\dot{T}=YA\frac{r_{w}\omega_{w}(t)-v}{l(t)}+T\frac{r_{w}\omega_{w}(t)}{l(t)}\label{eq: Tension derivative}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So we've eliminated the stretch 
+\begin_inset Formula $\xi$
+\end_inset
+
+, and will use eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:winch angle diffeq"
+
+\end_inset
+
+ as an additional equation of motion, with the auxiliary function 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: Tension derivative"
+
+\end_inset
+
+ to couple the winch and glider motions.
+ 
+\end_layout
+
+\begin_layout Section
+Engine and torque converter models
+\end_layout
+
+\begin_layout Standard
+The typical automotive torque converter in a hydraulic transmission has
+ a torque ratio 
+\begin_inset Formula $R_{\tau}\approx(\tau_{w}/\tau_{imp})=0.9(2-\omega_{w}/\omega_{imp}).$
+\end_inset
+
+ The torque applied to the torque converter impeller is 
+\begin_inset Formula $\tau_{imp}$
+\end_inset
+
+, the impeller's (engine's) rotational speed (scaled by any gearing) is
+ 
+\begin_inset Formula $\omega_{imp}$
+\end_inset
+
+, and the winch speed is 
+\begin_inset Formula $\omega_{w}.$
+\end_inset
+
+ So the torque converter acts as a continuously changing lower gear from
+ 2:1 at very low rotational speed to 1:1 when the transmission is turning
+ near engine rotation rate.
+ Then we can define the output power in terms of the engine power, and thus
+ an efficiency:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\eta(\omega_{w})=\frac{P_{out}}{P_{eng}}=\frac{\omega_{w}\tau_{w}}{\omega_{imp}\tau_{imp}}=0.9\frac{\omega_{w}}{\omega_{imp}}(2-\frac{\omega_{w}}{\omega_{imp}})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So the efficiency is zero at stall (
+\begin_inset Formula $\omega_{w}=0)$
+\end_inset
+
+ and grows to about 90% at full speed (
+\begin_inset Formula $\omega_{w}=\omega_{imp})$
+\end_inset
+
+.
+ If we assume that we control the power 
+\begin_inset Formula $P(t)$
+\end_inset
+
+ of the engine with the throttle, then the torque on the winch is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\tau_{w}=\frac{P_{out}}{\omega_{w}}=0.9\frac{P_{eng}}{\omega_{imp}}(2-\frac{\omega_{w}}{\omega_{imp}})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Engine model
+\end_layout
+
+\begin_layout Standard
+This simple model assumes that the power applied is proportional to the
+ difference between the engine speed and some target speed 
+\begin_inset Formula $\omega_{set}$
+\end_inset
+
+.
+ This speed could depend on the throttle setting 
+\begin_inset Formula $\omega_{set}(S_{thr})$
+\end_inset
+
+, and the constant A could also 
+\begin_inset Formula $A(S_{thr})$
+\end_inset
+
+.
+ 
+\begin_inset Formula 
+\[
+P_{applied}=-A(\omega_{imp}-\omega_{set})=\omega_{imp}\tau_{pistons}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Solving
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\omega_{imp}=\frac{\omega_{set}}{1+\frac{\tau_{imp}}{A}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+to describe the governor in steady state.
+ This may suffice to use dynamically, if we consider the engine of moment
+ of inertia 
+\begin_inset Formula $I_{eng}$
+\end_inset
+
+ to be a flywheel to which a torque from the pistons is applied:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+I_{eng}\dot{\omega}_{imp}=\tau_{pistons}-\tau_{imp}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+I_{eng}\dot{\omega}_{imp}=\frac{P_{applied}}{\frac{\omega_{set}}{1+\frac{\tau_{imp}}{A}}}-\tau_{imp}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+I_{eng}\dot{\omega}_{imp}=\frac{-A(\omega_{imp}-\omega_{set})}{\frac{\omega_{set}}{1+\frac{\tau_{imp}}{A}}}-\tau_{imp}
+\]
+
+\end_inset
+
+Then coupling all this to the winch: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\tau_{w}(t)=0.9\frac{-A(\omega_{imp}(t)-\omega_{set})}{\omega_{imp}(t)}(2-\frac{\omega_{w}(t)}{\omega_{imp}(t)})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Simulations of winch-spring-glider during rotation
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Pitch control
+\series default
+: The pilot operates the elevator to exert a torque proportional to 
+\begin_inset Formula 
+\[
+\dot{(\theta}(t)-\omega_{BGA})(\theta-\theta_{max})
+\]
+
+\end_inset
+
+.
+ This crude control targets the BGA recommended rotation rate, and the rotation
+ 
+\begin_inset Quotes eld
+\end_inset
+
+levels out
+\begin_inset Quotes erd
+\end_inset
+
+ at 
+\begin_inset Formula $\theta_{max}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We start the glider airborne horizontally at 
+\begin_inset Formula $v_{best}$
+\end_inset
+
+, and ramp up the drive tension in a time 
+\begin_inset Formula $t_{ramp}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Parameters 
+\end_layout
+
+\begin_layout Standard
+In addition to the free-flight parameters:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $m=400kg$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $k=675N/m$
+\end_inset
+
+ (from George Moore's estimate in 2005 
+\begin_inset Quotes eld
+\end_inset
+
+Non-Ideal Winch Tension Behaviors and 
+\end_layout
+
+\begin_layout Standard
+Compensation
+\begin_inset Quotes erd
+\end_inset
+
+, using Spectra Then 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\omega_{o}=1.3\,rad/sec$
+\end_inset
+
+ for a 400 kg glider, and 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $l_{str}=5.9m$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Utah Soaring Assn drum I = 70000 Lb in2 = 20 
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ R = 15 in = 0.4m.
+ Add 1500m of Spectra rope at about 20g/m at r=0.4m.
+ 
+\begin_inset Formula $I_{tot}=20$
+\end_inset
+
++30(.16)= 40
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $M_{eq}=25/.16$
+\end_inset
+
+= 160 kg.
+ Then M = 160kg/400kg = 0.4.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{rope}=0.1/(2\pi)$
+\end_inset
+
+=0.02 (10% amplitude loss per period, from a 2012 paper).
+ 
+\begin_inset Formula $d\approx-ln(1-0.1)/2\pi\approx0.1/(2\pi)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $t_{ramp}=4s$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $T_{drive}=1.0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $a=0.5,\,b=0.5$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Results
+\end_layout
+
+\begin_layout Standard
+In the following, there is no tension control except for the initial ramp.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+M=0.2, a=0.2, b=0.2
+\end_layout
+
+\begin_layout Standard
+In Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:M=.4,a=b=.2"
+
+\end_inset
+
+a), we see that the pilot achieves the constant rotation rate, and the flight
+ goes into a roughly stable climb with a path at a little less than 
+\begin_inset Formula $45^{\circ}$
+\end_inset
+
+ above the horizon, with the glider pitch angle at 
+\begin_inset Formula $45^{\circ}$
+\end_inset
+
+.
+ The angle of attack 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ rises by around 1 degree vs level flight, still 5 degrees away from stall.
+ The speed changes very little, and this constant rotation rate control
+ is a good proxy for velocity control.
+ 
+\end_layout
+
+\begin_layout Standard
+In Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:M=.4,a=b=.2"
+
+\end_inset
+
+b) we see the pilot's fairly large pitch controls (purple): The pilot pulls
+ up slightly (1st half second) to achieve the desired rotation rate, but
+ then has push the stick down to overcome the rope torque (blue) until the
+ rotation is over.
+ The net torque variation to achieve the rotation rate is quite small.
+ 
+\end_layout
+
+\begin_layout Standard
+Because the rope is attached on a glider-referenced line at 45 degrees from
+ the CG, the torque goes to zero when 
+\begin_inset Formula $\theta=45^{\circ}.$
+\end_inset
+
+ The largest net torque occurs right after 4s after the pilot overshoots
+ his target pitch of 
+\begin_inset Formula $45^{\circ}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+It's clear that the rope oscillations are not damping out after rotation
+ (see also 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:M=.4,a=b=.2"
+
+\end_inset
+
+c) .
+ In fact the pilot controls have made the oscillations worse, and seem to
+ sustain them after rotation.
+ This model needs to go into a routine with more sophisticated pilot controls.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="1">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a) 
+\begin_inset Graphics
+	filename C:/Users/owner/GOOGLE~1/Soaring/WINCHL~1/WINCHL~1/LONGIT~1/WINCHS~1/graphics/rotation/T=1,M=.4,a=b=.2/others.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\begin_inset Graphics
+	filename C:/Users/owner/GOOGLE~1/Soaring/WINCHL~1/WINCHL~1/LONGIT~1/WINCHS~1/graphics/rotation/T=1,M=.4,a=b=.2/torque.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\begin_inset Graphics
+	filename C:/Users/owner/GOOGLE~1/Soaring/WINCHL~1/WINCHL~1/LONGIT~1/WINCHS~1/graphics/rotation/T=1,M=.4,a=b=.2/T.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+M=0.2.
+ Winch launch rotation starting from 
+\begin_inset Formula $v_{best}$
+\end_inset
+
+, as the pilot targets a constant rotation rate until the glider pitch angle
+ is at 45
+\begin_inset Formula $^{\circ}$
+\end_inset
+
+above the horizon.
+ The dashed line in a) is the stall angle.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:M=.4,a=b=.2"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+M=0.2, a=0.2, b=0.1
+\end_layout
+
+\begin_layout Standard
+With 
+\begin_inset Formula $b$
+\end_inset
+
+ reduced, the rope attachment line is closer to the glider axis.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:M=.4,a=.2,b=.1"
+
+\end_inset
+
+a) we see that the flight is not very different from the previous case.
+ Again, 
+\begin_inset Formula $v$
+\end_inset
+
+ is almost constant.
+ 
+\end_layout
+
+\begin_layout Standard
+But in Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:M=.4,a=.2,b=.1"
+
+\end_inset
+
+b) we see the pilot (purple) has to do almost nothing until about 2.5 seconds
+ when he must pull back more and more to keep the rotation rate.
+ This is very similar to real life, where the glider will rotate by itself,
+ and then the glider must pull back to control speed.
+ The rope torque (blue) reverses at about 2 seconds with this rope attachment.
+ 
+\end_layout
+
+\begin_layout Standard
+Again, the oscillations don't damp and seem to be sustained by the pilot
+ controls.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="1">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a) 
+\begin_inset Graphics
+	filename C:/Users/owner/GOOGLE~1/Soaring/WINCHL~1/WINCHL~1/LONGIT~1/WINCHS~1/graphics/rotation/T=1,M=.4,a=.2,b=0.1/others.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\begin_inset Graphics
+	filename C:/Users/owner/GOOGLE~1/Soaring/WINCHL~1/WINCHL~1/LONGIT~1/WINCHS~1/graphics/rotation/T=1,M=.4,a=.2,b=0.1/torque.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\begin_inset Graphics
+	filename C:/Users/owner/GOOGLE~1/Soaring/WINCHL~1/WINCHL~1/LONGIT~1/WINCHS~1/graphics/rotation/T=1,M=.4,a=.2,b=0.1/T.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+M=0.2.
+ Winch launch rotation starting from 
+\begin_inset Formula $v_{best}$
+\end_inset
+
+, as the pilot targets a constant rotation rate until the glider pitch angle
+ is at 45
+\begin_inset Formula $^{\circ}$
+\end_inset
+
+above the horizon.
+ The dashed line in a) is the stall angle.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:M=.4,a=.2,b=.1"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Remarks
+\end_layout
+
+\begin_layout Standard
+It seems constant rotation rate during the rotation is a good control, and
+ along with velocity control is easily judged by the pilot.
+ In the sim this allows us to see the relatively small changes in angle
+ of attack during the rotation.
+ 
+\end_layout
+
+\end_body
+\end_document
