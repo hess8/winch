@@ -10,13 +10,13 @@ yD, vertical glider CG velocity
 theta, glider pitch angle above horizon
 thetaD, glider pitch rotation rate
 T, rope tension
-vu, rope uptake speed (m/s)
+v, rope uptake speed (m/s)
 ve, effective engine speed (m/s)
 Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 import os, subprocess, sys, time
-from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos
+from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
 from matplotlib.pyplot import plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim
 from scipy.integrate import odeint
 g = 9.8
@@ -43,7 +43,7 @@ class glider():
         self.x = None
         self.xD = None
         self.y = None    
-        self.xD = None
+        self.yD = None
         self.theta = None
         self.thetaD = None   
         return
@@ -71,10 +71,19 @@ class winch():
         self.me = 40              #  Winch effective mass, kg
         self.rdrum = 0.4          # Drum radius (m), needed only for conversion of rpm to engine peak effective speed
         #state variables
-        self.vu = None            # Rope uptake speed
+        self.v = None            # Rope uptake speed
 
-class engine(rdrum):
-    def __init__(self):
+
+class torqconv():
+     def __init__(self):
+         # TC parameters  
+         self.Ko = 12
+         self.dw = 0.13
+     def invK(self,vrel):
+         return 1/self.Ko * tanh((vrel-1/self.dw))
+
+class engine():
+    def __init__(self,rdrum):
         # Engine parameters  
         self.hp = 350             # engine horsepower
         self.Pmax = 750*self.hp        # engine watts
@@ -84,7 +93,7 @@ class engine(rdrum):
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1. #  engine power curve parameters, gas engine
         # state variables 
-        self.ve = None            #engine effective speed (m/s)
+        self.v = None            #engine effective speed (m/s)
         self.Few = None           # effective force between engine and winch (could go in either engine or winch or in its own class)
     
     def Pavail(self,ve):            # power curve
@@ -92,17 +101,23 @@ class engine(rdrum):
         
 class operator():
     def __init__(self):
-        return
-
+        def control(t,gl,rp,wi,en):
+            dStr = 0
+            return dStr
+         
 class pilot():
     def __init__(self):
-        return
+        self.Me = None
+        def control(t,gl):
+            dMe = 0
+            return dMe
     
 class plots():
     def __init__(self):
-        return
         
-def stateSplit(S,gl,rp,wi,en,op,pl):
+        return 
+        
+def stateSplit(S,gl,rp,wi,tc,en,op,pl):
     '''Splits the formal state vector S into the various state variables'''
     gl.x      = S[0]
     gl.xD     = S[1]
@@ -111,14 +126,13 @@ def stateSplit(S,gl,rp,wi,en,op,pl):
     gl.theta  = S[4]
     gl.thetaD = S[5]
     rp.T      = S[6]
-    wi.vu     = S[7]
-    wi.vu     = S[7]
-    en.ve     = S[8]
+    wi.v      = S[7]
+    en.v      = S[8]
     op.Sth    = S[9]
     pi.Me     = S[10]
-    return gl,rp,wi,en,op,pl
+    return gl,rp,wi,tc,en,op,pl
     
-def stateJoin(S,gl,rp,wi,en,op,pl):
+def stateJoin(S,gl,rp,wi,tc,en,op,pl):
     '''Joins the various state variables into the formal state vector S '''
     S[0] = gl.x
     S[1] = gl.xD
@@ -127,68 +141,64 @@ def stateJoin(S,gl,rp,wi,en,op,pl):
     S[4] = gl.theta    
     S[5] = gl.thetaD   
     S[6] = rp.T 
-    S[7] = wi.vu
-    S[8] = en.ve   
+    S[7] = wi.v
+    S[8] = en.v   
     S[9] = op.Sth  
     S[10] = pl.Me    
     return S
 
-def stateDer(S,t,gl,rp,wi,en,op,pl):
+def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''Differential equations that give the first derivative of the state vector'''
-    gl,rp,wi,en,op,pl = stateSplit(S,gl,rp,wi,en,op,pl)
-        
-    #----calculate algebraic functions----
+    gl,rp,wi,en,tc,op,pl = stateSplit(S,gl,rp,wi,tc,en,op,pl)
+    #----algebraic functions----#
     #rope
-    thetarope = atan(gl.y/(rp.lo-gl.x))
+    thetarope = arctan(gl.y/(rp.lo-gl.x))
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
-    gamma = atan(gl.yD/gl.xD)  # climb angle
+    gamma = arctan(gl.yD/gl.xD)  # climb angle
     alpha = gl.theta - gamma # angle of attack
     gl.L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)^2
     gl.D = gl.L/gl.Q*(1 + gl.dv*(v/gl.vb-1)^2 + gl.dalpha*alpha^2) #drag
     gl.M = (-gl.palpha*alpha - pl.Me) #torque on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/lenrope #velocity of glider toward winch
-    Few = en.me *  # effective force between engine and winch through torque converter
-    #winch--None
-    #engine
-    
-    
-    
-    #derivatives of state variables
+    #winch-engine
+    vrel = wi.v/en.v
+    Fee = tc.invK(vrel) * vrel**2 / wi.rdrum      
+    Few = Fee* (2-vrel)  # effective force between engine and winch through torque converter
+    #----derivatives of state variables----#
     dotx = gl.xD    
-    dotxD = rp.T*cos(thetarope) - gl.D*cos(gamma) -gl.L*sin(gamma) #x acceleration
+    dotxD = rp.T*cos(thetarope) - gl.D*cos(gamma) - gl.L*sin(gamma) #x acceleration
     doty = gl.yD    
-    dotyD = gl.L*cos(gamma) - rp.T*sin(thetarope)- gl.D*sin(gamma) - gl.W #y acceleration
+    dotyD = gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma) - gl.W #y acceleration
     dottheta = gl.thetaD    
-    dotthetaD = 1/gl.Ig * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(atan(rp.b/rp.a)-gl.theta-thetarope) + gl.M)    
-    dotT = rp.Y*rp.A*(wi.vu - vgw)/lenrope
-    dotvu =  1/wi.me * (Few - rp.T)
-    dotve =  op.Sth * en.Pavail(en.ve) / en.ve - Few / (2 - wi.vu - en.ve)
-    
-    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvu,dotve]
+    dotthetaD = 1/gl.Ig * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/rp.a)-gl.theta-thetarope) + gl.M)    
+    dotT = rp.Y*rp.A*(wi.v - vgw)/lenrope
+    dotvw =  1/wi.me * (Few - rp.T)
+    dotve =  op.Sth * en.Pavail(en.v) / en.v - Few / (2 - wi.v - en.v)
+    dotSth = op.control(t,gl,rp,wi,en)
+    dotMe = pl.control(t,gl) 
+    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
 
-
-
-    
-    
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
 tEnd = 10      # end time for simulation
+t = linspace(tStart,tEnd)
 
 gl = glider()
 rp = rope()
 wi = winch()
-en = engine()
+tc = torqconv()
+en = engine(wi.rdrum)
 op = operator()
 pl = pilot()
-
-
-    
+  
 S0 = zeros(11)
-
+op.Sth = 0.5  #throttle setting
+S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
+S = odeint(stateDer,S0,t,gl,rp,wi,tc,en,op,pl)
 
 # function that returns dy/dt
 def aux(y,t):
@@ -217,30 +227,6 @@ xlabel('time')
 ylabel('y(t)')
 show()
 
-#
-## function that returns dy/dt
-#def aux(y,t):
-#    return 3*y*t
-#
-#def model(y,t):
-#    k = 0.3
-#    dydt = -k * y * aux(y,t)
-#    return dydt
-#
-## initial condition
-#y0 = 5
-#
-## time points
-#t = linspace(0,20)
-#
-## solve ODE
-#y = odeint(model,y0,t)
-#
-## plot results
-#plot(t,y)
-#xlabel('time')
-#ylabel('y(t)')
-#show()
 
 
 

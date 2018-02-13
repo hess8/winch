@@ -162,10 +162,10 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $v_{w},$
+\begin_inset Formula $v_{u},$
 \end_inset
 
- rope uptake speed (m/s), or effective winch speed
+ rope uptake speed (m/s)
 \end_layout
 
 \begin_layout Standard
@@ -176,19 +176,24 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $F_{e,w}$
+\end_inset
+
+, effective force between engine and winch
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $S_{th},$
 \end_inset
 
- throttle setting (included as a state variable so state integrator can
- handle PID integrator)
+ throttle setting
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula $M_{e}$
 \end_inset
 
-, pilot controlled moment (torque) from elevator (included as a state variable
- so state integrator can handle PID integrator)
+, pilot controlled moment (torque) from elevator
 \end_layout
 
 \begin_layout Subsection*
@@ -196,7 +201,16 @@ Time-varying quantities derived from model variables
 \end_layout
 
 \begin_layout Standard
-.
+The following make up a vector 
+\begin_inset Formula $\mathbf{x}_{a}$
+\end_inset
+
+ of algebraic variables that form a system of differential algebraic equations
+ 
+\begin_inset Formula $0=g(\boldsymbol{\mathbf{x},\mathbf{x}_{a},t)}$
+\end_inset
+
+ :
 \end_layout
 
 \begin_layout Standard
@@ -282,13 +296,6 @@ Time-varying quantities derived from model variables
 \end_inset
 
 , torque of engine on torque converter
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $F_{e,e}$
-\end_inset
-
-, effective force of the above torque
 \end_layout
 
 \begin_layout Standard
@@ -459,30 +466,16 @@ Winch
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $r_{drum},$
-\end_inset
-
- drum radius, only used in the coupling to engine through torque converter
-\end_layout
-
-\begin_layout Standard
 
 \bar under
-Torque converter
+Torque Converter
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula $K_{o}^{-1}$
 \end_inset
 
-, the inverse capacity at stall
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $\delta_{K}$
-\end_inset
-
-, the capacity transition width
+, 
 \end_layout
 
 \begin_layout Standard
@@ -952,7 +945,7 @@ which includes the transmission gearing.
  The rope uptake speed is 
 \begin_inset Formula 
 \[
-v_{w}=r_{drum}\omega_{w}
+v_{u}=r_{drum}\omega_{w}
 \]
 
 \end_inset
@@ -988,7 +981,7 @@ F_{e,w}=\frac{\tau_{w}}{r_{drum}}:
 
 \begin_inset Formula 
 \[
-r_{drum}^{2}m_{e,w}\dot{\frac{v_{w}}{r_{drum}}}=r_{w}F_{e,w}-r_{drum}T
+r_{drum}^{2}m_{e,w}\dot{\frac{v_{u}}{r_{drum}}}=r_{w}F_{e,w}-r_{drum}T
 \]
 
 \end_inset
@@ -1007,7 +1000,7 @@ cancels and we are left with:
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-m_{e,w}\dot{v_{w}}=F_{e,w}-T\label{eq:uptake speed diffeq (winch diffeq)}
+m_{e,w}\dot{v_{u}}=F_{e,w}-T\label{eq:uptake speed diffeq (winch diffeq)}
 \end{equation}
 
 \end_inset
@@ -1141,7 +1134,7 @@ change
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{\xi}=v_{w}-v_{gw}\label{eq:stretch velocity}
+\dot{\xi}=v_{u}-v_{gw}\label{eq:stretch velocity}
 \end{equation}
 
 \end_inset
@@ -1209,7 +1202,7 @@ reference "eq: length(t)"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{T}=YA\frac{v_{w}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
 \]
 
 \end_inset
@@ -1228,7 +1221,7 @@ The term on the right of the above equation is not physical because it neglects
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{T}=YA\frac{v_{w}(t)-v_{gw}(t)}{l(t)}\label{eq: Tension derivative}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}(t)}{l(t)}\label{eq: Tension derivative}
 \end{equation}
 
 \end_inset
@@ -1468,6 +1461,17 @@ r_{drum}^{2}m_{e,e}\dot{\omega}_{eng}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\tau_{out
 \begin_layout Standard
 \begin_inset Formula 
 \[
+r_{drum}m_{e,e}\dot{v_{e}}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-\tau_{out,eng}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
 r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-r_{drum}F_{e,e}
 \]
 
@@ -1477,7 +1481,7 @@ r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-r_{drum}F_{e,e}
 \begin_inset Formula $F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}$
 \end_inset
 
- is the effective force between the torque convertor on the engine.
+ is an effective force applied by the torque convertor on the engine.
  Again 
 \begin_inset Formula $r_{drum}$
 \end_inset
@@ -1521,7 +1525,7 @@ reference "eq:torque and capacity"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\right)^{2}}{r_{drum}}
+F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{K^{-1}\times\omega_{rel}^{2}}{r_{drum}}
 \]
 
 \end_inset
@@ -1532,7 +1536,7 @@ F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\rig
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,w}=\frac{\tau_{w}}{r_{drum}}=F_{e,e}\left(2-\omega_{rel}\right)
+F_{e,w}=\frac{\tau_{w}}{r_{drum}}=\frac{K^{-1}\times\omega_{rel}^{2}\left(2-\omega_{rel}\right)}{r_{drum}}
 \]
 
 \end_inset

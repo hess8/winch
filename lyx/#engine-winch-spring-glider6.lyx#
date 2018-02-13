@@ -162,10 +162,10 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $v_{w},$
+\begin_inset Formula $v_{u},$
 \end_inset
 
- rope uptake speed (m/s), or effective winch speed
+ rope uptake speed (m/s)
 \end_layout
 
 \begin_layout Standard
@@ -179,16 +179,14 @@ We solve a system of first order differential equations in the form:
 \begin_inset Formula $S_{th},$
 \end_inset
 
- throttle setting (included as a state variable so state integrator can
- handle PID integrator)
+ throttle setting
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula $M_{e}$
 \end_inset
 
-, pilot controlled moment (torque) from elevator (included as a state variable
- so state integrator can handle PID integrator)
+, pilot controlled moment (torque) from elevator
 \end_layout
 
 \begin_layout Subsection*
@@ -459,16 +457,9 @@ Winch
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $r_{drum},$
-\end_inset
-
- drum radius, only used in the coupling to engine through torque converter
-\end_layout
-
-\begin_layout Standard
 
 \bar under
-Torque converter
+Torque Converter
 \end_layout
 
 \begin_layout Standard
@@ -952,7 +943,7 @@ which includes the transmission gearing.
  The rope uptake speed is 
 \begin_inset Formula 
 \[
-v_{w}=r_{drum}\omega_{w}
+v_{u}=r_{drum}\omega_{w}
 \]
 
 \end_inset
@@ -988,7 +979,7 @@ F_{e,w}=\frac{\tau_{w}}{r_{drum}}:
 
 \begin_inset Formula 
 \[
-r_{drum}^{2}m_{e,w}\dot{\frac{v_{w}}{r_{drum}}}=r_{w}F_{e,w}-r_{drum}T
+r_{drum}^{2}m_{e,w}\dot{\frac{v_{u}}{r_{drum}}}=r_{w}F_{e,w}-r_{drum}T
 \]
 
 \end_inset
@@ -1007,7 +998,7 @@ cancels and we are left with:
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-m_{e,w}\dot{v_{w}}=F_{e,w}-T\label{eq:uptake speed diffeq (winch diffeq)}
+m_{e,w}\dot{v_{u}}=F_{e,w}-T\label{eq:uptake speed diffeq (winch diffeq)}
 \end{equation}
 
 \end_inset
@@ -1141,7 +1132,7 @@ change
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{\xi}=v_{w}-v_{gw}\label{eq:stretch velocity}
+\dot{\xi}=v_{u}-v_{gw}\label{eq:stretch velocity}
 \end{equation}
 
 \end_inset
@@ -1209,7 +1200,7 @@ reference "eq: length(t)"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{T}=YA\frac{v_{w}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
 \]
 
 \end_inset
@@ -1228,7 +1219,7 @@ The term on the right of the above equation is not physical because it neglects
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{T}=YA\frac{v_{w}(t)-v_{gw}(t)}{l(t)}\label{eq: Tension derivative}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}(t)}{l(t)}\label{eq: Tension derivative}
 \end{equation}
 
 \end_inset
@@ -1521,7 +1512,7 @@ reference "eq:torque and capacity"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\right)^{2}}{r_{drum}}
+F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{K^{-1}\times\omega_{rel}^{2}}{r_{drum}}
 \]
 
 \end_inset
@@ -1532,7 +1523,7 @@ F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\rig
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,w}=\frac{\tau_{w}}{r_{drum}}=F_{e,e}\left(2-\omega_{rel}\right)
+F_{e,w}=\frac{\tau_{w}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\right)^{2}\left(2-\omega_{rel}\right)}{r_{drum}}
 \]
 
 \end_inset

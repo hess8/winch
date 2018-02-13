@@ -21,9 +21,9 @@ def K(v):
     return k0*(1 + v**p/(1.01-v**p))
     
 def invK(v):
-    k0 = 1./12 
+    invk0 = 1./12 
     w = 0.13
-    return -k0*tanh((v-1)/w)
+    return -invk0*tanh((v-1)/w)
 
 # solve ODE
 
