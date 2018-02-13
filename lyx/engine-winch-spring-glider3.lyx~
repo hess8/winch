@@ -176,6 +176,13 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $F_{e,w}$
+\end_inset
+
+, effective force between engine and winch
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $S_{th},$
 \end_inset
 
@@ -1609,7 +1616,7 @@ I_{g}\dot{\dot{\theta}}=\tau_{rope,glider}+M
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{T}=YA\frac{v_{u}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}(t)}{l(t)}
 \]
 
 \end_inset

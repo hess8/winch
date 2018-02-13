@@ -176,6 +176,13 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $F_{e,w}$
+\end_inset
+
+, effective force between engine and winch
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $S_{th},$
 \end_inset
 
@@ -1268,35 +1275,13 @@ A typical automotive torque converter in a hydraulic transmission has a
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
-\eta(\omega_{w})=\frac{P_{out}}{P_{eng}}=\frac{\omega_{w}\tau_{w}}{\omega_{eng}\tau_{out,eng}}=\frac{\omega_{w}}{\omega_{eng}}(2-\frac{\omega_{w}}{\omega_{eng}})
-\]
+\begin{equation}
+\eta(\omega_{w})=\frac{P_{out}}{P_{eng}}=\frac{\omega_{w}\tau_{w}}{\omega_{eng}\tau_{out,eng}}=\frac{\omega_{w}}{\omega_{eng}}(2-\frac{\omega_{w}}{\omega_{eng}})\label{eq:TC efficiency}
+\end{equation}
 
 \end_inset
 
-.
-\end_layout
 
-\begin_layout Standard
-The efficiency is zero at stall (
-\begin_inset Formula $\omega_{w}=0)$
-\end_inset
-
- and grows to about 100% at full speed (
-\begin_inset Formula $\omega_{w}=\omega_{eng})$
-\end_inset
-
-.
- We won't use this efficiency explicitly below, but the physics is captured
- as we use 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:torque ratio"
-
-\end_inset
-
- below.
- 
 \end_layout
 
 \begin_layout Standard
@@ -1461,6 +1446,19 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
  
 \end_layout
 
+\begin_layout Standard
+Finally, we need a way to determine 
+\begin_inset Formula $F_{e,w}$
+\end_inset
+
+.
+ It would be easy to determine this in steady state 
+\end_layout
+
+\begin_layout Standard
+The power loss in the TC is 
+\end_layout
+
 \begin_layout Section
 Pilot
 \end_layout
@@ -1609,7 +1607,7 @@ I_{g}\dot{\dot{\theta}}=\tau_{rope,glider}+M
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{T}=YA\frac{v_{u}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}(t)}{l(t)}
 \]
 
 \end_inset
@@ -1643,13 +1641,12 @@ m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\frac{F_{e,w}}{\left(2-v_{u}
 In three of the above, we've writtten the double-dot notation differently
  to emphasize that each is a first-order differential equation in the state
  variables, and we have one for each state variable.
- Note: it might seem strange to have 
+ Note: instead of having 
 \begin_inset Formula $T$
 \end_inset
 
- as a state variable, as the others are all positions or velocities.
- We could have instead written the angular position of some point on the
- winch drum 
+ as a state variable, we could have instead written the angular position
+ of some point on the winch drum 
 \begin_inset Formula $\theta_{winch}=\int\omega_{w}(t')dt'$
 \end_inset
 

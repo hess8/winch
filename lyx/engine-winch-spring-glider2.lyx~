@@ -1453,12 +1453,11 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
 \end_inset
 
 .
- In terms of the RPM for peak power, 
+ In terms of the rpm for peak power, 
 \begin_inset Formula $v_{peak}=\frac{2\pi}{60}r_{drum}RPM$
 \end_inset
 
-.
- 
+
 \end_layout
 
 \begin_layout Section

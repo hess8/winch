@@ -176,6 +176,13 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $F_{e,w}$
+\end_inset
+
+, effective force between engine and winch
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $S_{th},$
 \end_inset
 
@@ -1268,34 +1275,74 @@ A typical automotive torque converter in a hydraulic transmission has a
 
 \begin_layout Standard
 \begin_inset Formula 
+\begin{equation}
+\eta(\omega_{w})=\frac{P_{out}}{P_{eng}}=\frac{\omega_{w}\tau_{w}}{\omega_{eng}\tau_{out,eng}}=\frac{\omega_{w}}{\omega_{eng}}\left(2-\frac{\omega_{w}}{\omega_{eng}}\right)\label{eq:TC efficiency}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The final torque converter function we need is the capacity 
+\begin_inset Formula $K$
+\end_inset
+
+, that describes a ratio of impellor speed (rad/sec) and impellor torque
+ (Nm).
+ Define 
+\begin_inset Formula $\omega_{rel}=\frac{\omega_{w}}{\omega_{eng}}$
+\end_inset
+
+.
+ 
+\begin_inset Formula 
 \[
-\eta(\omega_{w})=\frac{P_{out}}{P_{eng}}=\frac{\omega_{w}\tau_{w}}{\omega_{eng}\tau_{out,eng}}=\frac{\omega_{w}}{\omega_{eng}}(2-\frac{\omega_{w}}{\omega_{eng}})
+\tau_{out,eng}=K^{-1}\times\omega_{rel}^{2}
 \]
 
 \end_inset
 
-.
+
 \end_layout
 
 \begin_layout Standard
-The efficiency is zero at stall (
-\begin_inset Formula $\omega_{w}=0)$
+This function K stays about constant until it diverges near 
+\begin_inset Formula $\omega_{rel}=1$
 \end_inset
 
- and grows to about 100% at full speed (
-\begin_inset Formula $\omega_{w}=\omega_{eng})$
+, so 
+\begin_inset Formula $K^{-1}$
 \end_inset
 
-.
- We won't use this efficiency explicitly below, but the physics is captured
- as we use 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:torque ratio"
+goes to zero at 
+\begin_inset Formula $\omega_{rel}=1.$
+\end_inset
+
+ We approximate a typical curve by
+\begin_inset Formula 
+\[
+K^{-1}\approx-\frac{1}{Ko}tanh\left(\frac{1-\omega_{rel}}{\delta}\right)
+\]
 
 \end_inset
 
- below.
+For a typical curve, 
+\begin_inset Formula $K_{o}=$
+\end_inset
+
+ 12 (rad/s)
+\begin_inset Formula $^{2}$
+\end_inset
+
+/Nm, and the transition width is 
+\begin_inset Formula $\delta$
+\end_inset
+
+ = 0.13.
+ This function make the torque switch sign when the winch moves faster than
+ the engine, a feature we want in the model.
  
 \end_layout
 
@@ -1382,7 +1429,7 @@ r_{drum}^{2}m_{e,e}\dot{\omega}_{eng}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\tau_{out
 \begin_layout Standard
 \begin_inset Formula 
 \[
-r_{drum}m_{e,e}\dot{v_{e}}=\frac{r_{drum}S_{th}P_{a}(v_{e})}{v_{e}}-\frac{\tau_{w}}{\left(2-\omega_{w}/\omega_{eng}\right)}
+r_{drum}m_{e,e}\dot{v_{e}}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-\frac{\tau_{w}}{\left(2-\omega_{w}/\omega_{eng}\right)}
 \]
 
 \end_inset
@@ -1393,7 +1440,7 @@ r_{drum}m_{e,e}\dot{v_{e}}=\frac{r_{drum}S_{th}P_{a}(v_{e})}{v_{e}}-\frac{\tau_{
 \begin_layout Standard
 \begin_inset Formula 
 \[
-r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}(v_{e})}{\dot{v}_{e}}-\frac{r_{drum}F_{e,w}}{\left(2-v_{u}/v_{e}\right)}
+r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{\dot{v}_{e}}-\frac{r_{drum}F_{e,w}}{\left(2-v_{u}/v_{e}\right)}
 \]
 
 \end_inset
@@ -1417,10 +1464,6 @@ m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\frac{F_{e,w}}{\left(2-v_{u}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 It will be easy to see how much the torque converter is slipping (losing
  energy) from the effective engine speed, when 
 \begin_inset Formula $v_{e}\neq v_{u}$
@@ -1428,6 +1471,15 @@ It will be easy to see how much the torque converter is slipping (losing
 
  i.e when the effective engine speed is not equal to the rope uptake speed.
  
+\end_layout
+
+\begin_layout Standard
+We need a way to determine 
+\begin_inset Formula $F_{e,w}$
+\end_inset
+
+ between the engine and winch, in terms of state variables, or the first
+ derivative in terms of state variables!!!!
 \end_layout
 
 \begin_layout Standard
@@ -1454,10 +1506,10 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
 
 .
  In terms of the RPM for peak power, 
-\begin_inset Formula $v_{peak}=\frac{2\pi}{60}r_{drum}RPM$
+\begin_inset Formula $v_{peak}=\frac{2\pi}{60}r_{drum}RPM_{peak}$
 \end_inset
 
-.
+, in m/s.
  
 \end_layout
 
@@ -1609,7 +1661,7 @@ I_{g}\dot{\dot{\theta}}=\tau_{rope,glider}+M
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{T}=YA\frac{v_{u}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
+\dot{T}=YA\frac{v_{u}(t)-v_{gw}(t)}{l(t)}
 \]
 
 \end_inset
@@ -1643,13 +1695,12 @@ m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\frac{F_{e,w}}{\left(2-v_{u}
 In three of the above, we've writtten the double-dot notation differently
  to emphasize that each is a first-order differential equation in the state
  variables, and we have one for each state variable.
- Note: it might seem strange to have 
+ Note: instead of having 
 \begin_inset Formula $T$
 \end_inset
 
- as a state variable, as the others are all positions or velocities.
- We could have instead written the angular position of some point on the
- winch drum 
+ as a state variable, we could have instead written the angular position
+ of some point on the winch drum 
 \begin_inset Formula $\theta_{winch}=\int\omega_{w}(t')dt'$
 \end_inset
 
