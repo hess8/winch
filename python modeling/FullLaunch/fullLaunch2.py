@@ -16,7 +16,7 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 import os, subprocess, sys, time
-from numpy import pi, array, zeros,linspace
+from numpy import pi, array, zeros,linspace,sqrt,atan,sin,cos
 from matplotlib.pyplot import plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim
 from scipy.integrate import odeint
 g = 9.8
@@ -45,6 +45,8 @@ class glider():
         self.thetaD = None   
         self.vu = None
         return
+#    def L(self):
+#        return (self.W + self.Lalpha*self.alpha) * (v/vb)^2
     
 class rope():
     def __init__(self):
@@ -92,22 +94,8 @@ class pilot():
 class plots():
     def __init__(self):
         return
-    
-##########################################################################
-#                         Main script
-##########################################################################                        
-tStart = 0
-tEnd = 10      # end time for simulation
-
-gl = glider()
-rp = rope()
-wi = winch()
-en = engine()
-op = operator()
-
-
-
-def stateSplit(S,gl,rp,wi,en):
+        
+def stateSplit(S,gl,rp,wi,en,op,pl):
     '''Splits the formal state vector S into the various state variables'''
     gl.x      = S[0]
     gl.xD     = S[1]
@@ -120,36 +108,114 @@ def stateSplit(S,gl,rp,wi,en):
     en.ve     = S[8]
     op.Sth    = S[9]
     pi.Me     = S[10]
-
-def stateDer(S,t):
-    '''Differential equations that give the first derivative of the state vector'''
+    return gl,rp,wi,en,op,pl
     
-# S0 = zeroes(11)
-# S0[0] = 
-# S0[]
+def stateJoin(S,gl,rp,wi,en,op,pl):
+    '''Joins the various state variables into the formal state vector S '''
+    S[0] = gl.x
+    S[1] = gl.xD
+    S[2] = gl.y        
+    S[3] = gl.yD       
+    S[4] = gl.theta    
+    S[5] = gl.thetaD   
+    S[6] = rp.T 
+    S[7] = wi.vu
+    S[8] = en.ve   
+    S[9] = op.Sth  
+    S[10] = pl.Me    
+    return S
+    
+
+def stateDer(S,t,gl,rp,wi,en,op,pl):
+    '''Differential equations that give the first derivative of the state vector'''
+    gl,rp,wi,en,op,pl = stateSplit(S,gl,rp,wi,en,op,pl)
+    #calculate algebraic functions:
+    v = sqrt(gl.xD**2 + gl.yD**2) # speed
+    gamma = atan(gl.yD/gl.xD)  # climb angle
+    alpha = gl.theta - gamma # angle of attack
+    thetarope = atan(gl.y/(rp.lo-gl.x))
+    L = (W + gl.Lalpha*alpha) * (v/gl.vb)^2
+    M = (-gl.palpha*alpha - pl.Me) #torque on glider
+    D = L/Q*(1 + gl.dv*(v/gl.vb-1)^2 + gl.dalpha*alpha^2) #drag
+    gl.xDD = T*cos(thetarope) - D*cos(gamma) -L*sin(gamma) #x acceleration
+    gl.yDD = L*cos(gamma) - rp.T*sin(thetarope)- D*sin(gamma) - gl.W #y acceleration
+    gl.thetaDD = 1/Ig * (rp.T*sqrt(a**2 + b**2)*sin(atan(rp.b/rp.a)-gl.theta-thetarope) + M)    
+    
+    
+    
+    dxdt = gl.xD
+    dxDdt = rp.T * cos(thetaRope)
+
+    
+##########################################################################
+#                         Main script
+##########################################################################                        
+tStart = 0
+tEnd = 10      # end time for simulation
+
+gl = glider()
+rp = rope()
+wi = winch()
+en = engine()
+op = operator()
+pl = pilot()
+
+
+    
+S0 = zeros(11)
+
 
 # function that returns dy/dt
+def aux(y,t):
+    return 3*array([y[1],y[0]])*t
+    
+    
+
 def model(y,t):
     k = 0.3
-    dydt = -k * y
+    dydt = -k * y * aux(y,t)
     return dydt
 
 # initial condition
-y0 = 5
+y0 = array([5,1])
 
 # time points
 t = linspace(0,20)
 
 # solve ODE
 y = odeint(model,y0,t)
-
+#print y[0]
 # plot results
-plot(t,y)
+plot(t,y[:,0])
+plot(t,y[:,1])
 xlabel('time')
 ylabel('y(t)')
 show()
 
-
+#
+## function that returns dy/dt
+#def aux(y,t):
+#    return 3*y*t
+#
+#def model(y,t):
+#    k = 0.3
+#    dydt = -k * y * aux(y,t)
+#    return dydt
+#
+## initial condition
+#y0 = 5
+#
+## time points
+#t = linspace(0,20)
+#
+## solve ODE
+#y = odeint(model,y0,t)
+#
+## plot results
+#plot(t,y)
+#xlabel('time')
+#ylabel('y(t)')
+#show()
 
 
 
