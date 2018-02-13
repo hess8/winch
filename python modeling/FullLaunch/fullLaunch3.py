@@ -185,7 +185,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''Differential equations that give the first derivative of the state vector'''
     
     gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
-#    if t
+    if 1.5<t<2.0:
+        print 'pause'
 
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
@@ -211,7 +212,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotx = gl.xD    
     dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - gl.D*cos(gamma) - gl.L*sin(gamma)) #x acceleration
     doty = gl.yD
-    if gl.y < 1e-3: #on ground   
+    if gl.y < 0.1 and gl.L < gl.W: #on ground 
         dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma)) #y acceleration on ground
     else:
         dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma) - gl.W) #y acceleration
@@ -228,7 +229,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 10      # end time for simulation
+tEnd = 20      # end time for simulation
 t = linspace(tStart,tEnd)
 
 gl = glider()
@@ -242,7 +243,6 @@ pl = pilot()
 S0 = zeros(11)
 op.Sth = 0.5  #throttle setting
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-print S0
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
 #Split S (now a matrix with a state row for each time)
 
