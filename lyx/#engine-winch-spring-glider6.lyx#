@@ -162,10 +162,10 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $v_{u},$
+\begin_inset Formula $v_{w},$
 \end_inset
 
- rope uptake speed (m/s)
+ rope uptake speed (m/s), or effective winch speed
 \end_layout
 
 \begin_layout Standard
@@ -179,14 +179,16 @@ We solve a system of first order differential equations in the form:
 \begin_inset Formula $S_{th},$
 \end_inset
 
- throttle setting
+ throttle setting (included as a state variable so state integrator can
+ handle PID integrator)
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula $M_{e}$
 \end_inset
 
-, pilot controlled moment (torque) from elevator
+, pilot controlled moment (torque) from elevator (included as a state variable
+ so state integrator can handle PID integrator)
 \end_layout
 
 \begin_layout Subsection*
@@ -457,9 +459,16 @@ Winch
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $r_{drum},$
+\end_inset
+
+ drum radius, only used in the coupling to engine through torque converter
+\end_layout
+
+\begin_layout Standard
 
 \bar under
-Torque Converter
+Torque converter
 \end_layout
 
 \begin_layout Standard
@@ -943,7 +952,7 @@ which includes the transmission gearing.
  The rope uptake speed is 
 \begin_inset Formula 
 \[
-v_{u}=r_{drum}\omega_{w}
+v_{w}=r_{drum}\omega_{w}
 \]
 
 \end_inset
@@ -979,7 +988,7 @@ F_{e,w}=\frac{\tau_{w}}{r_{drum}}:
 
 \begin_inset Formula 
 \[
-r_{drum}^{2}m_{e,w}\dot{\frac{v_{u}}{r_{drum}}}=r_{w}F_{e,w}-r_{drum}T
+r_{drum}^{2}m_{e,w}\dot{\frac{v_{w}}{r_{drum}}}=r_{w}F_{e,w}-r_{drum}T
 \]
 
 \end_inset
@@ -998,7 +1007,7 @@ cancels and we are left with:
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-m_{e,w}\dot{v_{u}}=F_{e,w}-T\label{eq:uptake speed diffeq (winch diffeq)}
+m_{e,w}\dot{v_{w}}=F_{e,w}-T\label{eq:uptake speed diffeq (winch diffeq)}
 \end{equation}
 
 \end_inset
@@ -1132,7 +1141,7 @@ change
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{\xi}=v_{u}-v_{gw}\label{eq:stretch velocity}
+\dot{\xi}=v_{w}-v_{gw}\label{eq:stretch velocity}
 \end{equation}
 
 \end_inset
@@ -1200,7 +1209,7 @@ reference "eq: length(t)"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{T}=YA\frac{v_{u}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
+\dot{T}=YA\frac{v_{w}(t)-v_{gw}}{l(t)}+T\frac{v_{u}(t)}{l(t)}
 \]
 
 \end_inset
@@ -1219,7 +1228,7 @@ The term on the right of the above equation is not physical because it neglects
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{T}=YA\frac{v_{u}(t)-v_{gw}(t)}{l(t)}\label{eq: Tension derivative}
+\dot{T}=YA\frac{v_{w}(t)-v_{gw}(t)}{l(t)}\label{eq: Tension derivative}
 \end{equation}
 
 \end_inset
@@ -1333,7 +1342,7 @@ The final TC  function we need is the capacity
  
 \begin_inset Formula 
 \begin{equation}
-\tau_{out,eng}=\left(\frac{\omega_{rel}}{K}\right)^{2}\label{eq:torque and capacity}
+\tau_{out,eng}=\left(\frac{\omega_{eng}}{K}\right)^{2}\label{eq:torque and capacity}
 \end{equation}
 
 \end_inset
@@ -1366,7 +1375,11 @@ Typically,
 \begin_inset Formula $K_{o}^{-1}=$
 \end_inset
 
-0.08 Nm, and the transition width is 
+0.08 rad/s/(Nm)
+\begin_inset Formula $^{1/2}$
+\end_inset
+
+, and the transition width is 
 \begin_inset Formula $\delta\approx$
 \end_inset
 
@@ -1512,7 +1525,7 @@ reference "eq:torque and capacity"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{K^{-1}\times\omega_{rel}^{2}}{r_{drum}}
+F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{eng}\right)^{2}}{r_{drum}}=\frac{\left(K^{-1}\times v_{e}\right)^{2}}{r_{drum}^{3}}
 \]
 
 \end_inset
@@ -1523,7 +1536,7 @@ F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{K^{-1}\times\omega_{rel}^{2}}{r_{d
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,w}=\frac{\tau_{w}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\right)^{2}\left(2-\omega_{rel}\right)}{r_{drum}}
+F_{e,w}=\frac{\tau_{w}}{r_{drum}}=F_{e,e}\left(2-\omega_{rel}\right)
 \]
 
 \end_inset
@@ -1532,7 +1545,12 @@ Once the effectives masses are defined, this is the only place that
 \begin_inset Formula $r_{drum}$
 \end_inset
 
- exists in the model
+ exists in the model.
+ We redefine 
+\begin_inset Formula $K_{o}$
+\end_inset
+
+in terms of velocity: 
 \end_layout
 
 \begin_layout Standard
@@ -1557,11 +1575,14 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
 
 \end_inset
 
- In terms of the RPM for peak power, 
-\begin_inset Formula $v_{peak}=\frac{2\pi}{60}r_{drum}RPM_{peak}$
+ 
+\begin_inset Formula $v_{peak}$
 \end_inset
 
-, in m/s.
+, in m/s is the rope uptake speed for maximum power and is determined not
+ just by the engine peak rotation rate, but by gearing in the transmission.
+ If the gearing is optimal, it should be close to the uptake speed during
+ and right after rotation.
  
 \end_layout
 

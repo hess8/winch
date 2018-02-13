@@ -17,7 +17,7 @@ Me, pilot controlled moment (torque) from elevator
 '''
 import os, subprocess, sys, time
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
-from matplotlib.pyplot import plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim
+from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim
 from scipy.integrate import odeint
 g = 9.8
 
@@ -77,10 +77,10 @@ class winch:
 class torqconv:
      def __init__(self):
          # TC parameters  
-         self.Ko = 12
+         self.Ko = 12             #TC capacity (rad/sec/(Nm)^1/2)
          self.dw = 0.13
      def invK(self,vrel):
-         return 1/self.Ko * tanh((vrel-1/self.dw))
+         return 1/float(self.Ko) * tanh((vrel-1)/self.dw)
 
 class engine:
     def __init__(self,rdrum):
@@ -88,7 +88,8 @@ class engine:
         self.hp = 350             # engine horsepower
         self.Pmax = 750*self.hp        # engine watts
         self.rpmpeak = 6000       # rpm for peak power
-        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power  
+#        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
+        self.vpeak = 30   # m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
@@ -118,8 +119,24 @@ class plots:
     def __init__(self):
         return 
         
-def stateSplit(S,gl,rp,wi,tc,en,op,pl):
-    '''Splits the formal state vector S into the various state variables'''
+def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
+    '''Splits the formal state matrix S (each row a different time) into the various state variables'''
+    gl.x      = S[:,0]
+    gl.xD     = S[:,1]
+    gl.y      = S[:,2]
+    gl.yD     = S[:,3]
+    gl.theta  = S[:,4]
+    gl.thetaD = S[:,5]
+    rp.T      = S[:,6]
+    wi.v      = S[:,7]
+    en.v      = S[:,8]
+    op.Sth    = S[:,9]
+    pl.Me     = S[:,10]
+    return gl,rp,wi,tc,en,op,pl
+    
+    
+def stateSplitVec(S,gl,rp,wi,tc,en,op,pl):
+    '''Splits the formal state matrix S (each row a different time) into the various state variables'''
     gl.x      = S[0]
     gl.xD     = S[1]
     gl.y      = S[2]
@@ -131,7 +148,7 @@ def stateSplit(S,gl,rp,wi,tc,en,op,pl):
     en.v      = S[8]
     op.Sth    = S[9]
     pl.Me     = S[10]
-    return gl,rp,wi,tc,en,op,pl
+    return gl,rp,wi,tc,en,op,pl    
     
 def stateJoin(S,gl,rp,wi,tc,en,op,pl):
     '''Joins the various state variables into the formal state vector S '''
@@ -150,7 +167,8 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''Differential equations that give the first derivative of the state vector'''
-    gl,rp,wi,tc,en,op,pl = stateSplit(S,gl,rp,wi,tc,en,op,pl)
+    print 't',t
+    gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
@@ -166,10 +184,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     gl.L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2
     gl.D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
     gl.M = (-gl.palpha*alpha - pl.Me) #torque on glider
-    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)float(lenrope) #velocity of glider toward winch
+    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
     #winch-engine
     vrel = wi.v/en.v
-    Fee = tc.invK(vrel) * vrel**2 / float(wi.rdrum)     
+    Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
     Few = Fee* (2-vrel)  # effective force between engine and winch through torque converter
     #----derivatives of state variables----#
     dotx = gl.xD    
@@ -180,12 +198,14 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     else:
         dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma) - gl.W) #y acceleration
     dottheta = gl.thetaD    
-    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a)-gl.theta-thetarope) + gl.M)    
+    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + gl.M)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
-    dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - wi.v - en.v))
+    dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
     dotSth = op.control(t,gl,rp,wi,en)
     dotMe = pl.control(t,gl) 
+    if en.v >1:
+        print 'pause'
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
 
 ##########################################################################
@@ -205,41 +225,28 @@ pl = pilot()
   
 S0 = zeros(11)
 op.Sth = 0.5  #throttle setting
-
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
 print S0
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
+#Split S (now a matrix with a state row for each time)
 
-# function that returns dy/dt
-class funcs:
-    def init(self):
-        return
-    def aux(self,y,t):
-        return 3*array([y[1],y[0]])*t
-    
-    
+gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
-def model(y,t,funcs):
-    k = 0.3
-    dydt = -k * y * funcs.aux(y,t)
-    return dydt
-
-# initial condition
-y0 = array([5,1])
-
-# time points
-t = linspace(0,20)
-fun = funcs()
-# solve ODE
-y = odeint(model,y0,t,args=(fun,))
-#print y[0]
 # plot results
-plot(t,y[:,0])
-plot(t,y[:,1])
-xlabel('time')
-ylabel('y(t)')
+figure()
+plot(t,gl.x)
+plot(t,gl.y)
+xlabel('time (sec)')
+ylabel('position')
+show()
+figure()
+plot(t,en.v)
+plot(t,wi.v+10)
+xlabel('time (sec)')
+ylabel('speed')
 show()
 
+print 'Done'
 
 
 

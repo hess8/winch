@@ -23,7 +23,7 @@ def K(v):
 def invK(v):
     invk0 = 1./12 
     w = 0.13
-    return -invk0*tanh((v-1)/w)
+    return invk0*tanh((1-v)/w)
 
 # solve ODE
 
@@ -35,6 +35,4 @@ plot(v,1/K(v))
 plot(v,invK(v))
 xlim([0,1])
 #ylim([0,4])
-
-
 show()

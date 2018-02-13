@@ -1342,7 +1342,7 @@ The final TC  function we need is the capacity
  
 \begin_inset Formula 
 \begin{equation}
-\tau_{out,eng}=\left(\frac{\omega_{rel}}{K}\right)^{2}\label{eq:torque and capacity}
+\tau_{out,eng}=\left(\frac{\omega_{eng}}{K}\right)^{2}\label{eq:torque and capacity}
 \end{equation}
 
 \end_inset
@@ -1375,7 +1375,11 @@ Typically,
 \begin_inset Formula $K_{o}^{-1}=$
 \end_inset
 
-0.08 Nm, and the transition width is 
+0.08 rad/s/(Nm)
+\begin_inset Formula $^{1/2}$
+\end_inset
+
+, and the transition width is 
 \begin_inset Formula $\delta\approx$
 \end_inset
 
@@ -1521,7 +1525,7 @@ reference "eq:torque and capacity"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{rel}\right)^{2}}{r_{drum}}
+F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}=\frac{\left(K^{-1}\times\omega_{eng}\right)^{2}}{r_{drum}}=\frac{\left(K^{-1}\times v_{e}\right)^{2}}{r_{drum}^{3}}
 \]
 
 \end_inset
@@ -1566,11 +1570,14 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
 
 \end_inset
 
- In terms of the RPM for peak power, 
-\begin_inset Formula $v_{peak}=\frac{2\pi}{60}r_{drum}RPM_{peak}$
+ 
+\begin_inset Formula $v_{peak}$
 \end_inset
 
-, in m/s.
+, in m/s is the rope uptake speed for maximum power and is determined not
+ just by the engine peak rotation rate, but by gearing in the transmission.
+ If the gearing is optimal, it should be close to the uptake speed during
+ and right after rotation.
  
 \end_layout
 
