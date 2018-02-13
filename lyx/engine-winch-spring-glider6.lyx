@@ -1323,7 +1323,7 @@ goes to zero at
  We approximate a typical curve by
 \begin_inset Formula 
 \[
-K^{-1}\approx-\frac{1}{Ko}tanh\left(\frac{1-\omega_{rel}}{\delta}\right)
+K^{-1}\approx-\frac{1}{K_{o}}tanh\left(\frac{1-\omega_{rel}}{\delta}\right)
 \]
 
 \end_inset
@@ -1474,12 +1474,44 @@ It will be easy to see how much the torque converter is slipping (losing
 \end_layout
 
 \begin_layout Standard
-We need a way to determine 
+We write 
 \begin_inset Formula $F_{e,w}$
 \end_inset
 
- between the engine and winch, in terms of state variables, or the first
- derivative in terms of state variables!!!!
+ in terms of the torque converter capacity: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+F_{e,w}=\frac{\tau_{w}}{r_{drum}}=\frac{\tau_{out,eng}\left(2-\omega_{w}/\omega_{eng}\right)}{r_{drum}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\frac{\tau_{out,eng}}{r_{drum}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\frac{K^{-1}\times\left(\frac{v_{u}}{v_{e}}\right)^{2}}{r_{drum}}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
