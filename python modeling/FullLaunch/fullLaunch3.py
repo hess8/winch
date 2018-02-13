@@ -19,13 +19,18 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 
-import os, subprocess, sys, time
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend
 from scipy.integrate import odeint
 g = 9.8
 close("all") 
 
+class timesteps:
+    def __init__(self):
+        '''The way to do persistent variables in python is with a class variable'''
+        self.oldt = -1.0
+        self.i = 0   #counter for time step
+    
 
 class glider:
     def __init__(self,ntime):
@@ -54,8 +59,9 @@ class glider:
         self.yD = 0
         self.theta = 0
         self.thetaD = 0 
-        self.data = (ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('x', float),('xD', float),('y', float),('yD', float),
+        self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
+                                    ('v', float),('theta', float),('alpha', float)])
+        
 
         return
     
@@ -228,6 +234,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
     dotSth = op.control(t,gl,rp,wi,en)
     dotMe = pl.control(t,gl) 
+    #store data from this time step for use in controls.  The ode solver enters this routine
+    #usually two or more times per time step.  We advance the counter only if the time has changed
+    if t > ts.oldt: 
+        ts.ic += 1
+    gl.data[ts.ic]['x'] = gl.x
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
 
 ##########################################################################
@@ -237,6 +248,7 @@ tStart = 0
 tEnd = 20      # end time for simulation
 ntime = 200   # number of time steps
 t = linspace(tStart,tEnd,num=ntime)
+ts = timesteps()
 
 gl = glider(ntime)
 rp = rope()
@@ -245,6 +257,7 @@ tc = torqconv()
 en = engine(wi.rdrum)
 op = operator()
 pl = pilot()
+
   
 S0 = zeros(11)
 gl.xD = 1e-6  #to avoid div/zero
