@@ -20,6 +20,7 @@ from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim
 from scipy.integrate import odeint
 g = 9.8
+close("all") 
 
 class glider:
     def __init__(self):
@@ -53,7 +54,7 @@ class glider:
 class rope:
     def __init__(self):
         # Rope parameters  
-        Rrope = 0.005/2     #  rope radius (m)
+        Rrope = 0.005/2.0     #  rope radius (m)
         self.A = pi*Rrope**2      #  rope area (m2)
         self.Y = 3e9             #  2400*9.8/pi*(0.005/2)^2/0.035  
                                  #  effective Young's modulus 10 GPa for rope from Dyneema
@@ -80,7 +81,7 @@ class torqconv:
          self.Ko = 12             #TC capacity (rad/sec/(Nm)^1/2)
          self.dw = 0.13
      def invK(self,vrel):
-         return 1/float(self.Ko) * tanh((vrel-1)/self.dw)
+         return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
 class engine:
     def __init__(self,rdrum):
@@ -98,7 +99,8 @@ class engine:
         self.Few = 0           # effective force between engine and winch (could go in either engine or winch or in its own class)
     
     def Pavail(self,ve):            # power curve
-        return self.Pmax*(self.pe1 * ve/self.vpeak + self.pe2 * (ve/self.vpeak)**2 - self.pe3 * (ve/self.vpeak)**3)
+        vr = ve/float(self.vpeak)
+        return self.Pmax*(self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3)
         
 class operator:
     def __init__(self):
@@ -167,8 +169,10 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''Differential equations that give the first derivative of the state vector'''
-    print 't',t
+    
     gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
+    print 't',t
+    print 've',en.v
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
@@ -204,8 +208,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
     dotSth = op.control(t,gl,rp,wi,en)
     dotMe = pl.control(t,gl) 
-    if en.v >1:
-        print 'pause'
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
 
 ##########################################################################
