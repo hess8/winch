@@ -17,7 +17,7 @@ Me, pilot controlled moment (torque) from elevator
 '''
 import os, subprocess, sys, time
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
-from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim
+from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend
 from scipy.integrate import odeint
 g = 9.8
 close("all") 
@@ -120,6 +120,15 @@ class pilot:
 class plots:
     def __init__(self):
         return 
+    def xy(self,x,ys,xlbl,ylbl,legendLabels,title):
+        # plot results
+        figure()
+        for iy,y in enumerate(ys):
+            plot(x,y,label = legendLabels[iy])
+            xlabel(xlbl)
+            ylabel(ylbl)
+        legend()
+        show()
         
 def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     '''Splits the formal state matrix S (each row a different time) into the various state variables'''
@@ -171,8 +180,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''Differential equations that give the first derivative of the state vector'''
     
     gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
-    print 't',t
-    print 've',en.v
+#    if t
+
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
@@ -235,18 +244,23 @@ S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
 # plot results
-figure()
-plot(t,gl.x)
-plot(t,gl.y)
-xlabel('time (sec)')
-ylabel('position')
-show()
-figure()
-plot(t,en.v)
-plot(t,wi.v+10)
-xlabel('time (sec)')
-ylabel('speed')
-show()
+plts = plots()
+plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
+plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
+
+
+#figure()
+#plot(t,gl.x)
+#plot(t,gl.y)
+#xlabel('time (sec)')
+#ylabel('position')
+#show()
+#figure()
+#plot(t,en.v)
+#plot(t,wi.v+10)
+#xlabel('time (sec)')
+#ylabel('speed')
+#show()
 
 print 'Done'
 
