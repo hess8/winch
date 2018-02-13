@@ -36,16 +36,16 @@ class glider:
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 1.8        #   drag constant (/rad) for glider angle of attack away from zero
         # algebraic functions
-        self.L = None
-        self.D = None
-        self.M = None
+        self.L = 0
+        self.D = 0
+        self.M = 0
         # state variables 
-        self.x = None
-        self.xD = None
-        self.y = None    
-        self.yD = None
-        self.theta = None
-        self.thetaD = None   
+        self.x = 0
+        self.xD = 0
+        self.y = 0    
+        self.yD = 0
+        self.theta = 0
+        self.thetaD = 0   
         return
 #    def L(self):
 #        return (self.W + self.Lalpha*self.alpha) * (v/vb)^2
@@ -63,7 +63,7 @@ class rope:
         self.b = 0.1             #  vertial distance (m) of rope attachment below CG
         self.lo = 1000           #  initial rope length (m)
         # state variables 
-        self.T = None
+        self.T = 0
         
 class winch:
     def __init__(self):
@@ -71,7 +71,7 @@ class winch:
         self.me = 40              #  Winch effective mass, kg
         self.rdrum = 0.4          # Drum radius (m), needed only for conversion of rpm to engine peak effective speed
         #state variables
-        self.v = None            # Rope uptake speed
+        self.v = 0            # Rope uptake speed
 
 
 class torqconv:
@@ -89,12 +89,12 @@ class engine:
         self.Pmax = 750*self.hp        # engine watts
         self.rpmpeak = 6000       # rpm for peak power
         self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power  
-        self.me = 10            #  Engine effective mass (kg), effectively rotating at rdrum
+        self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
         # state variables 
-        self.v = None            #engine effective speed (m/s)
-        self.Few = None           # effective force between engine and winch (could go in either engine or winch or in its own class)
+        self.v = 0            #engine effective speed (m/s)
+        self.Few = 0           # effective force between engine and winch (could go in either engine or winch or in its own class)
     
     def Pavail(self,ve):            # power curve
         return self.Pmax*(self.pe1 * ve/self.vpeak + self.pe2 * (ve/self.vpeak)**2 - self.pe3 * (ve/self.vpeak)**3)
@@ -108,7 +108,7 @@ class operator:
          
 class pilot:
     def __init__(self):
-        self.Me = None
+        self.Me = 0
         return
     def control(self,t,gl):
         dMe = 0
@@ -151,33 +151,39 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''Differential equations that give the first derivative of the state vector'''
     gl,rp,wi,tc,en,op,pl = stateSplit(S,gl,rp,wi,tc,en,op,pl)
+    if gl.xD < 1e-6:
+        gl.xD = 1e-6 #to handle v = 0 initial
+    if en.v < 1e-6:
+        en.v = 1e-6 #to handle v = 0 initial
     #----algebraic functions----#
     #rope
-    thetarope = arctan(gl.y/(rp.lo-gl.x))
+    thetarope = arctan(gl.y/float(rp.lo-gl.x))
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
-    gamma = arctan(gl.yD/gl.xD)  # climb angle
+    gamma = arctan(gl.yD/gl.xD)  # climb angle.  1d-6 handles the starting case of v=0
     alpha = gl.theta - gamma # angle of attack
     gl.L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2
-    gl.D = gl.L/gl.Q*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
+    gl.D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
     gl.M = (-gl.palpha*alpha - pl.Me) #torque on glider
-    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/lenrope #velocity of glider toward winch
+    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)float(lenrope) #velocity of glider toward winch
     #winch-engine
-    print 'en.v',en.v
     vrel = wi.v/en.v
-    Fee = tc.invK(vrel) * vrel**2 / wi.rdrum      
+    Fee = tc.invK(vrel) * vrel**2 / float(wi.rdrum)     
     Few = Fee* (2-vrel)  # effective force between engine and winch through torque converter
     #----derivatives of state variables----#
     dotx = gl.xD    
-    dotxD = rp.T*cos(thetarope) - gl.D*cos(gamma) - gl.L*sin(gamma) #x acceleration
-    doty = gl.yD    
-    dotyD = gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma) - gl.W #y acceleration
+    dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - gl.D*cos(gamma) - gl.L*sin(gamma)) #x acceleration
+    doty = gl.yD
+    if gl.y < 1e-3: #on ground   
+        dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma)) #y acceleration on ground
+    else:
+        dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma) - gl.W) #y acceleration
     dottheta = gl.thetaD    
-    dotthetaD = 1/gl.Ig * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/rp.a)-gl.theta-thetarope) + gl.M)    
-    dotT = rp.Y*rp.A*(wi.v - vgw)/lenrope
-    dotvw =  1/wi.me * (Few - rp.T)
-    dotve =  op.Sth * en.Pavail(en.v) / en.v - Few / (2 - wi.v - en.v)
+    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a)-gl.theta-thetarope) + gl.M)    
+    dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
+    dotvw =  1/float(wi.me) * (Few - rp.T)
+    dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - wi.v - en.v))
     dotSth = op.control(t,gl,rp,wi,en)
     dotMe = pl.control(t,gl) 
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
@@ -199,7 +205,9 @@ pl = pilot()
   
 S0 = zeros(11)
 op.Sth = 0.5  #throttle setting
+
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
+print S0
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
 
 # function that returns dy/dt
