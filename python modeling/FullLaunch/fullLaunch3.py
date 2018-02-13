@@ -28,7 +28,7 @@ close("all")
 
 
 class glider:
-    def __init__(self):
+    def __init__(self,ntime):
         # parameters
         self.vb = 30              #   speed of glider at best glide angle
         self.m = 400
@@ -45,16 +45,19 @@ class glider:
         self.L = 0
         self.D = 0
         self.M = 0
+        self.gamma = 0
+        self.alpha = 0
         # state variables 
         self.x = 0
         self.xD = 0
         self.y = 0    
         self.yD = 0
         self.theta = 0
-        self.thetaD = 0   
+        self.thetaD = 0 
+        self.data = (ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),\
+                                    ('x', float),('xD', float),('y', float),('yD', float),
+
         return
-#    def L(self):
-#        return (self.W + self.Lalpha*self.alpha) * (v/vb)^2
     
 class rope:
     def __init__(self):
@@ -109,9 +112,15 @@ class engine:
         
 class operator:
     def __init__(self):
-        return     
+        self.Sth = 0
+        return
     def control(self,t,gl,rp,wi,en):
-        dStr = 0
+        tramp = 4   #seconds
+        thrmax = 0.5        
+        if t<tramp and self.Sth < thrmax:
+            dStr = 1/float(tramp)
+        else:
+            dStr = 0
         return dStr
          
 class pilot:
@@ -182,12 +191,8 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
     return S
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
-    '''Differential equations that give the first derivative of the state vector'''
-    
+    '''First derivative of the state vector'''
     gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
-    if 1.5<t<2.0:
-        print 'pause'
-
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
@@ -198,24 +203,24 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
-    gamma = arctan(gl.yD/gl.xD)  # climb angle.  1d-6 handles the starting case of v=0
-    alpha = gl.theta - gamma # angle of attack
-    gl.L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2
-    gl.D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
-    gl.M = (-gl.palpha*alpha - pl.Me) #torque on glider
+    gl.gamma = arctan(gl.yD/gl.xD)  # climb angle.   
+    gl.alpha = gl.theta - gl.gamma # angle of attack
+    gl.L = (gl.W + gl.Lalpha*gl.alpha) * (v/gl.vb)**2 #lift
+    gl.D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*gl.alpha**2) #drag
+    gl.M = (-gl.palpha*gl.alpha - pl.Me) #torque on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
     #winch-engine
     vrel = wi.v/en.v
     Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
-    Few = Fee* (2-vrel)  # effective force between engine and winch through torque converter
+    Few = Fee * (2-vrel)  # effective force between engine and winch through torque converter
     #----derivatives of state variables----#
     dotx = gl.xD    
-    dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - gl.D*cos(gamma) - gl.L*sin(gamma)) #x acceleration
+    dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - gl.D*cos(gl.gamma) - gl.L*sin(gl.gamma)) #x acceleration
     doty = gl.yD
     if gl.y < 0.1 and gl.L < gl.W: #on ground 
-        dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma)) #y acceleration on ground
+        dotyD = 1/float(gl.m) * (gl.L*cos(gl.gamma) - rp.T*sin(thetarope) - gl.D*sin(gl.gamma)) #y acceleration on ground
     else:
-        dotyD = 1/float(gl.m) * (gl.L*cos(gamma) - rp.T*sin(thetarope) - gl.D*sin(gamma) - gl.W) #y acceleration
+        dotyD = 1/float(gl.m) * (gl.L*cos(gl.gamma) - rp.T*sin(thetarope) - gl.D*sin(gl.gamma) - gl.W) #y acceleration
     dottheta = gl.thetaD    
     dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + gl.M)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
@@ -230,9 +235,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################                        
 tStart = 0
 tEnd = 20      # end time for simulation
-t = linspace(tStart,tEnd)
+ntime = 200   # number of time steps
+t = linspace(tStart,tEnd,num=ntime)
 
-gl = glider()
+gl = glider(ntime)
 rp = rope()
 wi = winch()
 tc = torqconv()
@@ -241,7 +247,8 @@ op = operator()
 pl = pilot()
   
 S0 = zeros(11)
-op.Sth = 0.5  #throttle setting
+gl.xD = 1e-6  #to avoid div/zero
+gl.ve = 1e-6  #to avoid div/zero
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
 #Split S (now a matrix with a state row for each time)
@@ -252,7 +259,14 @@ gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 plts = plots()
 plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
 plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-
+plts.xy(t,[gl.xD,gl.yD],'time (sec)','velocity (m/s)',['vx','vy'],'glider velocity vs time')
+gl.gamma = arctan(gl.yD/gl.xD) 
+gl.alpha = gl.theta - gl.gamma  
+plts.xy(t,[180/pi*gl.theta,180/pi*gl.gamma,180/pi*gl.alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+vrel =wi.v/en.v 
+Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
+plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
+plts.xy(t,[op.Sth],'time (sec)','Throttle setting',[' ',' '],'Throttle')
 
 #figure()
 #plot(t,gl.x)
