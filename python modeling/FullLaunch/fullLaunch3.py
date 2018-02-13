@@ -1,3 +1,6 @@
+from IPython import get_ipython
+get_ipython().magic('reset -sf')
+
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 Solves for the motion of a glider launched by a winch with a springy rope. 
 The winch is connected to an engine through a torque converter. 
@@ -15,12 +18,14 @@ ve, effective engine speed (m/s)
 Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
+
 import os, subprocess, sys, time
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend
 from scipy.integrate import odeint
 g = 9.8
 close("all") 
+
 
 class glider:
     def __init__(self):
