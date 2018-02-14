@@ -235,6 +235,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     vrel = wi.v/en.v
     Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
     Few = Fee * (2-vrel)  # effective force between engine and winch through torque converter
+    # Update controls
+    op.control(t,gl,rp,wi,en) 
+    pl.control(t,ts,gl)
     #----derivatives of state variables----#
     dotx = gl.xD    
     dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - gl.D*cos(gl.gamma) - gl.L*sin(gl.gamma)) #x acceleration
@@ -264,15 +267,17 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ts.i]['v']  = v
         gl.data[ts.i]['theta']  = gl.theta
         gl.data[ts.i]['alpha']  = gl.alpha
-        op.data[ts.i]['Sth']  = op.Sth
+        op.data[ts.i]['t']   = t
+        op.data[ts.i]['Sth'] = op.Sth
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 1      # end time for simulation
-ntime = 20   # number of time steps
+tEnd = 20      # end time for simulation
+dt = 0.05       #sec
+ntime = (tEnd - tStart)/dt + 1   # number of time steps
 t = linspace(tStart,tEnd,num=ntime)
 ts = timesteps(tStart,tEnd,ntime)
 
@@ -283,7 +288,7 @@ tc = torqconv()
 en = engine(wi.rdrum)
 op = operator(ntime)
 pl = pilot()
-pl.ctrltype = 'alpha'
+#pl.ctrltype = 'alpha'
   
 S0 = zeros(9)
 gl.xD = 1e-6  #to avoid div/zero
@@ -306,7 +311,7 @@ plts.xy(t,[180/pi*gl.theta,180/pi*gl.gamma,180/pi*gl.alpha],'time (sec)','angle 
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
-plts.xy(t,[op.data['Sth']],'time (sec)','Throttle setting',[' ',' '],'Throttle')
+plts.xy(op.data[:ts.i]['t'],[op.data[:ts.i]['Sth']],'time (sec)','Throttle setting',[' ',' '],'Throttle')
 
 #figure()
 #plot(t,gl.x)
