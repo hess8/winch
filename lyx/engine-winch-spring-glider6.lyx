@@ -175,24 +175,8 @@ We solve a system of first order differential equations in the form:
  effective engine speed (m/s)
 \end_layout
 
-\begin_layout Standard
-\begin_inset Formula $S_{th},$
-\end_inset
-
- throttle setting (included as a state variable so state integrator can
- handle PID integrator)
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $M_{e}$
-\end_inset
-
-, pilot controlled moment (torque) from elevator (included as a state variable
- so state integrator can handle PID integrator)
-\end_layout
-
 \begin_layout Subsection*
-Time-varying quantities derived from model variables
+Time-varying quantities derived from state variables
 \end_layout
 
 \begin_layout Standard
@@ -304,6 +288,22 @@ Time-varying quantities derived from model variables
 
  , power available from the engine to the torque converter at each engine
  speed.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $S_{th},$
+\end_inset
+
+ throttle setting (included as a state variable so state integrator can
+ handle PID integrator)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $M_{e}$
+\end_inset
+
+, pilot controlled moment (torque) from elevator (included as a state variable
+ so state integrator can handle PID integrator)
 \end_layout
 
 \begin_layout Subsection*

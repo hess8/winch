@@ -145,7 +145,10 @@ class pilot:
             #Find the error properties
             err = (gl.data[ts.i][ctype] - setpoint)
             #for the derivative, take the last two time steps
-            derr = (gl.data[ts.i][ctype] - gl.data[ts.i-2][ctype])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t']) 
+            if ts.i >= 2:  
+                derr = (gl.data[ts.i][ctype] - gl.data[ts.i-2][ctype])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t']) 
+            else:
+                derr = 0
             #for the integral, last Nint average
             if ts.i >= Nint:            
                 interr = sum(gl.data[ts.i-Nint : ts.i][ctype])/(Nint + 1) - setpoint
@@ -179,8 +182,6 @@ def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     rp.T      = S[:,6]
     wi.v      = S[:,7]
     en.v      = S[:,8]
-    op.Sth    = S[:,9]
-    pl.Me     = S[:,10]
     return gl,rp,wi,tc,en,op,pl
     
     
@@ -195,8 +196,6 @@ def stateSplitVec(S,gl,rp,wi,tc,en,op,pl):
     rp.T      = S[6]
     wi.v      = S[7]
     en.v      = S[8]
-    op.Sth    = S[9]
-    pl.Me     = S[10]
     return gl,rp,wi,tc,en,op,pl    
     
 def stateJoin(S,gl,rp,wi,tc,en,op,pl):
@@ -209,9 +208,7 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
     S[5] = gl.thetaD   
     S[6] = rp.T 
     S[7] = wi.v
-    S[8] = en.v   
-    S[9] = op.Sth  
-    S[10] = pl.Me    
+    S[8] = en.v     
     return S
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
@@ -246,7 +243,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     else:
         dotyD = 1/float(gl.m) * (gl.L*cos(gl.gamma) - rp.T*sin(thetarope) - gl.D*sin(gl.gamma) - gl.W) #y acceleration
     dottheta = gl.thetaD    
-    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + gl.M)    
+    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + pl.Me)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -273,7 +270,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 20      # end time for simulation
+tEnd = 10      # end time for simulation
 ntime = 200   # number of time steps
 t = linspace(tStart,tEnd,num=ntime)
 ts = timesteps(tStart,tEnd,ntime)
@@ -285,13 +282,14 @@ tc = torqconv()
 en = engine(wi.rdrum)
 op = operator()
 pl = pilot()
-#pl.ctrltype = 'alpha'
+pl.ctrltype = 'alpha'
   
-S0 = zeros(11)
+S0 = zeros(9)
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,),full_output = 1 )
+# S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,),full_output = 1)
+S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
 #Split S (now a matrix with a state row for each time)
 
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
@@ -307,7 +305,7 @@ plts.xy(t,[180/pi*gl.theta,180/pi*gl.gamma,180/pi*gl.alpha],'time (sec)','angle 
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
-plts.xy(t,[op.Sth],'time (sec)','Throttle setting',[' ',' '],'Throttle')
+# plts.xy(t,[op.Sth],'time (sec)','Throttle setting',[' ',' '],'Throttle')
 
 #figure()
 #plot(t,gl.x)
