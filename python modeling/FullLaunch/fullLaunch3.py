@@ -130,6 +130,7 @@ class operator:
 class pilot:
     def __init__(self,ntime):
         self.Me = 0
+        self.err = 0
         self.ctrltype = ''
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         return
@@ -137,12 +138,13 @@ class pilot:
     def control(self,t,ts,gl): 
         setpoint = 0.0
         tint = 0.5 #sec
-        pp = 5; pd = 0; pint = 0
+        pp = 25; pd = 0; pint = 0
         Nint = ceil(tint/ts.dt)
         ctype = self.ctrltype
         if ctype != '': 
             #Find the error properties
             err = (gl.data[ts.i][ctype] - setpoint)
+            self.err = err
             #for the derivative, take the last two time steps
             if ts.i >= 2:  
                 derr = (gl.data[ts.i][ctype] - gl.data[ts.i-2][ctype])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t']) 
@@ -153,7 +155,7 @@ class pilot:
                 interr = sum(gl.data[ts.i-Nint : ts.i][ctype])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = -(pp*err + pd*derr + pint*interr)
+            self.Me = -gl.Ig*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
             pl.data[ts.i]['t'] = t #store error
             pl.data[ts.i]['err'] = err
             pl.data[ts.i]['Me'] = self.Me
@@ -222,6 +224,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if en.v < 1e-6:
         en.v = 1e-6 #to handle v = 0 initial
     #----algebraic functions----#
+    # Update controls
+    op.control(t,gl,rp,wi,en) 
+    pl.control(t,ts,gl)
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x))
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
@@ -229,30 +234,29 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
     gamma = arctan(gl.yD/gl.xD)  # climb angle.   
     alpha = gl.theta - gamma # angle of attack
-    L = (W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift
-    D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
-    M = (-gl.palpha*alpha - pl.Me) #torque on glider
+    L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift
+    D = L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
+    if alpha > 0.2:
+        print 'pause'
+    M = (-gl.palpha*alpha + pl.Me) #torque on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
     #winch-engine
     vrel = wi.v/en.v
     Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
     Few = Fee * (2-vrel)  # effective force between engine and winch through torque converter
-    # Update controls
-    op.control(t,gl,rp,wi,en) 
-    pl.control(t,ts,gl)
     #----derivatives of state variables----#
     dotx = gl.xD    
     dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - D*cos(gamma) - L*sin(gamma)) #x acceleration
     doty = gl.yD
-    if gl.y < 0.1 and L < W: #on ground 
+    if gl.y < 0.1 and L < gl.W: #on ground 
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma)) #y acceleration on ground
     else:
-        dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - W) #y acceleration
+        dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
     dottheta = gl.thetaD    
-    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + pl.Me)    
+    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + M)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
-    dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
+    dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
 
     # store data from this time step for use in controls.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the counter only if the time has changed 
@@ -304,7 +308,7 @@ gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 # plot results
 close("all")
 plts = plots()
-plts.xy(t,[x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
+plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
 plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
 plts.xy(t,[gl.xD,gl.yD],'time (sec)','velocity (m/s)',['vx','vy'],'glider velocity vs time')
 gamma = arctan(gl.yD/gl.xD) 
@@ -314,7 +318,7 @@ vrel =wi.v/en.v
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
 plts.xy(op.data[:ts.i]['t'],[op.data[:ts.i]['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
-plts.xy(pl.data[:ts.i]['t'],[pl.data[:ts.i]['err'],pl.data[:ts.i]['Me']],'time (sec)','Error (rad/s)',['error','elevator moment'],'Pilot')
+plts.xy(pl.data[:ts.i]['t'],[100*pl.data[:ts.i]['err'],pl.data[:ts.i]['Me']],'time (sec)','Error ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
 
 
 print 'Done'
