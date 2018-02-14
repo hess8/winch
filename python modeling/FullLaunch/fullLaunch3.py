@@ -1,5 +1,5 @@
-# from IPython import get_ipython
-# get_ipython().magic('reset -sf')
+from IPython import get_ipython
+get_ipython().magic('reset -sf')
 
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 Solves for the motion of a glider launched by a winch with a springy rope. 
@@ -116,17 +116,18 @@ class engine:
         return self.Pmax*(self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3)
         
 class operator:
-    def __init__(self):
+    def __init__(self,ntime):
         self.Sth = 0
+        self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
+        print 'op t',t
         tramp = 4   #seconds
         thrmax = 0.5        
-        if t<tramp and self.Sth < thrmax:
-            dStr = 1/float(tramp)
+        if t < tramp:
+            self.Sth =  thrmax/float(tramp) * t
         else:
-            dStr = 0
-        return dStr
+            self.Sth =  thrmax
          
 class pilot:
     def __init__(self):
@@ -135,13 +136,13 @@ class pilot:
         return
         
     def control(self,t,ts,gl): 
+        
         setpoint = 0.0
         tint = 0.5 #sec
         pp = 0.1; pd = 0; pint = 0
         Nint = ceil(tint/ts.dt)
         ctype = self.ctrltype
         if ctype != '': 
-            
             #Find the error properties
             err = (gl.data[ts.i][ctype] - setpoint)
             #for the derivative, take the last two time steps
@@ -247,8 +248,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
-    dotSth = op.control(t,gl,rp,wi,en)
-    dotMe = pl.control(t,ts,gl) 
+
     # store data from this time step for use in controls.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the counter only if the time has changed 
     # by close to a nominal time step
@@ -264,14 +264,15 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ts.i]['v']  = v
         gl.data[ts.i]['theta']  = gl.theta
         gl.data[ts.i]['alpha']  = gl.alpha
-    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
+        op.data[ts.i]['Sth']  = op.Sth
+    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 10      # end time for simulation
-ntime = 200   # number of time steps
+tEnd = 1      # end time for simulation
+ntime = 20   # number of time steps
 t = linspace(tStart,tEnd,num=ntime)
 ts = timesteps(tStart,tEnd,ntime)
 
@@ -280,7 +281,7 @@ rp = rope()
 wi = winch()
 tc = torqconv()
 en = engine(wi.rdrum)
-op = operator()
+op = operator(ntime)
 pl = pilot()
 pl.ctrltype = 'alpha'
   
@@ -305,7 +306,7 @@ plts.xy(t,[180/pi*gl.theta,180/pi*gl.gamma,180/pi*gl.alpha],'time (sec)','angle 
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
-# plts.xy(t,[op.Sth],'time (sec)','Throttle setting',[' ',' '],'Throttle')
+plts.xy(t,[op.data['Sth']],'time (sec)','Throttle setting',[' ',' '],'Throttle')
 
 #figure()
 #plot(t,gl.x)
