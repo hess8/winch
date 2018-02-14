@@ -19,17 +19,18 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 
-from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh
+from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend
 from scipy.integrate import odeint
 g = 9.8
 close("all") 
 
 class timesteps:
-    def __init__(self):
+    def __init__(self,tStart,tEnd,N):
         '''The way to do persistent variables in python is with a class variable'''
         self.oldt = -1.0
-        self.i = 0   #counter for time step
+        self.i = -1   #counter for time step
+        self.dt = (tEnd -tStart)/float((N-1))
     
 
 class glider:
@@ -132,9 +133,24 @@ class operator:
 class pilot:
     def __init__(self):
         self.Me = 0
+        self.ctrltype = None
         return
-    def control(self,t,gl):
-        dMe = 0
+    def control(self,ts,gl): 
+        alphaset = 0.0
+        tint = 0.5 #sec
+        Nint = ceil(tint/ts.dt)
+        if self.ctrltype == 'alpha': #Find the error properties
+            err = gl.data[ts.i]['alpha'] - alphaset
+            #for the derivative, take the last two time steps
+            derr = (gl.data[ts.i]['alpha'] - gl.data[ts.i-2]['alpha'])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t'])
+            #for the integral, last Nint average
+            if ts.i >= Nint:            
+                interr = sum(gl.data[ts.i-Nint:ts.i]['alpha'])/(gl.data[ts.i]['t'] - gl.data[ts.i-Nint]['t'])
+            else:
+                interr = 0
+ 
+        else:        
+            dMe = 0
         return dMe
     
 class plots:
@@ -233,12 +249,22 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) *(op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
     dotSth = op.control(t,gl,rp,wi,en)
-    dotMe = pl.control(t,gl) 
-    #store data from this time step for use in controls.  The ode solver enters this routine
-    #usually two or more times per time step.  We advance the counter only if the time has changed
-    if t > ts.oldt: 
-        ts.ic += 1
-    gl.data[ts.ic]['x'] = gl.x
+    dotMe = pl.control(t,ts,gl) 
+    # store data from this time step for use in controls.  The ode solver enters this routine
+    # usually two or more times per time step.  We advance the counter only if the time has changed 
+    # by close to a nominal time step
+    print 'i',ts.i,t,t - ts.oldt,ts.dt    
+    if t - ts.oldt > 0.9*ts.dt: 
+        ts.i += 1
+        ts.oldt = t
+        gl.data[ts.i]['t']  = t
+        gl.data[ts.i]['x']  = gl.x
+        gl.data[ts.i]['xD'] = gl.xD
+        gl.data[ts.i]['y']  = gl.y
+        gl.data[ts.i]['yD'] = gl.yD
+        gl.data[ts.i]['v']  = gl.v
+        gl.data[ts.i]['theta']  = gl.theta
+        gl.data[ts.i]['alpha']  = gl.alpha
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
 
 ##########################################################################
@@ -248,7 +274,8 @@ tStart = 0
 tEnd = 20      # end time for simulation
 ntime = 200   # number of time steps
 t = linspace(tStart,tEnd,num=ntime)
-ts = timesteps()
+ts = timesteps(tStart,tEnd,ntime)
+pl.ctrltype = 'alpha'
 
 gl = glider(ntime)
 rp = rope()
@@ -263,7 +290,7 @@ S0 = zeros(11)
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
+S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
 #Split S (now a matrix with a state row for each time)
 
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
