@@ -300,7 +300,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tStart = 0
 tEnd = 35      # end time for simulation
 dt = 0.05       #nominal time step, sec
-path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
+#path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
+path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 control = 'v'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
