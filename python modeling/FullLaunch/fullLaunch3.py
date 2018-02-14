@@ -67,6 +67,7 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
 class plots:
     def __init__(self,path):
         self.i = 0 #counter for plots, so each variable has a different color
+        self.path = path        
         return 
     
     def xy(self,x,ys,xlbl,ylbl,legendLabels,titlestr):
@@ -83,10 +84,10 @@ class plots:
             ylabel(ylbl)
         legend(loc='lower right')
         title(titlestr)
-#        savefig('{}{}{}.pdf').format(self.path,os.sep.title)
+        savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
         show()
     
-class timesteps:
+class timeinfo:
     def __init__(self,tStart,tEnd,N):
         '''The way to do persistent variables in python is with class variables
         
@@ -108,7 +109,7 @@ class glider:
         self.alphas = 6         #   stall angle vs glider zero
         Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/Co
-        self.Ig = 600*600/400   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
+        self.Ig = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.palpha = 3.0        #   change in air-glider pitch moment (/rad) with angle of attack 
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 1.8        #   drag constant (/rad) for glider angle of attack away from zero
@@ -134,7 +135,7 @@ class rope:
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
-        self.b = 0.1             #  vertial distance (m) of rope attachment below CG
+        self.b = 0.2             #  vertial distance (m) of rope attachment below CG
         self.lo = 1000           #  initial rope length (m)
         # state variables 
         self.T = 0
@@ -182,44 +183,50 @@ class operator:
         return
     def control(self,t,gl,rp,wi,en):
         tramp = 4   #seconds
-        thrmax = 0.5        
+        thrmax = 1.0        
         if t < tramp:
             self.Sth =  thrmax/float(tramp) * t
         else:
             self.Sth =  thrmax
          
 class pilot:
-    def __init__(self,ntime,ctrltype):
+    def __init__(self,ntime,ctrltype,setpoint):
         self.Me = 0
         self.err = 0
         self.ctrltype = ctrltype
+        self.setpoint = setpoint
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         return
         
-    def control(self,t,ts,gl): 
+    def control(self,t,ti,gl): 
         setpoint = 0.0
         tint = 0.5 #sec
         pp = 100; pd = 20; pint = 40
-        Nint = ceil(tint/ts.dt)
+        Nint = ceil(tint/ti.dt)
         ctype = self.ctrltype
+        setpoint = self.setpoint
+        var = gl.data[ctype]
+        if ctype == 'v':
+            var = var/gl.vb
+        time = gl.data['t']
         if ctype != '': 
             #Find the error properties
-            err = (gl.data[ts.i][ctype] - setpoint)
+            err = (var[ti.i] - setpoint)
             self.err = err
             #for the derivative, take the last two time steps
-            if ts.i >= 2:  
-                derr = (gl.data[ts.i][ctype] - gl.data[ts.i-2][ctype])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t']) 
+            if ti.i >= 2:  
+                derr = (var[ti.i] - var[ti.i-2])/(time[ti.i]- time[ti.i-2]) 
             else:
                 derr = 0
             #for the integral, last Nint average
-            if ts.i >= Nint:            
-                interr = sum(gl.data[ts.i-Nint : ts.i][ctype])/(Nint + 1) - setpoint
+            if ti.i >= Nint:            
+                interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
             else:
                 interr = 0
             self.Me = -gl.Ig*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
-            pl.data[ts.i]['t'] = t #store error
-            pl.data[ts.i]['err'] = err
-            pl.data[ts.i]['Me'] = self.Me
+            pl.data[ti.i]['t'] = t #store error
+            pl.data[ti.i]['err'] = err
+            pl.data[ti.i]['Me'] = self.Me
         else:        
             self.Me = 0       
 
@@ -233,7 +240,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     #----algebraic functions----#
     # Update controls
     op.control(t,gl,rp,wi,en) 
-    pl.control(t,ts,gl)
+    pl.control(t,ti,gl)
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x))
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
@@ -268,36 +275,41 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     # store data from this time step for use in controls.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the counter only if the time has changed 
     # by close to a nominal time step    
-    if t - ts.oldt > 0.9*ts.dt: 
-        ts.i += 1 
-        ts.oldt = t
-        gl.data[ts.i]['t']  = t
-        gl.data[ts.i]['x']  = gl.x
-        gl.data[ts.i]['xD'] = gl.xD
-        gl.data[ts.i]['y']  = gl.y
-        gl.data[ts.i]['yD'] = gl.yD
-        gl.data[ts.i]['v']  = v
-        gl.data[ts.i]['theta']  = gl.theta
-        gl.data[ts.i]['alpha']  = alpha
-        gl.data[ts.i]['L']  = L
-        gl.data[ts.i]['D']  = D
-        op.data[ts.i]['t']   = t
-        op.data[ts.i]['Sth'] = op.Sth
+    if t - ti.oldt > 0.9*ti.dt: 
+        ti.i += 1 
+        ti.oldt = t
+        gl.data[ti.i]['t']  = t
+        gl.data[ti.i]['x']  = gl.x
+        gl.data[ti.i]['xD'] = gl.xD
+        gl.data[ti.i]['y']  = gl.y
+        gl.data[ti.i]['yD'] = gl.yD
+        gl.data[ti.i]['v']  = v
+        gl.data[ti.i]['theta']  = gl.theta
+        gl.data[ti.i]['alpha']  = alpha
+        gl.data[ti.i]['L']  = L
+        gl.data[ti.i]['D']  = D
+        op.data[ti.i]['t']   = t
+        op.data[ti.i]['Sth'] = op.Sth
+    else:
+        print 't,delta,dt', t, t - ti.oldt,ti.dt
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 40      # end time for simulation
+tEnd = 35      # end time for simulation
 dt = 0.05       #nominal time step, sec
-path = 'D:\Winch launch physics\results\aoa control Grob USA winch'  #for saving plots
-control = 'alpha'  # Use '' for none
+path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
+#control = 'alpha'  # Use '' for none
+control = 'v'  # Use '' for none
+#setpoint = 2*pi/180   #alpha, 2 degrees
+setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
 
 ntime = (tEnd - tStart)/dt + 1   # number of time steps expected
 t = linspace(tStart,tEnd,num=ntime)
-ts = timesteps(tStart,tEnd,ntime)
+ti = timeinfo(tStart,tEnd,ntime) 
 
 gl = glider(ntime)
 rp = rope()
@@ -305,37 +317,39 @@ wi = winch()
 tc = torqconv()
 en = engine(wi.rdrum)
 op = operator(ntime)
-pl = pilot(ntime,control)
+pl = pilot(ntime,control,setpoint)
   
 S0 = zeros(9)
+# nonzero initial conditions
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
+if control == 'alpha': gl.theta = setpoint
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
 # S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,),full_output = 1)
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
-#Split S (now a matrix with a state row for each time)
 
+#Split S (now a matrix with state variables in columns and times in rows)
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
 # plot results
 close("all")
 plts = plots(path)
 
-plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
+plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
 #plts.xy(t,[gl.xD,gl.yD],'time (sec)','velocity (m/s)',['vx','vy'],'glider velocity vs time')
-plts.xy(gl.data[:ts.i]['t'],[gl.data[:ts.i]['xD'],gl.data[:ts.i]['yD'],gl.data[:ts.i]['v']],'time (sec)','velocity (m/s)',['vx','vy','v'],'glider velocity vs time')
-plts.xy(gl.data[:ts.i]['t'],[gl.data[:ts.i]['L']/gl.W,10*gl.data[:ts.i]['D']/gl.W],'time (sec)','Force/weight (N) ',['lift','drag x 10'],'Aerodynamic forces')
+plts.xy(gl.data[:ti.i]['t'],[gl.data[:ti.i]['xD'],gl.data[:ti.i]['yD'],gl.data[:ti.i]['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'glider velocity vs time')
+plts.xy(gl.data[:ti.i]['t'],[gl.data[:ti.i]['L']/gl.W,10*gl.data[:ti.i]['D']/gl.W],'time (sec)','Force/weight (N) ',['lift','drag x 10'],'Aerodynamic forces')
 
 gamma = arctan(gl.yD/gl.xD) 
 alpha = gl.theta - gamma  
-plts.xy(t,[180/pi*gl.theta,180/pi*gamma,10*180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA x10'],'flight angles')  
-plts.xy(pl.data[:ts.i]['t'],[100*pl.data[:ts.i]['err'],pl.data[:ts.i]['Me']],'time (sec)','Error ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
+plts.xy(t,[180/pi*gl.theta,180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+plts.xy(pl.data[:ti.i]['t'],[100*pl.data[:ti.i]['err'],pl.data[:ti.i]['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
 
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
-plts.xy(op.data[:ts.i]['t'],[op.data[:ts.i]['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+plts.xy(op.data[:ti.i]['t'],[op.data[:ti.i]['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
 
 
 print 'Done'
