@@ -18,13 +18,74 @@ ve, effective engine speed (m/s)
 Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
-
+import os
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor
-from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend
+from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title
 from scipy.integrate import odeint
 g = 9.8
  
+def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
+    '''Splits the formal state matrix S (each row a different time) into the various state variables'''
+    gl.x      = S[:,0]
+    gl.xD     = S[:,1]
+    gl.y      = S[:,2]
+    gl.yD     = S[:,3]
+    gl.theta  = S[:,4]
+    gl.thetaD = S[:,5]
+    rp.T      = S[:,6]
+    wi.v      = S[:,7]
+    en.v      = S[:,8]
+    return gl,rp,wi,tc,en,op,pl
+    
+    
+def stateSplitVec(S,gl,rp,wi,tc,en,op,pl):
+    '''Splits the formal state matrix S (each row a different time) into the various state variables'''
+    gl.x      = S[0]
+    gl.xD     = S[1]
+    gl.y      = S[2]
+    gl.yD     = S[3]
+    gl.theta  = S[4]
+    gl.thetaD = S[5]
+    rp.T      = S[6]
+    wi.v      = S[7]
+    en.v      = S[8]
+    return gl,rp,wi,tc,en,op,pl    
+    
+def stateJoin(S,gl,rp,wi,tc,en,op,pl):
+    '''Joins the various state variables into the formal state vector S '''
+    S[0] = gl.x
+    S[1] = gl.xD
+    S[2] = gl.y        
+    S[3] = gl.yD       
+    S[4] = gl.theta    
+    S[5] = gl.thetaD   
+    S[6] = rp.T 
+    S[7] = wi.v
+    S[8] = en.v     
+    return S
 
+class plots:
+    def __init__(self,path):
+        self.i = 0 #counter for plots, so each variable has a different color
+        return 
+    
+    def xy(self,x,ys,xlbl,ylbl,legendLabels,titlestr):
+        colorsList = [u'#30a2da', u'#fc4f30', u'#e5ae38', u'#6d904f', u'#8b8b8b',
+              u'#348ABD', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 
+              u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#009E73', u'#F0E442']
+        figure()
+        for iy,y in enumerate(ys):
+            plot(x,y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+            self.i += 1
+            if self.i > len(colorsList)-1:
+                self.i = 0
+            xlabel(xlbl)
+            ylabel(ylbl)
+        legend(loc='lower right')
+        title(titlestr)
+#        savefig('{}{}{}.pdf').format(self.path,os.sep.title)
+        show()
+    
 class timesteps:
     def __init__(self,tStart,tEnd,N):
         '''The way to do persistent variables in python is with class variables
@@ -41,13 +102,13 @@ class glider:
     def __init__(self,ntime):
         # parameters
         self.vb = 30              #   speed of glider at best glide angle
-        self.m = 400
+        self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
         self.Q = 20             #   L/D
         self.alphas = 6         #   stall angle vs glider zero
         Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/Co
-        self.Ig = 600            #   Glider moment of inertia, kgm^2
+        self.Ig = 600*600/400   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.palpha = 3.0        #   change in air-glider pitch moment (/rad) with angle of attack 
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 1.8        #   drag constant (/rad) for glider angle of attack away from zero
@@ -60,7 +121,7 @@ class glider:
         self.theta = 0
         self.thetaD = 0 
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('v', float),('theta', float),('alpha', float)])
+                                    ('v', float),('theta', float),('alpha', float), ('L', float),('D', float),])
         return
     
 class rope:
@@ -128,17 +189,17 @@ class operator:
             self.Sth =  thrmax
          
 class pilot:
-    def __init__(self,ntime):
+    def __init__(self,ntime,ctrltype):
         self.Me = 0
         self.err = 0
-        self.ctrltype = ''
+        self.ctrltype = ctrltype
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         return
         
     def control(self,t,ts,gl): 
         setpoint = 0.0
         tint = 0.5 #sec
-        pp = 25; pd = 0; pint = 0
+        pp = 100; pd = 20; pint = 40
         Nint = ceil(tint/ts.dt)
         ctype = self.ctrltype
         if ctype != '': 
@@ -160,61 +221,7 @@ class pilot:
             pl.data[ts.i]['err'] = err
             pl.data[ts.i]['Me'] = self.Me
         else:        
-            self.Me = 0
-
-    
-class plots:
-    def __init__(self):
-        return 
-    def xy(self,x,ys,xlbl,ylbl,legendLabels,title):
-        # plot results
-        figure()
-        for iy,y in enumerate(ys):
-            plot(x,y,label = legendLabels[iy])
-            xlabel(xlbl)
-            ylabel(ylbl)
-        legend()
-        show()
-        
-def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
-    '''Splits the formal state matrix S (each row a different time) into the various state variables'''
-    gl.x      = S[:,0]
-    gl.xD     = S[:,1]
-    gl.y      = S[:,2]
-    gl.yD     = S[:,3]
-    gl.theta  = S[:,4]
-    gl.thetaD = S[:,5]
-    rp.T      = S[:,6]
-    wi.v      = S[:,7]
-    en.v      = S[:,8]
-    return gl,rp,wi,tc,en,op,pl
-    
-    
-def stateSplitVec(S,gl,rp,wi,tc,en,op,pl):
-    '''Splits the formal state matrix S (each row a different time) into the various state variables'''
-    gl.x      = S[0]
-    gl.xD     = S[1]
-    gl.y      = S[2]
-    gl.yD     = S[3]
-    gl.theta  = S[4]
-    gl.thetaD = S[5]
-    rp.T      = S[6]
-    wi.v      = S[7]
-    en.v      = S[8]
-    return gl,rp,wi,tc,en,op,pl    
-    
-def stateJoin(S,gl,rp,wi,tc,en,op,pl):
-    '''Joins the various state variables into the formal state vector S '''
-    S[0] = gl.x
-    S[1] = gl.xD
-    S[2] = gl.y        
-    S[3] = gl.yD       
-    S[4] = gl.theta    
-    S[5] = gl.thetaD   
-    S[6] = rp.T 
-    S[7] = wi.v
-    S[8] = en.v     
-    return S
+            self.Me = 0       
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''
@@ -236,8 +243,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     alpha = gl.theta - gamma # angle of attack
     L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift
     D = L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
-    if alpha > 0.2:
-        print 'pause'
     M = (-gl.palpha*alpha + pl.Me) #torque on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
     #winch-engine
@@ -248,12 +253,14 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotx = gl.xD    
     dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - D*cos(gamma) - L*sin(gamma)) #x acceleration
     doty = gl.yD
-    if gl.y < 0.1 and L < gl.W: #on ground 
-        dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma)) #y acceleration on ground
+    if gl.y < 1.0 and L < gl.W: #on ground 
+        dotyD = 0 
+        dottheta = 0
+        dotthetaD = 0
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
-    dottheta = gl.thetaD    
-    dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + M)    
+        dottheta = gl.thetaD    
+        dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + M)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -272,6 +279,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ts.i]['v']  = v
         gl.data[ts.i]['theta']  = gl.theta
         gl.data[ts.i]['alpha']  = alpha
+        gl.data[ts.i]['L']  = L
+        gl.data[ts.i]['D']  = D
         op.data[ts.i]['t']   = t
         op.data[ts.i]['Sth'] = op.Sth
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
@@ -280,8 +289,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 20      # end time for simulation
+tEnd = 40      # end time for simulation
 dt = 0.05       #nominal time step, sec
+path = 'D:\Winch launch physics\results\aoa control Grob USA winch'  #for saving plots
+control = 'alpha'  # Use '' for none
+
+
 ntime = (tEnd - tStart)/dt + 1   # number of time steps expected
 t = linspace(tStart,tEnd,num=ntime)
 ts = timesteps(tStart,tEnd,ntime)
@@ -292,8 +305,7 @@ wi = winch()
 tc = torqconv()
 en = engine(wi.rdrum)
 op = operator(ntime)
-pl = pilot(ntime)
-pl.ctrltype = 'alpha'
+pl = pilot(ntime,control)
   
 S0 = zeros(9)
 gl.xD = 1e-6  #to avoid div/zero
@@ -307,18 +319,23 @@ gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
 # plot results
 close("all")
-plts = plots()
+plts = plots(path)
+
 plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
 plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-plts.xy(t,[gl.xD,gl.yD],'time (sec)','velocity (m/s)',['vx','vy'],'glider velocity vs time')
+#plts.xy(t,[gl.xD,gl.yD],'time (sec)','velocity (m/s)',['vx','vy'],'glider velocity vs time')
+plts.xy(gl.data[:ts.i]['t'],[gl.data[:ts.i]['xD'],gl.data[:ts.i]['yD'],gl.data[:ts.i]['v']],'time (sec)','velocity (m/s)',['vx','vy','v'],'glider velocity vs time')
+plts.xy(gl.data[:ts.i]['t'],[gl.data[:ts.i]['L']/gl.W,10*gl.data[:ts.i]['D']/gl.W],'time (sec)','Force/weight (N) ',['lift','drag x 10'],'Aerodynamic forces')
+
 gamma = arctan(gl.yD/gl.xD) 
 alpha = gl.theta - gamma  
-plts.xy(t,[180/pi*gl.theta,180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+plts.xy(t,[180/pi*gl.theta,180/pi*gamma,10*180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA x10'],'flight angles')  
+plts.xy(pl.data[:ts.i]['t'],[100*pl.data[:ts.i]['err'],pl.data[:ts.i]['Me']],'time (sec)','Error ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
+
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
 plts.xy(op.data[:ts.i]['t'],[op.data[:ts.i]['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
-plts.xy(pl.data[:ts.i]['t'],[100*pl.data[:ts.i]['err'],pl.data[:ts.i]['Me']],'time (sec)','Error ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
 
 
 print 'Done'
