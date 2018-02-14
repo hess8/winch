@@ -1,5 +1,5 @@
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
+# from IPython import get_ipython
+# get_ipython().magic('reset -sf')
 
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 Solves for the motion of a glider launched by a winch with a springy rope. 
@@ -291,7 +291,7 @@ S0 = zeros(11)
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
 S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
+S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,),full_output = 1 )
 #Split S (now a matrix with a state row for each time)
 
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
