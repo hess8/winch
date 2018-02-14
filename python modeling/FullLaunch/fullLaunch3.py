@@ -23,11 +23,15 @@ from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend
 from scipy.integrate import odeint
 g = 9.8
-close("all") 
+ 
 
 class timesteps:
     def __init__(self,tStart,tEnd,N):
-        '''The way to do persistent variables in python is with a class variable'''
+        '''The way to do persistent variables in python is with class variables
+        
+        The solver does not keep a constant time step, and evaluates the stateDer 
+        function usually two or more steps per time step'''
+        
         self.oldt = -1.0
         self.i = -1   #counter for time step
         self.dt = (tEnd -tStart)/float((N-1))
@@ -47,12 +51,7 @@ class glider:
         self.palpha = 3.0        #   change in air-glider pitch moment (/rad) with angle of attack 
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 1.8        #   drag constant (/rad) for glider angle of attack away from zero
-        # algebraic functions
-        self.L = 0
-        self.D = 0
-        self.M = 0
-        self.gamma = 0
-        self.alpha = 0
+
         # state variables 
         self.x = 0
         self.xD = 0
@@ -121,7 +120,6 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
-        print 'op t',t
         tramp = 4   #seconds
         thrmax = 0.5        
         if t < tramp:
@@ -130,16 +128,16 @@ class operator:
             self.Sth =  thrmax
          
 class pilot:
-    def __init__(self):
+    def __init__(self,ntime):
         self.Me = 0
         self.ctrltype = ''
+        self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         return
         
     def control(self,t,ts,gl): 
-        
         setpoint = 0.0
         tint = 0.5 #sec
-        pp = 0.1; pd = 0; pint = 0
+        pp = 5; pd = 0; pint = 0
         Nint = ceil(tint/ts.dt)
         ctype = self.ctrltype
         if ctype != '': 
@@ -155,9 +153,13 @@ class pilot:
                 interr = sum(gl.data[ts.i-Nint : ts.i][ctype])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = pp*err + pd*derr + pint*interr
+            self.Me = -(pp*err + pd*derr + pint*interr)
+            pl.data[ts.i]['t'] = t #store error
+            pl.data[ts.i]['err'] = err
+            pl.data[ts.i]['Me'] = self.Me
         else:        
             self.Me = 0
+
     
 class plots:
     def __init__(self):
@@ -225,11 +227,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
-    gl.gamma = arctan(gl.yD/gl.xD)  # climb angle.   
-    gl.alpha = gl.theta - gl.gamma # angle of attack
-    gl.L = (gl.W + gl.Lalpha*gl.alpha) * (v/gl.vb)**2 #lift
-    gl.D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*gl.alpha**2) #drag
-    gl.M = (-gl.palpha*gl.alpha - pl.Me) #torque on glider
+    gamma = arctan(gl.yD/gl.xD)  # climb angle.   
+    alpha = gl.theta - gamma # angle of attack
+    L = (W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift
+    D = gl.L/float(gl.Q)*(1 + gl.dv*(v/gl.vb-1)**2 + gl.dalpha*alpha**2) #drag
+    M = (-gl.palpha*alpha - pl.Me) #torque on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
     #winch-engine
     vrel = wi.v/en.v
@@ -240,12 +242,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     pl.control(t,ts,gl)
     #----derivatives of state variables----#
     dotx = gl.xD    
-    dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - gl.D*cos(gl.gamma) - gl.L*sin(gl.gamma)) #x acceleration
+    dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - D*cos(gamma) - L*sin(gamma)) #x acceleration
     doty = gl.yD
-    if gl.y < 0.1 and gl.L < gl.W: #on ground 
-        dotyD = 1/float(gl.m) * (gl.L*cos(gl.gamma) - rp.T*sin(thetarope) - gl.D*sin(gl.gamma)) #y acceleration on ground
+    if gl.y < 0.1 and L < W: #on ground 
+        dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma)) #y acceleration on ground
     else:
-        dotyD = 1/float(gl.m) * (gl.L*cos(gl.gamma) - rp.T*sin(thetarope) - gl.D*sin(gl.gamma) - gl.W) #y acceleration
+        dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - W) #y acceleration
     dottheta = gl.thetaD    
     dotthetaD = 1/float(gl.Ig) * (rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) + pl.Me)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
@@ -254,10 +256,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 
     # store data from this time step for use in controls.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the counter only if the time has changed 
-    # by close to a nominal time step
-    print 'i',ts.i,t,t - ts.oldt,ts.dt    
+    # by close to a nominal time step    
     if t - ts.oldt > 0.9*ts.dt: 
-        ts.i += 1
+        ts.i += 1 
         ts.oldt = t
         gl.data[ts.i]['t']  = t
         gl.data[ts.i]['x']  = gl.x
@@ -266,7 +267,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ts.i]['yD'] = gl.yD
         gl.data[ts.i]['v']  = v
         gl.data[ts.i]['theta']  = gl.theta
-        gl.data[ts.i]['alpha']  = gl.alpha
+        gl.data[ts.i]['alpha']  = alpha
         op.data[ts.i]['t']   = t
         op.data[ts.i]['Sth'] = op.Sth
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
@@ -276,8 +277,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################                        
 tStart = 0
 tEnd = 20      # end time for simulation
-dt = 0.05       #sec
-ntime = (tEnd - tStart)/dt + 1   # number of time steps
+dt = 0.05       #nominal time step, sec
+ntime = (tEnd - tStart)/dt + 1   # number of time steps expected
 t = linspace(tStart,tEnd,num=ntime)
 ts = timesteps(tStart,tEnd,ntime)
 
@@ -287,8 +288,8 @@ wi = winch()
 tc = torqconv()
 en = engine(wi.rdrum)
 op = operator(ntime)
-pl = pilot()
-#pl.ctrltype = 'alpha'
+pl = pilot(ntime)
+pl.ctrltype = 'alpha'
   
 S0 = zeros(9)
 gl.xD = 1e-6  #to avoid div/zero
@@ -301,30 +302,20 @@ S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
 # plot results
+close("all")
 plts = plots()
-plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
+plts.xy(t,[x,gl.y],'time (sec)','position (m)',['x','y'],'glider position vs time')
 plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
 plts.xy(t,[gl.xD,gl.yD],'time (sec)','velocity (m/s)',['vx','vy'],'glider velocity vs time')
-gl.gamma = arctan(gl.yD/gl.xD) 
-gl.alpha = gl.theta - gl.gamma  
-plts.xy(t,[180/pi*gl.theta,180/pi*gl.gamma,180/pi*gl.alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+gamma = arctan(gl.yD/gl.xD) 
+alpha = gl.theta - gamma  
+plts.xy(t,[180/pi*gl.theta,180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
-plts.xy(op.data[:ts.i]['t'],[op.data[:ts.i]['Sth']],'time (sec)','Throttle setting',[' ',' '],'Throttle')
+plts.xy(op.data[:ts.i]['t'],[op.data[:ts.i]['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+plts.xy(pl.data[:ts.i]['t'],[pl.data[:ts.i]['err'],pl.data[:ts.i]['Me']],'time (sec)','Error (rad/s)',['error','elevator moment'],'Pilot')
 
-#figure()
-#plot(t,gl.x)
-#plot(t,gl.y)
-#xlabel('time (sec)')
-#ylabel('position')
-#show()
-#figure()
-#plot(t,en.v)
-#plot(t,wi.v+10)
-#xlabel('time (sec)')
-#ylabel('speed')
-#show()
 
 print 'Done'
 

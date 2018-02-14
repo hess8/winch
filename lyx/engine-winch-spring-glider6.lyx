@@ -80,7 +80,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -1601,7 +1600,7 @@ The pilot model will target different glider states during different phases
 :
 \begin_inset Formula 
 \[
-M_{e}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'.
+M_{e}(t)=-(p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt')
 \]
 
 \end_inset
