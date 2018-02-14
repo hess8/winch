@@ -62,8 +62,6 @@ class glider:
         self.thetaD = 0 
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
                                     ('v', float),('theta', float),('alpha', float)])
-        
-
         return
     
 class rope:
@@ -133,25 +131,29 @@ class operator:
 class pilot:
     def __init__(self):
         self.Me = 0
-        self.ctrltype = None
+        self.ctrltype = ''
         return
-    def control(self,ts,gl): 
-        alphaset = 0.0
+        
+    def control(self,t,ts,gl): 
+        setpoint = 0.0
         tint = 0.5 #sec
+        pp = 0.1; pd = 0; pint = 0
         Nint = ceil(tint/ts.dt)
-        if self.ctrltype == 'alpha': #Find the error properties
-            err = gl.data[ts.i]['alpha'] - alphaset
+        ctype = self.ctrltype
+        if ctype != '': 
+            
+            #Find the error properties
+            err = (gl.data[ts.i][ctype] - setpoint)
             #for the derivative, take the last two time steps
-            derr = (gl.data[ts.i]['alpha'] - gl.data[ts.i-2]['alpha'])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t'])
+            derr = (gl.data[ts.i][ctype] - gl.data[ts.i-2][ctype])/(gl.data[ts.i]['t'] - gl.data[ts.i-2]['t']) 
             #for the integral, last Nint average
             if ts.i >= Nint:            
-                interr = sum(gl.data[ts.i-Nint:ts.i]['alpha'])/(gl.data[ts.i]['t'] - gl.data[ts.i-Nint]['t'])
+                interr = sum(gl.data[ts.i-Nint : ts.i][ctype])/(Nint + 1) - setpoint
             else:
                 interr = 0
- 
+            self.Me = pp*err + pd*derr + pint*interr
         else:        
-            dMe = 0
-        return dMe
+            self.Me = 0
     
 class plots:
     def __init__(self):
@@ -262,7 +264,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ts.i]['xD'] = gl.xD
         gl.data[ts.i]['y']  = gl.y
         gl.data[ts.i]['yD'] = gl.yD
-        gl.data[ts.i]['v']  = gl.v
+        gl.data[ts.i]['v']  = v
         gl.data[ts.i]['theta']  = gl.theta
         gl.data[ts.i]['alpha']  = gl.alpha
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve,dotSth,dotMe]
@@ -275,7 +277,6 @@ tEnd = 20      # end time for simulation
 ntime = 200   # number of time steps
 t = linspace(tStart,tEnd,num=ntime)
 ts = timesteps(tStart,tEnd,ntime)
-pl.ctrltype = 'alpha'
 
 gl = glider(ntime)
 rp = rope()
@@ -284,7 +285,7 @@ tc = torqconv()
 en = engine(wi.rdrum)
 op = operator()
 pl = pilot()
-
+#pl.ctrltype = 'alpha'
   
 S0 = zeros(11)
 gl.xD = 1e-6  #to avoid div/zero

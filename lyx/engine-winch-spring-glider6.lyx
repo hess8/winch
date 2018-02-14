@@ -1545,7 +1545,12 @@ Once the effectives masses are defined, this is the only place that
 \begin_inset Formula $r_{drum}$
 \end_inset
 
- exists in the model
+ exists in the model.
+ We redefine 
+\begin_inset Formula $K_{o}$
+\end_inset
+
+in terms of velocity: 
 \end_layout
 
 \begin_layout Standard
@@ -1593,34 +1598,15 @@ The pilot model will target different glider states during different phases
 \begin_inset Formula $\epsilon$
 \end_inset
 
-: 
-\begin_inset Formula $M_{e}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'$
-\end_inset
-
- .
- To replace the integral, we differentiate each side:
-\end_layout
-
-\begin_layout Standard
+:
 \begin_inset Formula 
 \[
-\dot{M_{e}}=p_{p}\dot{\epsilon}+p_{d}\ddot{\epsilon}+p_{i}\epsilon
+M_{e}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'.
 \]
 
 \end_inset
 
-, and make 
-\begin_inset Formula $M_{e}(t)$
-\end_inset
 
- a state variable.
- The function will be a dimensionless error 
-\begin_inset Formula $\epsilon(t)=\frac{state-target(t)}{target(t)}$
-\end_inset
-
- .
- The error function definition will change during the flight.
- 
 \end_layout
 
 \begin_layout Section
