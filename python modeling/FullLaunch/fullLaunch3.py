@@ -166,7 +166,7 @@ class engine:
         self.Pmax = 750*self.hp        # engine watts
         self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
-        self.vpeak = 30   # m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms
+        self.vpeak = 40   # m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
@@ -317,7 +317,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 20      # end time for simulation
+tEnd = 35      # end time for simulation
 dt = 0.05       #nominal time step, sec
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
@@ -325,7 +325,8 @@ path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for savin
 #setpoint = 2*pi/180   #alpha, 2 degrees
 
 control = ['alpha','v']
-setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
+#setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
+setpoint = [1*pi/180  , 1.0, 60]  #last one is climb angle to transition to final control
 
 
 #control =/ 'v'  # Use '' for none
@@ -349,8 +350,8 @@ S0 = zeros(9)
 # nonzero initial conditions
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
-if control == 'alpha':
-    gl.theta = setpoint
+if control[0] == 'alpha':
+    gl.theta = setpoint[0]
 else:
     gl.theta = 2*pi/180   #initial AoA, 2 degrees
 
