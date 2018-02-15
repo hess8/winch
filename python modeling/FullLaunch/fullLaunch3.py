@@ -19,7 +19,7 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 import os
-from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor
+from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title
 from scipy.integrate import odeint
 g = 9.8
@@ -106,7 +106,7 @@ class glider:
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
         self.Q = 20             #   L/D
-        self.alphas = 6         #   stall angle vs glider zero
+        self.alphas = 6*3.14/180         #   stall angle vs glider zero
         Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/Co
         self.Ig = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
@@ -184,12 +184,16 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
-        tramp = 2   #seconds
-        thrmax = 1.0       
-        if t < tramp:
-            self.Sth =  thrmax/float(tramp) * t
-        else:
+        tRampUp = 4   #seconds
+        tDown = 7
+        tRampDown = 50
+        thrmax = .6  
+        if t <= tRampUp:
+            self.Sth =  thrmax/float(tRampUp) * t
+        elif tRampUp < t < tDown:
             self.Sth =  thrmax
+        elif t >= tDown:
+            self.Sth = max(0,thrmax * (1-(t-tDown)/float(tRampDown)))
          
 class pilot:
     def __init__(self,ntime,ctrltype,setpoint):
@@ -266,8 +270,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
     gamma = arctan(gl.yD/gl.xD)  # climb angle.   
     alpha = gl.theta - gamma # angle of attack
-    L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift
+    L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
     D = L/float(gl.Q)*(1 + gl.Q*gl.dalpha*alpha**2) + gl.de*pl.Me #drag
+    if alpha > gl.alphas: #stall
+        L = 0.75*L
+        D = L/float(gl.Q)
     M = (-gl.palpha*alpha + pl.Me) #torque of air on glider
     ropetorq = rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) #torque of rope on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
@@ -317,16 +324,16 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 35      # end time for simulation
+tEnd = 40      # end time for simulation
 dt = 0.05       #nominal time step, sec
-#path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
+path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
+#path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
 
 control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
-setpoint = [1*pi/180  , 1.0, 60]  #last one is climb angle to transition to final control
+setpoint = [2*pi/180  , 35, 60]  #last one is climb angle to transition to final control
 
 
 #control =/ 'v'  # Use '' for none
@@ -360,26 +367,39 @@ S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
 #Split S (now a matrix with state variables in columns and times in rows)
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
+#If yD drops below zero, the sim went too long.  Remove time points after that. 
+negyD = where(gl.yD < 0)[0]
+itr = negyD[0]-1 #ode solver index for release time
+t = t[:itr] #shorten
+negyDData = where(gl.data['yD']<0)[0]
+ti.i = negyDData[0] - 1  #data index for release time
 
 # plot results
+temp =  gl.data[:ti.i]['t']
+tData = temp
+tData = gl.data[:ti.i]['t']
+gData = gl.data[:ti.i]
+pData = pl.data[:ti.i]
+oData = op.data[:ti.i]
 close("all")
 plts = plots(path)   
-plts.xy(t,[gl.x,gl.y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
-plts.xy(gl.data[:ti.i]['t'],[gl.data[:ti.i]['xD'],gl.data[:ti.i]['yD'],gl.data[:ti.i]['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'glider velocity vs time')
-gamma = arctan(gl.yD/gl.xD) 
-alpha = gl.theta - gamma  
-plts.xy(t,[180/pi*gl.theta,180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
-plts.xy(t,[en.v,wi.v],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-plts.xy(gl.data[:ti.i]['t'],[gl.data[:ti.i]['L']/gl.W,10*gl.data[:ti.i]['D']/gl.W],'time (sec)','Force/weight (N) ',['lift','drag x 10'],'Aerodynamic forces')
-plts.xy(gl.data[:ti.i]['t'],[gl.data[:ti.i]['rptorq']],'time (sec)','Torque (Nm) ',['torque','drag x 10'],'Rope torque on glider')
-plts.xy(pl.data[:ti.i]['t'],[100*pl.data[:ti.i]['err'],pl.data[:ti.i]['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
+plts.xy(t,[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+plts.xy(tData,[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'glider velocity vs time')
+gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
+alpha = gl.theta[:itr] - gamma  
+plts.xy(t,[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+plts.xy(t,[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
+plts.xy(tData,[gData['L']/gl.W,10*gData['D']/gl.W],'time (sec)','Force/weight (N) ',['lift','drag x 10'],'Aerodynamic forces')
+plts.xy(tData,[gData['rptorq']],'time (sec)','Torque (Nm) ',['torque','drag x 10'],'Rope torque on glider')
+plts.xy(pData['t'],[100*pData['err'],pData['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
-plts.xy(t,[rp.T,Few],'time (sec)','Force (N)',['rope','TC-winch'],'Forces between objects')
-plts.xy(op.data[:ti.i]['t'],[op.data[:ti.i]['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+plts.xy(t,[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['rope','TC-winch'],'Forces between objects')
+plts.xy(oData['t'],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
 
 if abs(t[-1] - gl.data[ti.i]['t']) > dt:
-    print 'Warning...Some time plots probably have a time axis that is too short vs others.  This is because the integrator had a hard time with this model.'
+    print 'Warning...In this run some time plots probably have a time axis that is too short vs others.'
+    print 'The integrator had a hard time with this model.'
     print '!!!!!!!!! Try making smoother controls'
 
 print 'Done'
