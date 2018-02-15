@@ -749,7 +749,7 @@ The drag includes both induced and viscous, and is described by a total
 :
 \begin_inset Formula 
 \[
-D=\frac{1}{2}\rho SC_{D}v^{2}=\frac{C_{D}}{C_{L}}L
+D=\frac{1}{2}\rho SC_{D}v=\frac{C_{D}}{C_{L}}L
 \]
 
 \end_inset
@@ -771,36 +771,60 @@ The drag ratio
 \end_inset
 
 .
- For the case 
-\begin_inset Formula $Q=40,$
-\end_inset
-
- the ratio roughly the ratio doubles for an excursion of 1.5 degrees (0.025
- rad) about the normal flying angle of attack.
+ Basically the ratio doubles for an excursion of 1.5 degrees about the trim.
  
-\end_layout
-
-\begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{C_{D}}{C_{L}}\approx\frac{1}{Q}\left(1+\frac{Q}{40}\left(\frac{1}{0.025}\right)^{2}\alpha^{2}\right)
+D/L=\frac{1}{Q}(1+d_{v}(\frac{v}{v_{b}}-1)^{2}+d_{\alpha}\alpha^{2})
 \]
 
 \end_inset
 
- for 
-\begin_inset Formula $\alpha$
+
+\end_layout
+
+\begin_layout Standard
+The drag ratio 
+\begin_inset Formula $D/L$
 \end_inset
 
- in radians.
- Then we use the drag constant 
-\begin_inset Formula $40$
+ is minimized near the best-glide speed, so we expand it quadratically about
+ 
+\begin_inset Formula $v=v_{b}$
 \end_inset
 
- and write:
+ and 
+\begin_inset Formula $\alpha=$
+\end_inset
+
+0.
+ 
 \begin_inset Formula 
 \[
-D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})
+D/L=\frac{1}{Q}(1+d_{v}(\frac{v}{v_{b}}-1)^{2}+d_{\alpha}\alpha^{2})
+\]
+
+\end_inset
+
+Where 
+\begin_inset Formula $d_{v},d_{\alpha}$
+\end_inset
+
+ are dimensionless drag constants.
+ From a glider polar, 
+\begin_inset Formula $d_{v}\approx3$
+\end_inset
+
+.
+ From a glider model in xflr5, 
+\begin_inset Formula $d_{\alpha}\approx1.8$
+\end_inset
+
+.
+ Adding elevator drag, 
+\begin_inset Formula 
+\[
+D=\frac{L}{Q}(1+d_{v}(\frac{v}{v_{b}}-1)^{2}+d_{\alpha}\alpha^{2})+d_{e}M_{e}.
 \]
 
 \end_inset
@@ -1872,7 +1896,7 @@ kgm
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $d_{\alpha}=40/rad$
+\begin_inset Formula $d_{\alpha}=1.8/rad$
 \end_inset
 
 
