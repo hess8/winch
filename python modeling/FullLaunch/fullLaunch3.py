@@ -184,7 +184,7 @@ class operator:
         return
     def control(self,t,gl,rp,wi,en):
         tramp = 8   #seconds
-        thrmax = 0.5        
+        thrmax = 1.0       
         if t < tramp:
             self.Sth =  thrmax/float(tramp) * t
         else:
@@ -202,11 +202,22 @@ class pilot:
     def control(self,t,ti,gl): 
         setpoint = 0.0
         tint = 0.5 #sec
-        Nint = ceil(tint/ti.dt)
-        ctype = self.ctrltype
-        setpoint = self.setpoint
-        var = gl.data[ctype]
+        Nint = ceil(tint/ti.dt)        
+        
         cGo = True
+        if len(self.ctrltype)>1:  # We have two types of control
+            angleSwitch = self.ctrltype[0]
+            gamma = arctan(gl.yD/gl.xD)*180/pi
+            if gamma < angleSwitch:
+                ctype = self.ctrltype[0]
+                setpoint = self.setpoint[0]
+            else:
+                ctype = self.ctrltype[1]
+                setpoint = self.setpoint[1]                
+        else:
+            ctype = self.ctrltype
+            setpoint = self.setpoint
+        var = gl.data[ctype]
         if ctype == 'v':
             pp = 0; pd = 0; pint = 0
             var = var/gl.vb
@@ -305,14 +316,19 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 13      # end time for simulation
+tEnd = 35      # end time for simulation
 dt = 0.05       #nominal time step, sec
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
-control = 'v'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
-setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
+
+control = ['alpha','v']
+setpoint = [2*pi/180 , 1.0, 45]  #last one is climb angle to transition to final control
+
+
+#control =/ 'v'  # Use '' for none
+#setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
 
 ntime = (tEnd - tStart)/dt + 1   # number of time steps expected
@@ -362,8 +378,7 @@ plts.xy(op.data[:ti.i]['t'],[op.data[:ti.i]['Sth']],'time (sec)','Throttle setti
 
 if abs(t[-1] - gl.data[ti.i]['t']) > dt:
     print 'Warning...Some time plots probably have a time axis that is too short vs others.  This is because the integrator had a hard time with this model.'
-    print '          Try making smoother controls'
-
+    print '!!!!!!!!! Try making smoother controls'
 
 print 'Done'
 
