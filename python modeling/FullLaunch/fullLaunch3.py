@@ -19,7 +19,7 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 import os
-from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where
+from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where,amin,amax
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title
 from scipy.integrate import odeint
 g = 9.8
@@ -70,19 +70,24 @@ class plots:
         self.path = path        
         return 
     
-    def xy(self,x,ys,xlbl,ylbl,legendLabels,titlestr):
-        colorsList = [u'#30a2da', u'#fc4f30', u'#e5ae38', u'#6d904f', u'#8b8b8b',
-              u'#348ABD', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 
-              u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#009E73', u'#F0E442']
+    def xy(self,xs,ys,xlbl,ylbl,legendLabels,titlestr):
+        '''To allow different time (x) arrays, we require the xs to be a list'''
+        if len(xs)<len(ys): #duplicate first x to every spot in new list
+            xs = [xs[0] for y in ys] 
+        colorsList = [u'#30a2da', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
+              u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 'darkviolet',
+              u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#009E73','peru','slateblue'] # u'#F0E442'
         figure()
         for iy,y in enumerate(ys):
-            plot(x,y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+            plot(xs[iy],y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
             self.i += 1
             if self.i > len(colorsList)-1:
                 self.i = 0
             xlabel(xlbl)
             ylabel(ylbl)
         legend(loc='lower right')
+        ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
+        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
         show()
@@ -383,19 +388,29 @@ pData = pl.data[:ti.i]
 oData = op.data[:ti.i]
 close("all")
 plts = plots(path)   
-plts.xy(t,[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
-plts.xy(tData,[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'glider velocity vs time')
+plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time')
 gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
 alpha = gl.theta[:itr] - gamma  
-plts.xy(t,[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
-plts.xy(t,[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-plts.xy(tData,[gData['L']/gl.W,10*gData['D']/gl.W],'time (sec)','Force/weight (N) ',['lift','drag x 10'],'Aerodynamic forces')
-plts.xy(tData,[gData['rptorq']],'time (sec)','Torque (Nm) ',['torque','drag x 10'],'Rope torque on glider')
-plts.xy(pData['t'],[100*pData['err'],pData['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
+plts.xy([t],[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+plts.xy([t],[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
+plts.xy([tData],[gData['L']/gl.W,10*gData['D']/gl.W],'time (sec)','Force/W',['lift','drag x 10'],'Aerodynamic forces')
+plts.xy([tData],[gData['rptorq']],'time (sec)','Torque (Nm) ',['torque','drag x 10'],'Rope torque on glider')
+plts.xy([tData],[100*pData['err'],pData['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
-plts.xy(t,[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['rope','TC-winch'],'Forces between objects')
-plts.xy(oData['t'],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
+plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+   #glider speed and angles
+plts.xy([tData,tData,tData,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA'],'Glider velocities and angles')
+   #lift,drag,forces
+plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
+        'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
+    #Engine and winch
+plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
+        
+      
 
 if abs(t[-1] - gl.data[ti.i]['t']) > dt:
     print 'Warning...In this run some time plots probably have a time axis that is too short vs others.'

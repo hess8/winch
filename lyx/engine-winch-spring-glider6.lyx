@@ -797,10 +797,10 @@ The drag ratio
 \begin_inset Formula $40$
 \end_inset
 
- and write:
+ and include a small drag coefficient for the elevator moment::
 \begin_inset Formula 
 \[
-D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})
+D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
 \]
 
 \end_inset
@@ -1963,11 +1963,7 @@ m/rad.
 \begin_inset Formula $p_{\alpha}\approx3W$
 \end_inset
 
-m, which about the same.
-\end_layout
-
-\begin_layout Standard
-Change in drag with 
+m, which about the same as before.
 \end_layout
 
 \end_body
