@@ -114,7 +114,7 @@ class glider:
         self.alphas = 6*3.14/180         #   stall angle vs glider zero
         Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/Co
-        self.Ig = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
+        self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.palpha = 3.0        #   change in air-glider pitch moment (/rad) with angle of attack 
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
@@ -127,9 +127,11 @@ class glider:
         self.yD = 0
         self.theta = 0
         self.thetaD = 0 
+        
+        #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
                                     ('v', float),('theta', float),('alpha', float),('L', float),\
-                                    ('D', float),('rptorq',float)])
+                                    ('D', float),('rptorq',float),('Edeliv',float),('Emech',float)])
         return
     
 class rope:
@@ -154,13 +156,16 @@ class winch:
         self.rdrum = 0.4          # Drum radius (m), needed only for conversion of rpm to engine peak effective speed
         #state variables
         self.v = 0            # Rope uptake speed
-
+        #data
+        self.data = zeros(ntime,dtype = [('Edeliv',float)])  #energy delivered to winch by TC
 
 class torqconv:
      def __init__(self):
          # TC parameters  
          self.Ko = 12             #TC capacity (rad/sec/(Nm)^1/2)
          self.dw = 0.13
+         #data
+         self.data = zeros(ntime,dtype = [('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
      def invK(self,vrel):
          return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
@@ -169,7 +174,7 @@ class engine:
         # Engine parameters  
         self.hp = 350             # engine horsepower
         self.Pmax = 750*self.hp        # engine watts
-        self.rpmpeak = 6000       # rpm for peak power
+#        self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
         self.vpeak = 40   # m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
@@ -178,6 +183,8 @@ class engine:
         # state variables 
         self.v = 0            #engine effective speed (m/s)
         self.Few = 0           # effective force between engine and winch (could go in either engine or winch or in its own class)
+         #data
+        self.data = zeros(ntime,dtype = [('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
     
     def Pavail(self,ve):            # power curve
         vr = ve/float(self.vpeak)
@@ -250,7 +257,7 @@ class pilot:
                 interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = gl.Ig*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
+            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
             pl.data[ti.i]['t'] = t #store error
             pl.data[ti.i]['err'] = err
             pl.data[ti.i]['Me'] = self.Me
@@ -299,7 +306,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
         dottheta = gl.thetaD    
-        dotthetaD = 1/float(gl.Ig) * (ropetorq + M)    
+        dotthetaD = 1/float(gl.I) * (ropetorq + M)    
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -309,7 +316,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     # by close to a nominal time step    
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
-        ti.oldt = t
+        
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
         gl.data[ti.i]['xD'] = gl.xD
@@ -321,8 +328,16 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
         gl.data[ti.i]['rptorq'] = ropetorq
+        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2 + en.me*en.v**2 + wi.me*wi.v**2) + gl.m  * g * gl.y 
+#        if rp.T > 1000:
+#            print 'pause'
+        gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + rp.T * vgw * (t-ti.oldt)
+        wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + Few * wi.v * (t-ti.oldt)
+        en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + op.Sth * en.Pavail(en.v) * (t-ti.oldt)
         op.data[ti.i]['t']   = t
         op.data[ti.i]['Sth'] = op.Sth
+        
+        ti.oldt = t
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
 
 ##########################################################################
@@ -380,12 +395,13 @@ negyDData = where(gl.data['yD']<0)[0]
 ti.i = negyDData[0] - 1  #data index for release time
 
 # plot results
-temp =  gl.data[:ti.i]['t']
-tData = temp
 tData = gl.data[:ti.i]['t']
 gData = gl.data[:ti.i]
+wData = wi.data[:ti.i]
 pData = pl.data[:ti.i]
+eData = en.data[:ti.i]
 oData = op.data[:ti.i]
+
 close("all")
 plts = plots(path)   
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
@@ -409,12 +425,12 @@ plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
     #Engine and winch
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
-        
-      
+    #Energy
+plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
 
 if abs(t[-1] - gl.data[ti.i]['t']) > dt:
-    print 'Warning...In this run some time plots probably have a time axis that is too short vs others.'
-    print 'The integrator had a hard time with this model.'
+    print 'Warning...The integrator had a hard time with this model.'
+    print 'In this run some of the time plots probably have a time axis that is too short vs others.'
     print '!!!!!!!!! Try making smoother controls'
 
 print 'Done'

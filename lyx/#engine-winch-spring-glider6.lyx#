@@ -797,10 +797,10 @@ The drag ratio
 \begin_inset Formula $40$
 \end_inset
 
- and write:
+ and include a small drag coefficient for the elevator moment::
 \begin_inset Formula 
 \[
-D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})
+D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
 \]
 
 \end_inset
@@ -1598,6 +1598,74 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
 \end_layout
 
 \begin_layout Section
+Power flow
+\end_layout
+
+\begin_layout Standard
+The power delivered by the pistons is
+\begin_inset Formula $S_{th}P_{a}(\omega_{eng})$
+\end_inset
+
+ so the total energy delivered at each time is 
+\begin_inset Formula 
+\[
+E_{pist}(t)=S_{th}(t')P_{a}(t')dt'
+\]
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The power delivered by the TC to the winch is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E_{winch}(t)=\intop_{o}^{t}F_{e,w}(t')v_{e}(t')dt'
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The power delivered by the winch to the glider is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E_{glider}(t)=\intop_{o}^{t}T(t')v_{gw}(t')dt'
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally the mechanical energy of the engine + glider is 
+\begin_inset Formula 
+\[
+E_{mech}=mgy+\frac{1}{2}mv^{2}+\frac{1}{2}I\dot{\theta^{2}+}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We will compare each of these to understand the losses.
+ 
+\end_layout
+
+\begin_layout Section
 Pilot
 \end_layout
 
@@ -1612,12 +1680,17 @@ The pilot model will target different glider states during different phases
 :
 \begin_inset Formula 
 \[
-M_{e}(t)=-(p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt')
+M_{e}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
 \]
 
 \end_inset
 
+The targets and 
+\begin_inset Formula $p$
+\end_inset
 
+'s can change during the flight.
+ 
 \end_layout
 
 \begin_layout Section
@@ -1628,28 +1701,7 @@ Winch operator
 The operator (throttle) model will target certain engine or rope states
  during different phases of the flight, such as constant tension or torque,
  ramped power or torque.
- Generally it could include a PID controller, so 
-\begin_inset Formula $S_{th}(t)=s_{p}\epsilon+s_{d}\dot{\epsilon}+s_{i}\intop^{t}\epsilon(t')dt'$
-\end_inset
-
- .
- To replace the integral, we differentiate each side:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\dot{S_{th}}=s_{th}\dot{\epsilon}+s_{d}\ddot{\epsilon}+s_{i}\epsilon
-\]
-
-\end_inset
-
-, and make 
-\begin_inset Formula $S_{th}(t)$
-\end_inset
-
- a state variable.
- The error function definition will change during the flight.
+ Generally it could include a PID controller.
  
 \end_layout
 
@@ -1910,7 +1962,7 @@ From NACA report 278 the lift slope of the stabilator vs elevator deflection
 \end_inset
 
 .
- 
+ This is 
 \end_layout
 
 \begin_layout Standard
@@ -1945,12 +1997,8 @@ with fuselage included: From xflyr5 model:
 \end_inset
 
 m/rad.
- To compare to a rough estimate: For an estimate of 
-\begin_inset Formula $p_{\alpha}$
-\end_inset
-
-, the area of the stabilizer is about 1/10 that of the wing area, at a distance
- of about 
+ To compare to a rough estimate: the area of the stabilizer is about 1/10
+ that of the wing area, at a distance of about 
 \begin_inset Formula $l_{s}=$
 \end_inset
 
@@ -1963,7 +2011,7 @@ m/rad.
 \begin_inset Formula $p_{\alpha}\approx3W$
 \end_inset
 
-m, which about the same as before.
+m, which is not too different.
 \end_layout
 
 \end_body
