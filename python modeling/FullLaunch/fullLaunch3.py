@@ -19,7 +19,7 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 import os
-from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where,amin,amax
+from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where,amin,amax,argmin,argmax
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title
 from scipy.integrate import odeint
 g = 9.8
@@ -162,7 +162,7 @@ class winch:
 class torqconv:
      def __init__(self):
          # TC parameters  
-         self.Ko = 12             #TC capacity (rad/sec/(Nm)^1/2)
+         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
          self.dw = 0.13
          #data
          self.data = zeros(ntime,dtype = [('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
@@ -347,7 +347,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tStart = 0
 tEnd = 40      # end time for simulation
 dt = 0.05       #nominal time step, sec
-path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
+path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
