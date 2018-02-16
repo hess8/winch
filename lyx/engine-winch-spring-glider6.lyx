@@ -1935,8 +1935,8 @@ kgm
 \end_layout
 
 \begin_layout Standard
-From NACA report 278 the lift slope of the stabilator vs elevator deflection
- is 
+Lift slope: From NACA report 278 the lift slope of the stabilator vs elevator
+ deflection is 
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
 \end_inset
 
@@ -1966,15 +1966,11 @@ From NACA report 278 the lift slope of the stabilator vs elevator deflection
 \end_inset
 
 .
- This is 
+ This is negligible in any case.
 \end_layout
 
 \begin_layout Standard
-Check on 
-\begin_inset Formula $p_{\alpha}$
-\end_inset
-
-with fuselage included: From xflyr5 model: 
+Moment slope: From xflyr5 model: 
 \begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
 \end_inset
 
@@ -2019,7 +2015,53 @@ m, which is not too different.
 \end_layout
 
 \begin_layout Standard
-Torque capacity factor GM 350 transmission : K = 140 = rpm/
+Torque capacity factor: GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142
+ rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 13 rad/s/(Nm)
+\begin_inset Formula $^{\frac{1}{2}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Winch effective mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ R = 15 in = 0.4m.
+ Add 1500m of Spectra rope at about 20g/m at r=0.4m.
+ 
+\begin_inset Formula $I_{tot}=20$
+\end_inset
+
++30(.16)= 40
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $M_{eq}=40kgm^{2}/.16$
+\end_inset
+
+= 250 kg.
+ Ratio vs grob: 250/600 = 0.4
+\end_layout
+
+\begin_layout Standard
+Peak engine speed: USA 2nd gear: 1:1.52 transmission.
+ Spider gear differential: 1:3 (triveshaft turrns faster, so in reality
+ 
+\begin_inset Formula $\omega_{w}$
+\end_inset
+
+= 1/(3*1.5) 
+\begin_inset Formula $w_{w}=\frac{\omega_{TC}}{4.5}$
+\end_inset
+
+.
+ So when engine turns 4500 rpm (max power) the winch turns at 1000 rmp,
+ x 1rad/sec/10rpm x 0.4m = 40m/s peak engine speed.
 \end_layout
 
 \end_body

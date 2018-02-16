@@ -176,7 +176,8 @@ class engine:
         self.Pmax = 750*self.hp        # engine watts
 #        self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
-        self.vpeak = 40   # m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms
+        self.vpeak = 40   #  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+                          # 4500rpm /4.5 (gear and differential) = 1000 rmp, x 1rad/sec/10rpm x 0.4m = 40m/s peak engine speed.
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
