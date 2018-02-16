@@ -609,7 +609,7 @@ The angle of attack of the glider
 \begin_inset Formula $\gamma$
 \end_inset
 
- (above the horizon):
+ (above the horizon); using radians:
 \end_layout
 
 \begin_layout Standard
@@ -628,10 +628,6 @@ The angle of attack of the glider
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 The winch is a distance 
 \begin_inset Formula $l_{o}$
 \end_inset
@@ -1597,7 +1593,7 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
  
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 Power flow
 \end_layout
 
@@ -1694,6 +1690,60 @@ The targets and
 \end_inset
 
 's can change during the flight.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Elevator
+\end_layout
+
+\begin_layout Standard
+The elevator is part of the horizontal 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ whose lift changes with the angle of the elevator: 
+\begin_inset Formula $L_{s}=\frac{1}{2}\rho SC_{Ls}v^{2}$
+\end_inset
+
+= 
+\begin_inset Formula $L\frac{C_{Ls}}{C_{Lw}}\frac{S_{w}}{S_{w}}$
+\end_inset
+
+.
+ Because we have already trimmed the glider, we are interested only in the
+ change with elevator deflection 
+\begin_inset Formula $\delta_{e}$
+\end_inset
+
+: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\,C_{Ls,\delta_{e}}=\frac{\partial C_{Ls}}{\partial\delta_{e}}$
+\end_inset
+
+ , and 
+\begin_inset Formula $C_{L_{w}}(\alpha)$
+\end_inset
+
+ is the wing lift coefficient.
  
 \end_layout
 
@@ -1940,7 +1990,7 @@ Lift slope: From NACA report 278 the lift slope of the stabilator vs elevator
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
 \end_inset
 
-0.035/deg.
+0.032/deg.
  The drag is 
 \begin_inset Formula $C_{Ds}\approx\frac{1}{10}C_{Ls}$
 \end_inset
@@ -1966,7 +2016,7 @@ Lift slope: From NACA report 278 the lift slope of the stabilator vs elevator
 \end_inset
 
 .
- This is negligible in any case.
+ This is negligible compared to the other drags.
 \end_layout
 
 \begin_layout Standard
@@ -2050,18 +2100,36 @@ Winch effective mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20
 
 \begin_layout Standard
 Peak engine speed: USA 2nd gear: 1:1.52 transmission.
- Spider gear differential: 1:3 (triveshaft turrns faster, so in reality
+ Spider gear differential: 1:3.7 (driveshaft turrns faster than winch, so
  
-\begin_inset Formula $\omega_{w}$
+\begin_inset Formula $\omega_{at\,w}$
 \end_inset
 
-= 1/(3*1.5) 
-\begin_inset Formula $w_{w}=\frac{\omega_{TC}}{4.5}$
+= 1/(3.7*1.5).
+ 
+\begin_inset Formula $w_{at\,w}=\frac{\omega_{TC}}{5.5}$
 \end_inset
 
 .
- So when engine turns 4500 rpm (max power) the winch turns at 1000 rmp,
- x 1rad/sec/10rpm x 0.4m = 40m/s peak engine speed.
+ So when engine turns 4500 rpm (max power) the winch turns at 820 rmp, x
+ 1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
+ We should use gear 3: 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+ = 49 m/s...now get 80 vs 50% out of engine at max power.
+ If we had no differential, then in 3rd gear the winch (locking the TC).
+ It would have to have a rope speed of 180 m/2 to get the most power out
+ of the engine.
+ When we add the differential, then the rope speed would need to be 48 m/s
+ to match.
+ We have to have some slipping, so this would be the right ratio for the
+ most power.
+ If we use gear 2, then the peak speed becomes 33m/s, and again we have
+ to have some slippage so you can't get full power out of the engine in
+ gear 2.
+ But maybe we don't want to.
+ 
 \end_layout
 
 \end_body

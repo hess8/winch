@@ -145,7 +145,8 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.2             #  vertial distance (m) of rope attachment below CG
-        self.lo = 8000 * 0.305         #  initial rope length (m)
+#        self.lo = 8000 * 0.305         #  initial rope length (m)
+        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
         
@@ -176,8 +177,14 @@ class engine:
         self.Pmax = 750*self.hp        # engine watts
 #        self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
-        self.vpeak = 40   #  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
-                          # 4500rpm /4.5 (gear and differential) = 1000 rmp, x 1rad/sec/10rpm x 0.4m = 40m/s peak engine speed.
+
+#        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+
+        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+                          # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
+#        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+                          # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
+
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
@@ -349,7 +356,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 15      # end time for simulation
+tEnd = 40      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -436,16 +443,18 @@ plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
     #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
-yfinal = gData['y'][-1]
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
-
-
+# Comments to user
+yfinal = gData['y'][-1]  
+vyfinal  = gData['yD'][-1]  
+if vyfinal < 0.5: vyfinal = 0
 print 'Final height reached: {:5.1f} m, {:5.1f} ft.  Fraction of rope length: {:3.2f}'.format(yfinal,yfinal/0.305,yfinal/float(rp.lo))
+print 'Final vy: {:5.1f} m/s'.format(vyfinal)
 
-if abs(t[-1] - gl.data[ti.i]['t']) > dt:
-    print '\nWarning...The integrator had a harder time with this model.'
-    print 'In this run some of the time plots may have a time axis that is too short vs others.'
-    print 'Try making smoother controls.'
+if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
+    print '\nWarning...the integrator had a harder time with this model.'
+    print '\tIf some of the plots have a time axis that is too short vs others, '
+    print '\t...try making smoother controls.'
 
 print 'Done'
 
