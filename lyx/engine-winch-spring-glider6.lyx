@@ -1609,23 +1609,22 @@ The power delivered by the pistons is
  so the total energy delivered at each time is 
 \begin_inset Formula 
 \[
-E_{pist}(t)=S_{th}(t')P_{a}(t')dt'
+E_{pist}(t)=\intop_{o}^{t}S_{th}(t')\,P_{a}(t')dt'
 \]
 
 \end_inset
 
-.
- 
+
 \end_layout
 
 \begin_layout Standard
-The power delivered by the TC to the winch is
+The power delivered by the TC to the winch is:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-E_{winch}(t)=\intop_{o}^{t}F_{e,w}(t')v_{e}(t')dt'
+E_{winch}(t)=\intop_{o}^{t}F_{e,w}\,v_{e}dt'
 \]
 
 \end_inset
@@ -1634,13 +1633,13 @@ E_{winch}(t)=\intop_{o}^{t}F_{e,w}(t')v_{e}(t')dt'
 \end_layout
 
 \begin_layout Standard
-The power delivered by the winch to the glider is
+The power delivered by the winch to the glider is:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-E_{glider}(t)=\intop_{o}^{t}T(t')v_{gw}(t')dt'
+E_{glider}(t)=\intop_{o}^{t}T\,v_{gw}dt'
 \]
 
 \end_inset
@@ -1649,7 +1648,7 @@ E_{glider}(t)=\intop_{o}^{t}T(t')v_{gw}(t')dt'
 \end_layout
 
 \begin_layout Standard
-Finally the mechanical energy 
+Finally the mechanical energy is:
 \begin_inset Formula 
 \[
 E_{mech}=mgy+\frac{1}{2}mv^{2}+\frac{1}{2}I_{g}\dot{\theta}^{2}+\frac{1}{2}m_{e,w}v_{w}^{2}+\frac{1}{2}m_{e,e}v_{e}^{2}
@@ -1657,7 +1656,12 @@ E_{mech}=mgy+\frac{1}{2}mv^{2}+\frac{1}{2}I_{g}\dot{\theta}^{2}+\frac{1}{2}m_{e,
 
 \end_inset
 
+All the kinetic terms will be tiny compared to 
+\begin_inset Formula $mgy$
+\end_inset
 
+ at the end of the launch.
+ 
 \end_layout
 
 \begin_layout Standard

@@ -344,7 +344,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 40      # end time for simulation
+tEnd = 4      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
@@ -387,12 +387,16 @@ S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
 S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
 #Split S (now a matrix with state variables in columns and times in rows)
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
+
 #If yD drops below zero, the sim went too long.  Remove time points after that. 
-negyD = where(gl.yD < 0)[0]
-itr = negyD[0]-1 #ode solver index for release time
-t = t[:itr] #shorten
-negyDData = where(gl.data['yD']<0)[0]
-ti.i = negyDData[0] - 1  #data index for release time
+if min(gl.yD) < 0 :
+    negyD = where(gl.yD < 0)[0]
+    itr = negyD[0]-1 #ode solver index for release time
+    t = t[:itr] #shorten
+    negyDData = where(gl.data['yD']<0)[0]
+    ti.i = negyDData[0] - 1  #data index for release time
+else:
+    itr = len(t)
 
 # plot results
 tData = gl.data[:ti.i]['t']
