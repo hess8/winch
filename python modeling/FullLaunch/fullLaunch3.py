@@ -199,7 +199,7 @@ class operator:
         tRampUp = 4   #seconds
         tDown = 7
         tRampDown = 50
-        thrmax = .6  
+        thrmax = 1.0 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
