@@ -344,7 +344,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 4      # end time for simulation
+tEnd = 40      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
