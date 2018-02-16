@@ -775,8 +775,8 @@ The drag ratio
 \begin_inset Formula $Q=40,$
 \end_inset
 
- the ratio roughly the ratio doubles for an excursion of 1.5 degrees (0.025
- rad) about the normal flying angle of attack.
+ the drag ratio roughly doubles for an excursion of 1.5 degrees (0.025 rad)
+ about the normal flying angle of attack.
  
 \end_layout
 
@@ -794,10 +794,10 @@ The drag ratio
 
  in radians.
  Then we use the drag constant 
-\begin_inset Formula $40$
+\begin_inset Formula $d_{\alpha}\approx40$
 \end_inset
 
- and include a small drag coefficient for the elevator moment::
+ and also include a small drag coefficient for the elevator moment::
 \begin_inset Formula 
 \[
 D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
@@ -1609,55 +1609,59 @@ The power delivered by the pistons is
  so the total energy delivered at each time is 
 \begin_inset Formula 
 \[
-E_{pist}(t)=S_{th}(t')P_{a}(t')dt'
+E_{pist}(t)=\intop_{o}^{t}S_{th}(t')\,P_{a}(t')dt'
 \]
 
 \end_inset
 
-.
+
+\end_layout
+
+\begin_layout Standard
+The power delivered by the TC to the winch is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E_{winch}(t)=\intop_{o}^{t}F_{e,w}\,v_{e}dt'
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The power delivered by the winch to the glider is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E_{glider}(t)=\intop_{o}^{t}T\,v_{gw}dt'
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally the mechanical energy is:
+\begin_inset Formula 
+\[
+E_{mech}=mgy+\frac{1}{2}mv^{2}+\frac{1}{2}I_{g}\dot{\theta}^{2}+\frac{1}{2}m_{e,w}v_{w}^{2}+\frac{1}{2}m_{e,e}v_{e}^{2}
+\]
+
+\end_inset
+
+All the kinetic terms will be tiny compared to 
+\begin_inset Formula $mgy$
+\end_inset
+
+ at the end of the launch.
  
-\end_layout
-
-\begin_layout Standard
-The power delivered by the TC to the winch is
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-E_{winch}(t)=\intop_{o}^{t}F_{e,w}(t')v_{e}(t')dt'
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The power delivered by the winch to the glider is
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-E_{glider}(t)=\intop_{o}^{t}T(t')v_{gw}(t')dt'
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Finally the mechanical energy of the engine + glider is 
-\begin_inset Formula 
-\[
-E_{mech}=mgy+\frac{1}{2}mv^{2}+\frac{1}{2}I\dot{\theta^{2}+}
-\]
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
