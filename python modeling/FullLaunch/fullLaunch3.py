@@ -199,7 +199,7 @@ class operator:
         tRampUp = 4   #seconds
         tDown = 7
         tRampDown = 50
-        thrmax = .6  
+        thrmax = 1.0 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
@@ -236,7 +236,7 @@ class pilot:
             setpoint = self.setpoint
         var = gl.data[ctype]
         if ctype == 'v':
-            pp = 2; pd = 0; pint = 0
+            pp = 0; pd = 0; pint = 0
             var = var/gl.vb
             if gl.y < 1:
                 cGo = False
@@ -283,7 +283,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     gamma = arctan(gl.yD/gl.xD)  # climb angle.   
     alpha = gl.theta - gamma # angle of attack
     L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
-    D = L/float(gl.Q)*(1 + gl.Q*gl.dalpha*alpha**2) + gl.de*pl.Me #drag
+    D = L/float(gl.Q)*(1 + gl.Q*gl.dalpha*alpha**2)# + gl.de*pl.Me #drag
     if alpha > gl.alphas: #stall
         L = 0.75*L
         D = L/float(gl.Q)
@@ -328,7 +328,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
         gl.data[ti.i]['rptorq'] = ropetorq
-        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2 + en.me*en.v**2 + wi.me*wi.v**2) + gl.m  * g * gl.y 
+#        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2 + en.me*en.v**2 + wi.me*wi.v**2) + gl.m  * g * gl.y 
+        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
 #        if rp.T > 1000:
 #            print 'pause'
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + rp.T * vgw * (t-ti.oldt)
