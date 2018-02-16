@@ -131,7 +131,7 @@ class glider:
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
                                     ('v', float),('theta', float),('alpha', float),('L', float),\
-                                    ('D', float),('rptorq',float),('Edeliv',float),('Emech',float)])
+                                    ('D', float),('rptorq',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
         return
     
 class rope:
@@ -145,7 +145,7 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.2             #  vertial distance (m) of rope attachment below CG
-        self.lo = 1000           #  initial rope length (m)
+        self.lo = 8000 * 0.305         #  initial rope length (m)
         # state variables 
         self.T = 0
         
@@ -157,7 +157,7 @@ class winch:
         #state variables
         self.v = 0            # Rope uptake speed
         #data
-        self.data = zeros(ntime,dtype = [('Edeliv',float)])  #energy delivered to winch by TC
+        self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to winch by TC
 
 class torqconv:
      def __init__(self):
@@ -165,7 +165,7 @@ class torqconv:
          self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
          self.dw = 0.13
          #data
-         self.data = zeros(ntime,dtype = [('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
+         self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
      def invK(self,vrel):
          return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
@@ -185,7 +185,7 @@ class engine:
         self.v = 0            #engine effective speed (m/s)
         self.Few = 0           # effective force between engine and winch (could go in either engine or winch or in its own class)
          #data
-        self.data = zeros(ntime,dtype = [('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
+        self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
     
     def Pavail(self,ve):            # power curve
         vr = ve/float(self.vpeak)
@@ -198,8 +198,8 @@ class operator:
         return
     def control(self,t,gl,rp,wi,en):
         tRampUp = 4   #seconds
-        tDown = 7
-        tRampDown = 50
+        tDown = tRampUp + 3
+        tRampDown = 80
         thrmax = 1.0 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
@@ -333,9 +333,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
 #        if rp.T > 1000:
 #            print 'pause'
-        gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + rp.T * vgw * (t-ti.oldt)
-        wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + Few * wi.v * (t-ti.oldt)
-        en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + op.Sth * en.Pavail(en.v) * (t-ti.oldt)
+        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
+        gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+        wi.data[ti.i]['Pdeliv'] = Few * wi.v
+        wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+        en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)         
+        en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         op.data[ti.i]['t']   = t
         op.data[ti.i]['Sth'] = op.Sth
         
@@ -346,10 +349,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 40      # end time for simulation
+tEnd = 15      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
-#path = 'D:\\Winch launch physics\\results\\v control Grob USA winch'  #for saving plots
+#path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
 
@@ -424,20 +427,25 @@ Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
 plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
    #glider speed and angles
-plts.xy([tData,tData,tData,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA'],'Glider velocities and angles')
+plts.xy([tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr]],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)'],'Glider velocities and angles')
    #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
     #Engine and winch
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
-    #Energy
+    #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
+yfinal = gData['y'][-1]
+plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
+
+
+print 'Final height reached: {:5.1f} m, {:5.1f} ft.  Fraction of rope length: {:3.2f}'.format(yfinal,yfinal/0.305,yfinal/float(rp.lo))
 
 if abs(t[-1] - gl.data[ti.i]['t']) > dt:
-    print 'Warning...The integrator had a hard time with this model.'
-    print 'In this run some of the time plots probably have a time axis that is too short vs others.'
-    print '!!!!!!!!! Try making smoother controls'
+    print '\nWarning...The integrator had a harder time with this model.'
+    print 'In this run some of the time plots may have a time axis that is too short vs others.'
+    print 'Try making smoother controls.'
 
 print 'Done'
 
