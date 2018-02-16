@@ -775,8 +775,8 @@ The drag ratio
 \begin_inset Formula $Q=40,$
 \end_inset
 
- the ratio roughly the ratio doubles for an excursion of 1.5 degrees (0.025
- rad) about the normal flying angle of attack.
+ the drag ratio roughly doubles for an excursion of 1.5 degrees (0.025 rad)
+ about the normal flying angle of attack.
  
 \end_layout
 
@@ -794,10 +794,10 @@ The drag ratio
 
  in radians.
  Then we use the drag constant 
-\begin_inset Formula $40$
+\begin_inset Formula $d_{\alpha}\approx40$
 \end_inset
 
- and include a small drag coefficient for the elevator moment::
+ and also include a small drag coefficient for the elevator moment::
 \begin_inset Formula 
 \[
 D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
@@ -2016,6 +2016,10 @@ m/rad.
 \end_inset
 
 m, which is not too different.
+\end_layout
+
+\begin_layout Standard
+Torque capacity factor GM 350 transmission : K = 140 = rpm/
 \end_layout
 
 \end_body
