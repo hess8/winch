@@ -232,19 +232,22 @@ class pilot:
         cGo = True
         if '' in control:        
             cGo = False
-        if len(self.ctrltype)>1:  # We have two types of control
-            angleSwitch = self.setpoint[2]
-            gamma = arctan(gl.yD/gl.xD)*180/pi
-            if gamma < angleSwitch:
-                ctype = self.ctrltype[0]
-                setpoint = self.setpoint[0]
-            else:
-                ctype = self.ctrltype[1]
-                setpoint = self.setpoint[1]                
+            ctype = ''
         else:
-            ctype = self.ctrltype
-            setpoint = self.setpoint
-        var = gl.data[ctype]
+            if len(self.ctrltype)>1:  # We have two types of control
+                angleSwitch = self.setpoint[2]
+                gamma = arctan(gl.yD/gl.xD)*180/pi
+                if gamma < angleSwitch:
+                    ctype = self.ctrltype[0]
+                    setpoint = self.setpoint[0]
+                    var = gl.data[ctype]
+                else:
+                    ctype = self.ctrltype[1]
+                    setpoint = self.setpoint[1]                
+                    var = gl.data[ctype]
+            else:
+                ctype = self.ctrltype
+                setpoint = self.setpoint  
         if ctype == 'v':
             pp = 0; pd = 0; pint = 0
             var = var/gl.vb
@@ -365,8 +368,8 @@ path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
-
-control = ['alpha','v']
+control = ['','']
+#control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
 setpoint = [2*pi/180  , 35, 60]  #last one is climb angle to transition to final control
 
