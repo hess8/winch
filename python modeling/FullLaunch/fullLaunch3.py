@@ -115,10 +115,13 @@ class glider:
         Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
+        self.ls = 4           #distance(m) between cg and stabilizer center        
         self.palpha = 1.8 * self.W        #   change in air-glider pitch moment (/rad) with angle of attack 
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
+        #logic
+        self.onGnd = True
 
         # state variables 
         self.x = 0
@@ -130,7 +133,7 @@ class glider:
         
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('v', float),('theta', float),('alpha', float),('L', float),('Malpha',float),\
+                                    ('v', float),('theta', float),('thetaDD', float),('alpha', float),('L', float),('Malpha',float),\
                                     ('D', float),('rptorq',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
         return
     
@@ -222,13 +225,15 @@ class pilot:
         self.err = 0
         self.ctrltype = ctrltype
         self.setpoint = setpoint
+        self.pitchOscDamp = False
+        self.reachPeakyD = False
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         return
         
     def control(self,t,ti,gl): 
         setpoint = 0.0
         tint = 0.5 #sec
-        Nint = ceil(tint/ti.dt)        
+        Nint = ceil(tint/ti.dt) 
         cGo = True
         if '' in control:        
             cGo = False
@@ -257,20 +262,33 @@ class pilot:
             pp = -100; pd = -20; pint = -40
         time = gl.data['t']
         if cGo: 
-            #Find the error properties
+            # Find the error properties
             err = (var[ti.i] - setpoint)
             self.err = err
-            #for the derivative, take the last two time steps
+            # for the derivative, take the last two time steps
             if ti.i >= 2:  
                 derr = (var[ti.i] - var[ti.i-2])/(time[ti.i]- time[ti.i-2]) 
             else:
                 derr = 0
-            #for the integral, last Nint average
+            # for the integral, last Nint average
             if ti.i >= Nint:            
                 interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
+            # phugoid damping
+            pthetaDD = -.4          
+            if not self.pitchOscDamp and gl.y > 1.0 and gl.thetaD < 0:  #reached peak pitch
+                self.pitchOscDamp = True #turns on, stays on 
+                print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
+            if self.pitchOscDamp:  #phugoid damping
+                MePhug = pthetaDD * gl.data[ti.i]['thetaDD'] *gl.I
+#                print 'test'
+            else:
+                MePhug = 0
+#            print 'damping, MeP',self.pitchOscDamp,
+            # elevator moment:
+            self.Me =  MePhug + gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
+                        
             pl.data[ti.i]['t'] = t #store error
             pl.data[ti.i]['err'] = err
             pl.data[ti.i]['Me'] = self.Me
@@ -284,6 +302,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
         en.v = 1e-6 #to handle v = 0 initial
+
     #----algebraic functions----#
     # Update controls
     op.control(t,gl,rp,wi,en) 
@@ -312,14 +331,15 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotx = gl.xD    
     dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - D*cos(gamma) - L*sin(gamma)) #x acceleration
     doty = gl.yD
-    if gl.y < 1.0 and L < gl.W: #on ground 
+    gl.onGnd = gl.y < 1.0 and L < gl.W #on ground 
+    if gl.onGnd:  
         dotyD = 0 
         dottheta = 0
         dotthetaD = 0
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
         dottheta = gl.thetaD    
-        dotthetaD = 1/float(gl.I) * (ropetorq + M)    
+        dotthetaD = 1/float(gl.I) * (ropetorq + M) 
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -337,6 +357,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['yD'] = gl.yD
         gl.data[ti.i]['v']  = v
         gl.data[ti.i]['theta']  = gl.theta
+        gl.data[ti.i]['thetaDD']  = dotthetaD
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
@@ -368,8 +389,8 @@ path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
-control = ['','']
-#control = ['alpha','v']
+#control = ['','']
+control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
 setpoint = [2*pi/180  , 35, 60]  #last one is climb angle to transition to final control
 
@@ -438,17 +459,18 @@ vrel =wi.v/en.v
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 #plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
 #plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
-   #glider speed and angles
+
+#glider speed and angles
 plts.xy([tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr]],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)'],'Glider velocities and angles')
-   #lift,drag,forces
+#lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
-   #torques
-plts.xy([tData],[gData['rptorq'],gData['Malpha'],100*pData['err'],pData['Me']],'time (sec)','Torque (Nm)',['rope','alpha','errorx100 (rad/s)','elevator'],'Torques')
-    #Engine and winch
+#torques
+plts.xy([tData],[gData['rptorq'],gData['Malpha'],pData['Me']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator'],'Torques')
+#Engine and winch
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
-    #Energy,Power
+#Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
 # Comments to user
