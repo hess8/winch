@@ -276,7 +276,7 @@ class pilot:
             else:
                 interr = 0
             # phugoid damping
-            pvD = 2
+            pvD = 8
             if not self.pitchOscDamp and gl.y > 1.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
 #            if not self.pitchOscDamp and gl.y > 1.0 and gl.thetaD < 0:  #reached peak pitch
                 self.pitchOscDamp = True #turns on, stays on 
