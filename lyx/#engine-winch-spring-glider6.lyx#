@@ -609,7 +609,7 @@ The angle of attack of the glider
 \begin_inset Formula $\gamma$
 \end_inset
 
- (above the horizon):
+ (above the horizon); using radians:
 \end_layout
 
 \begin_layout Standard
@@ -628,10 +628,6 @@ The angle of attack of the glider
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 The winch is a distance 
 \begin_inset Formula $l_{o}$
 \end_inset
@@ -809,7 +805,7 @@ D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
 \end_layout
 
 \begin_layout Standard
-From Newton's third law using our dimensionless forces and velocities: 
+From Newton's second law: 
 \end_layout
 
 \begin_layout Standard
@@ -973,7 +969,7 @@ v_{w}=r_{drum}\omega_{w}
 \end_inset
 
  on the winch, and the rope creates a negative torque.
- Newton's third law for a rotating object is 
+ Newton's second law for a rotating object is 
 \begin_inset Formula 
 \begin{equation}
 I_{w}\dot{\omega}_{w}=\tau_{w}-r_{w}T\label{eq:winch angle diffeq}
@@ -1291,7 +1287,7 @@ A typical automotive torque converter (TC) in a hydraulic transmission has
 \begin_inset Formula $\omega_{rel}=\omega_{w}/\omega_{eng}$
 \end_inset
 
- is the speed ratio.
+ is the speed ratio or relative speed.
  The torque applied by the engine to the TC  impeller is 
 \begin_inset Formula $\tau_{out,eng}$
 \end_inset
@@ -1597,7 +1593,7 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
  
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 Power flow
 \end_layout
 
@@ -1694,6 +1690,60 @@ The targets and
 \end_inset
 
 's can change during the flight.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Elevator
+\end_layout
+
+\begin_layout Standard
+The elevator is part of the horizontal 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ whose lift changes with the angle of the elevator: 
+\begin_inset Formula $L_{s}=\frac{1}{2}\rho SC_{Ls}v^{2}$
+\end_inset
+
+= 
+\begin_inset Formula $L\frac{C_{Ls}}{C_{Lw}}\frac{S_{w}}{S_{w}}$
+\end_inset
+
+.
+ Because we have already trimmed the glider, we are interested only in the
+ change with elevator deflection 
+\begin_inset Formula $\delta_{e}$
+\end_inset
+
+: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\,C_{Ls,\delta_{e}}=\frac{\partial C_{Ls}}{\partial\delta_{e}}$
+\end_inset
+
+ , and 
+\begin_inset Formula $C_{L_{w}}(\alpha)$
+\end_inset
+
+ is the wing lift coefficient.
  
 \end_layout
 
@@ -1935,12 +1985,12 @@ kgm
 \end_layout
 
 \begin_layout Standard
-From NACA report 278 the lift slope of the stabilator vs elevator deflection
- is 
+Lift slope: From NACA report 278 the lift slope of the stabilator vs elevator
+ deflection is 
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
 \end_inset
 
-0.035/deg.
+0.032/deg.
  The drag is 
 \begin_inset Formula $C_{Ds}\approx\frac{1}{10}C_{Ls}$
 \end_inset
@@ -1966,15 +2016,11 @@ From NACA report 278 the lift slope of the stabilator vs elevator deflection
 \end_inset
 
 .
- This is 
+ This is negligible compared to the other drags.
 \end_layout
 
 \begin_layout Standard
-Check on 
-\begin_inset Formula $p_{\alpha}$
-\end_inset
-
-with fuselage included: From xflyr5 model: 
+Moment slope: From xflyr5 model: 
 \begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
 \end_inset
 
@@ -2015,11 +2061,98 @@ m/rad.
 \begin_inset Formula $p_{\alpha}\approx3W$
 \end_inset
 
-m, which is not too different.
+m, which is not too different (last time I used chord = 1)
 \end_layout
 
 \begin_layout Standard
-Torque capacity factor GM 350 transmission : K = 140 = rpm/
+Torque capacity factor: GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142
+ rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 13 rad/s/(Nm)
+\begin_inset Formula $^{\frac{1}{2}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Winch effective mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ R = 15 in = 0.4m.
+ Add 1500m of Spectra rope at about 20g/m at r=0.4m.
+ 
+\begin_inset Formula $I_{tot}=20$
+\end_inset
+
++30(.16)= 40
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $M_{eq}=40kgm^{2}/.16$
+\end_inset
+
+= 250 kg.
+ Ratio vs grob: 250/600 = 0.4
+\end_layout
+
+\begin_layout Standard
+Peak engine speed: USA 2nd gear: 1:1.52 transmission.
+ Spider gear differential: 1:3.7 (driveshaft turrns faster than winch, so
+ 
+\begin_inset Formula $\omega_{at\,w}$
+\end_inset
+
+= 1/(3.7*1.5).
+ 
+\begin_inset Formula $w_{at\,w}=\frac{\omega_{TC}}{5.5}$
+\end_inset
+
+.
+ So when engine turns 4500 rpm (max power) the winch turns at 820 rmp, x
+ 1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
+ We should use gear 3: 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+ = 49 m/s...now get 80 vs 50% out of engine at max power.
+ If we had no differential, then in 3rd gear the winch (locking the TC).
+ It would have to have a rope speed of 180 m/2 to get the most power out
+ of the engine.
+ When we add the differential, then the rope speed would need to be 48 m/s
+ to match.
+ We have to have some slipping, so this would be the right ratio for the
+ most power.
+ If we use gear 2, then the peak speed becomes 33m/s, and again we have
+ to have some slippage so you can't get full power out of the engine in
+ gear 2.
+ But maybe we don't want to.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Notes on vpeak tests 
+\end_layout
+
+\begin_layout Standard
+Notes on this test: having a and b close to zero and a higher vpeak than
+ normal seems to give the dynamic behavior I see hands off.
+ But the height is too large It will rotate without any rope torque because
+ vy is increasing and theta corrects for alpa not equal to zero.
+ 
+\end_layout
+
+\begin_layout Standard
+Remember the glider picks its tail up without any input from the pilot.
+ So the rope torque even at full power (tension) is less than the wing and
+ tail negative moment for that initial AoA The wheel is forward of the CG.
+ 
+\end_layout
+
+\begin_layout Standard
+WHY DIDN'T CHANGING PALPHA CHANGE THE ROPE PITCHING EFFECT????
 \end_layout
 
 \end_body

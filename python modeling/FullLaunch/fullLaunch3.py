@@ -116,8 +116,8 @@ class glider:
         self.Lalpha = 2*pi*self.W/Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.palpha = 3.0        #   change in air-glider pitch moment (/rad) with angle of attack 
-        self.dv = 3.0            #   drag constant ()for speed varying away from vb
-        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
+        self.dv = 1.8 * self.W           #   drag constant ()for speed varying away from vb
+        self.dalpha = 40       #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
 
         # state variables 
@@ -130,7 +130,7 @@ class glider:
         
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('v', float),('theta', float),('alpha', float),('L', float),\
+                                    ('v', float),('theta', float),('alpha', float),('L', float),('Malpha',float),\
                                     ('D', float),('rptorq',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
         return
     
@@ -143,8 +143,8 @@ class rope:
                                  #  effective Young's modulus 30 GPa for rope from Dyneema
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
-        self.a = 0.01             #  horizontal distance (m) of rope attachment in front of CG
-        self.b = 0.01             #  vertial distance (m) of rope attachment below CG
+        self.a = 0.3             #  horizontal distance (m) of rope attachment in front of CG
+        self.b = 0.2            #  vertial distance (m) of rope attachment below CG
         self.lo = 8000 * 0.305         #  initial rope length (m)
 #        self.lo = 1000         #  initial rope length (m)
         # state variables 
@@ -180,11 +180,11 @@ class engine:
 
 #        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
 
-#        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
 #        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
-        self.vpeak = 40   #  arbitrary to fit glider behavior...adjust this and rp.b
+#        self.vpeak = 50   #  arbitrary to fit glider behavior...adjust this and rp.b,a
 
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
@@ -205,7 +205,7 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
-        tRampUp = 2  #seconds
+        tRampUp = 1  #seconds
         tHold = 20
         tDown = tRampUp + tHold
         tRampDown = 60
@@ -231,7 +231,8 @@ class pilot:
         tint = 0.5 #sec
         Nint = ceil(tint/ti.dt)        
         
-        cGo = True
+        if '' in control:        
+            cGo = False
         if len(self.ctrltype)>1:  # We have two types of control
             angleSwitch = self.setpoint[2]
             gamma = arctan(gl.yD/gl.xD)*180/pi
@@ -253,7 +254,7 @@ class pilot:
         elif ctype =='alpha':
             pp = -100; pd = -20; pint = -40
         time = gl.data['t']
-        if ctype != '' and cGo: 
+        if cGo: 
             #Find the error properties
             err = (var[ti.i] - setpoint)
             self.err = err
@@ -267,8 +268,7 @@ class pilot:
                 interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = 0
-#            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
+            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
             pl.data[ti.i]['t'] = t #store error
             pl.data[ti.i]['err'] = err
             pl.data[ti.i]['Me'] = self.Me
@@ -298,6 +298,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if alpha > gl.alphas: #stall
         L = 0.75*L
         D = L/float(gl.Q)
+    if alpha > 10/60.:
+        print 'pause'
     M = (-gl.palpha*alpha + pl.Me) #torque of air on glider
     ropetorq = rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) #torque of rope on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
@@ -338,6 +340,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
+        gl.data[ti.i]['Malpha']  = -gl.palpha*alpha
         gl.data[ti.i]['rptorq'] = ropetorq
 #        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2 + en.me*en.v**2 + wi.me*wi.v**2) + gl.m  * g * gl.y 
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
@@ -365,8 +368,8 @@ path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = 'alpha'  # Use '' for none
 #setpoint = 2*pi/180   #alpha, 2 degrees
-
-control = ['alpha','v']
+control = ['']
+#control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
 setpoint = [0*pi/180  , 35, 60]  #last one is climb angle to transition to final control
 
@@ -429,8 +432,8 @@ gamma = arctan(gl.yD[:itr]/gl.xD[:itr])
 alpha = gl.theta[:itr] - gamma  
 plts.xy([t],[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
 plts.xy([t],[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-plts.xy([tData],[gData['L']/gl.W,10*gData['D']/gl.W],'time (sec)','Force/W',['lift','drag x 10'],'Aerodynamic forces')
-plts.xy([tData],[gData['rptorq']],'time (sec)','Torque (Nm) ',['torque','drag x 10'],'Rope torque on glider')
+plts.xy([tData],[gData['L']/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
+plts.xy([tData],[gData['rptorq'],gData['Malpha']],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
 plts.xy([tData],[100*pData['err'],pData['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
@@ -461,7 +464,6 @@ if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
     print '\tIf some of the plots have a time axis that is too short vs others, '
     print '\t...try making smoother controls.'
 
-print 'Done'
 
 
 

@@ -2132,5 +2132,28 @@ Peak engine speed: USA 2nd gear: 1:1.52 transmission.
  
 \end_layout
 
+\begin_layout Subsection*
+Notes on vpeak tests 
+\end_layout
+
+\begin_layout Standard
+Notes on this test: having a and b close to zero and a higher vpeak than
+ normal seems to give the dynamic behavior I see hands off.
+ But the height is too large It will rotate without any rope torque because
+ vy is increasing and theta corrects for alpa not equal to zero.
+ 
+\end_layout
+
+\begin_layout Standard
+Remember the glider picks its tail up without any input from the pilot.
+ So the rope torque even at full power (tension) is less than the wing and
+ tail negative moment for that initial AoA The wheel is forward of the CG.
+ 
+\end_layout
+
+\begin_layout Standard
+WHY DIDN'T CHANGING PALPHA CHANGE THE ROPE PITCHING EFFECT????
+\end_layout
+
 \end_body
 \end_document
