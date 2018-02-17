@@ -204,7 +204,7 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
-        tRampUp = 1  #seconds
+        tRampUp = 2  #seconds
         tHold = 20
         tDown = tRampUp + tHold
         tRampDown = 60
