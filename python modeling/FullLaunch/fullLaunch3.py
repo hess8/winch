@@ -63,6 +63,25 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
     S[7] = wi.v
     S[8] = en.v     
     return S
+    
+def pid(var,time,setpoint,c,j,Nint):
+    '''The array c contains the [p,i,d] coefficients'''
+    # Find the error properties
+    err = (var[j] - setpoint)
+    # for the derivative, use the last two time steps
+    if j >= 2:  
+        derr = (var[j] - var[j-2])/(time[j]- time[j-2]) 
+    else:
+        derr = 0
+    # for the integral, last Nint average
+    if j >= Nint:            
+        interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
+    else:
+        interr = 0
+    return c[0]*err + c[1]*derr + c[2]*interr
+        
+
+
 
 class plots:
     def __init__(self,path):
@@ -225,8 +244,7 @@ class pilot:
         self.err = 0
         self.ctrltype = ctrltype
         self.setpoint = setpoint
-        self.pitchOscDamp = False
-        self.reachPeakyD = False
+        self.vDdamp = False
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         return
         
@@ -236,24 +254,23 @@ class pilot:
         Nint = ceil(tint/ti.dt) 
         cGo = True
         if '' in control:        
-            cGo = False
             ctype = ''
         else:
-            if len(self.ctrltype)>1:  # We have two types of control
-                angleSwitch = self.setpoint[2]
-                gamma = arctan(gl.yD/gl.xD)*180/pi
-                if gamma < angleSwitch:
-                    ctype = self.ctrltype[0]
-                    setpoint = self.setpoint[0]
-                    var = gl.data[ctype]
-                else:
-                    ctype = self.ctrltype[1]
-                    setpoint = self.setpoint[1]                
-                    var = gl.data[ctype]
-            else:
-                ctype = self.ctrltype
-                setpoint = self.setpoint  
-        if ctype == 'v':
+            self.Me = 0 
+            for ic,ctype in enumerate(control): #Each control has separate logic 
+                setpoint = self.setpoint[ic]
+                if ctype == 'vDdamp': # speed derivative control only (= phugoid damping)
+                    pvD = 8
+                    if not self.vDdamp and gl.y > 1.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
+                        self.vDdamp = True #turns on, stays on 
+                        print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
+                    if self.vDdamp:  
+                        self.Me += pvD * gl.data[ti.i]['vD'] *gl.I 
+                elif ctype == 'v': #target v with setpoint
+                    v = gl.data['v']
+                elif ctype == 'alpha':
+                    al = gl.data['alpha']
+                    
             pp = 0; pd = 0; pint = 0
             var = var/gl.vb
             if gl.y < 1:
@@ -262,31 +279,11 @@ class pilot:
             pp = -100; pd = -20; pint = -40
         time = gl.data['t']
         if cGo: 
-            # Find the error properties
-            err = (var[ti.i] - setpoint)
-            self.err = err
-            # for the derivative, take the last two time steps
-            if ti.i >= 2:  
-                derr = (var[ti.i] - var[ti.i-2])/(time[ti.i]- time[ti.i-2]) 
-            else:
-                derr = 0
-            # for the integral, last Nint average
-            if ti.i >= Nint:            
-                interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
-            else:
-                interr = 0
-            # phugoid damping
-            pvD = 8
-            if not self.pitchOscDamp and gl.y > 1.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
-#            if not self.pitchOscDamp and gl.y > 1.0 and gl.thetaD < 0:  #reached peak pitch
-                self.pitchOscDamp = True #turns on, stays on 
-                print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
-            if self.pitchOscDamp:  #phugoid damping
-                MePhug = pvD * gl.data[ti.i]['vD'] *gl.I
+           
 #                print 'test'
             else:
                 MePhug = 0
-#            print 'damping, MeP',self.pitchOscDamp,
+#            print 'damping, MeP',self.vDdamp,
             # elevator moment:
             self.Me =  MePhug + gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
                         
