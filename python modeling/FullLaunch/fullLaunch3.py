@@ -144,7 +144,7 @@ class rope:
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
-        self.b = 0.2             #  vertial distance (m) of rope attachment below CG
+        self.b = 0.1             #  vertial distance (m) of rope attachment below CG
         self.lo = 8000 * 0.305         #  initial rope length (m)
 #        self.lo = 1000         #  initial rope length (m)
         # state variables 
@@ -204,9 +204,10 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
-        tRampUp = 3   #seconds
-        tDown = tRampUp + 3
-        tRampDown = 80
+        tRampUp = 2  #seconds
+        tHold = 20
+        tDown = tRampUp + tHold
+        tRampDown = 60
         thrmax = 1.0 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
@@ -265,7 +266,8 @@ class pilot:
                 interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
+            self.Me = 0
+#            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
             pl.data[ti.i]['t'] = t #store error
             pl.data[ti.i]['err'] = err
             pl.data[ti.i]['Me'] = self.Me
@@ -356,7 +358,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 15      # end time for simulation
+tEnd = 90      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -448,7 +450,9 @@ plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']
 yfinal = gData['y'][-1]  
 vyfinal  = gData['yD'][-1]
 if vyfinal < 0.5: vyfinal = 0
-print 'Final height reached: {:5.1f} m, {:5.1f} ft.  Fraction of rope length: {:3.2f}'.format(yfinal,yfinal/0.305,yfinal/float(rp.lo))
+print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
+print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
+print 'Maximum Tension factor: {:3.2f}'.format(max(rp.T[:itr]/gl.W))
 print 'Final vy: {:5.1f} m/s'.format(vyfinal)
 
 if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:

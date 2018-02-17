@@ -437,12 +437,12 @@ I_{g}\ddot{\theta}=\tau_{rope,glider}+M\label{eq:theta diffeq}
 \end_layout
 
 \begin_layout Section
-Constant Speed Rotation
+Constant Speed Circular path control
 \end_layout
 
 \begin_layout Standard
 There are many paths the glider can take while connected to the winch and
- keeping a constant speed if the lift and tension are adjusted accordingly.
+ keeping a reasonable speed if the lift and tension are adjusted accordingly.
  Here we explore a circular path of radius R.
  
 \end_layout
@@ -496,9 +496,31 @@ Tcos(\gamma+\theta_{r})-Wsin\gamma-D=0
 \end_layout
 
 \begin_layout Standard
-D is usually small vs W, so T goes from essentially from zero to W at the
- end of the rotation (note: we will see that for a 40:1 glider the drag
- increases by only 10% during the maneuver).
+We Instead of dealing with the radius 
+\begin_inset Formula $R$
+\end_inset
+
+, we simply write 
+\begin_inset Formula $\gamma(t)$
+\end_inset
+
+ in terms of 
+\bar under
+how long 
+\begin_inset Formula $t_{r}$
+\end_inset
+
+ 
+\bar default
+that it takes to complete the rotation: 
+\begin_inset Formula 
+\[
+\gamma=\gamma_{max}\frac{t}{t_{r}}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -511,17 +533,107 @@ very long rope
 \end_inset
 
  during rotation.
- We imagine the operator or a computer controls the rope tension so that
- 
+ We imagine the operator or a computer controls the rope tension so that:
 \begin_inset Formula 
 \[
-T=Wtan\gamma+\frac{D}{cos\gamma}.
+T=T_{o}+Wtan\left(\gamma_{max}\frac{t}{t_{r}}\right)
 \]
 
 \end_inset
 
-The pilot simply reacts to this with the elevator to keep the velocity constant.
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $T_{o}\approx D$
+\end_inset
+
+, a small force compared to 
+\begin_inset Formula $W.$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The pilot simply reacts to this with the elevator to keep the velocity roughly
+ constant.
+ This looks hard mathematically, but it's natural for the pilot.
  
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L=Wcos\gamma+Tsin\gamma+m\frac{v^{2}}{R}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If we write the tension factor 
+\begin_inset Formula $\hat{T}=\frac{T}{W}$
+\end_inset
+
+ and combine it 
+\begin_inset Formula $m\frac{v^{2}}{R}$
+\end_inset
+
+ into the load factor 
+\begin_inset Formula $n$
+\end_inset
+
+, and write 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L=nW
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+n=cos\gamma+\hat{T}sin\gamma+\frac{v^{2}}{gR}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, we know that 
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Formula $R=\frac{t_{r}v}{\gamma_{max}}$
+\end_inset
+
+ , so 
+\begin_inset Formula 
+\begin{equation}
+n=cos\gamma+\hat{T}sin\gamma+\gamma_{max}\frac{v}{gt_{r}}\label{eq:n factor-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Example
 \end_layout
 
 \begin_layout Standard
@@ -529,60 +641,129 @@ Imagine a rotation from
 \begin_inset Formula $\gamma_{i}=0$
 \end_inset
 
- to a final (climb) angle 
+ to a final (climb) angle of 
 \begin_inset Formula $\gamma_{f}=45$
 \end_inset
 
- degrees.
- Then the tension ramps up from 
-\begin_inset Formula $T=D$
+ degrees or 
+\begin_inset Formula $\pi/4$
 \end_inset
 
- at the beginning of the rotation, to 
-\begin_inset Formula $T=W+\sqrt{2}D$
-\end_inset
-
- at the end.
- The lift will increase from 
-\begin_inset Formula $L=W$
-\end_inset
-
- at the beginning to 
-\begin_inset Formula $L=\sqrt{2}\text{\ensuremath{W} at the end, an increase of only 40\%. }$
-\end_inset
-
-The glider usually starts with an angle of attack of 2 degrees vs the wing
- chord, so the AoA change will be less than one degree, and the glider stays
- far from stall (which occurs at 8-10 degreesfrom the wing chord.
- ) 
+ radians.
+ 
 \end_layout
 
 \begin_layout Standard
-How does the operator acheive this tension profile.
- If the pilot does his part, then the computer can start this increase at
- any time, and 
-\begin_inset Formula $\gamma(t)$
+The tension in any variation ramps up from 
+\begin_inset Formula $T\approx D$
 \end_inset
 
- is known from the rope speed (which will be the same as the glider speed.
+ at the beginning of the rotation, to 
+\begin_inset Formula $T\approx W$
+\end_inset
+
+ at the end.
  
-\begin_inset Formula $\gamma=\frac{4v}{\pi R}t$
+\end_layout
+
+\begin_layout Standard
+Let's choose 
+\begin_inset Formula $t_{r}=$
 \end_inset
 
-.
- Then the computer will excecute
-\begin_inset Formula 
-\[
-T=Wtan\left(\frac{4v}{\pi R}t\right)
-\]
+ 4.5 sec, so that we're taking the minimum time that the BGA suggests to
+ complete (10 deg/sec), and assume 
+\begin_inset Formula $v=$
+\end_inset
+
+30m/s.
+ Then the last term in Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:n factor-1"
 
 \end_inset
 
-until 
-\begin_inset Formula $T=W$
+ becomes 
+\begin_inset Formula $\frac{\pi}{4}\frac{v}{gt_{r}}$
 \end_inset
 
-.
+= 0.6.
+ At the beginning of the rotation 
+\begin_inset Formula $n$
+\end_inset
+
+=1.6, and at the end (when 
+\begin_inset Formula $\hat{T}$
+\end_inset
+
+= 1) 
+\begin_inset Formula $n=\sqrt{2}+0.6$
+\end_inset
+
+= 2.0.
+ So 
+\begin_inset Formula $L$
+\end_inset
+
+ ranges from 
+\begin_inset Formula $1.6W$
+\end_inset
+
+ to 
+\begin_inset Formula $2.0W$
+\end_inset
+
+,, a small variation over 4.5 seconds.
+ We're at most picking up an extra 0.6 g from the turn itself.
+ The 0.4 increase during the rotation is because 
+\begin_inset Formula $L$
+\end_inset
+
+ has to counteract some of the rope tension as the angle increases.
+ 
+\end_layout
+
+\begin_layout Standard
+To fly at without rotation (
+\begin_inset Formula $L=W)$
+\end_inset
+
+ the glider wing has an angle of attack of 2 deg.
+ To start the rotation, we need 0.6W more in lift: If we stay at 
+\begin_inset Formula $v=v_{b}$
+\end_inset
+
+: 
+\begin_inset Formula $\Delta L=\frac{2\pi}{C_{o}}\Delta\alpha$
+\end_inset
+
+, we get 
+\begin_inset Formula $\Delta\alpha=4.5$
+\end_inset
+
+ degrees.
+ So this puts us at 6.5 vs the wing chord, too close to stall.
+ SO THIS IS NOT PRACTICAL.
+ IF WE WANT TO STAY AT LOW AOA, WE HAVE TO INCREASE SPEED.
+ We can start the rotation at a higher speed, but need a speed of 
+\begin_inset Formula $\sqrt{2}v_{b}$
+\end_inset
+
+ if want to keep AOA the same.
+ 
+\end_layout
+
+\begin_layout Section
+Relation to contant angle of attack control
+\end_layout
+
+\begin_layout Standard
+Any tension control scheme that keeps 
+\begin_inset Formula $v$
+\end_inset
+
+ under control (less than 30% increase) will share features with this method.
  
 \end_layout
 
