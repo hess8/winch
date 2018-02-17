@@ -133,7 +133,7 @@ class glider:
         
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('v', float),('theta', float),('thetaDD', float),('alpha', float),('L', float),('Malpha',float),\
+                                    ('v', float),('theta', float),('yDD', float),('alpha', float),('L', float),('Malpha',float),\
                                     ('D', float),('rptorq',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
         return
     
@@ -276,12 +276,12 @@ class pilot:
             else:
                 interr = 0
             # phugoid damping
-            pthetaDD = -.4          
-            if not self.pitchOscDamp and gl.y > 1.0 and gl.thetaD < 0:  #reached peak pitch
+            pyDD = -1          
+            if not self.pitchOscDamp and gl.y > 1.0 and gl.yD < 0:  #reached peak pitch
                 self.pitchOscDamp = True #turns on, stays on 
                 print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
             if self.pitchOscDamp:  #phugoid damping
-                MePhug = pthetaDD * gl.data[ti.i]['thetaDD'] *gl.I
+                MePhug = pyDD * gl.data[ti.i]['yDD'] *gl.I
 #                print 'test'
             else:
                 MePhug = 0
@@ -357,7 +357,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['yD'] = gl.yD
         gl.data[ti.i]['v']  = v
         gl.data[ti.i]['theta']  = gl.theta
-        gl.data[ti.i]['thetaDD']  = dotthetaD
+        gl.data[ti.i]['yDD']  = dotyD
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
