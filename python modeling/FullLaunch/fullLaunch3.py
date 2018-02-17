@@ -266,8 +266,7 @@ class pilot:
                 interr = sum(var[ti.i-Nint : ti.i])/(Nint + 1) - setpoint
             else:
                 interr = 0
-            self.Me = 0
-#            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
+            self.Me = gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
             pl.data[ti.i]['t'] = t #store error
             pl.data[ti.i]['err'] = err
             pl.data[ti.i]['Me'] = self.Me
