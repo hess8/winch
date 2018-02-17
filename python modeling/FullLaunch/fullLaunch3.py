@@ -143,8 +143,8 @@ class rope:
                                  #  effective Young's modulus 30 GPa for rope from Dyneema
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
-        self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
-        self.b = 0.1             #  vertial distance (m) of rope attachment below CG
+        self.a = 0.01             #  horizontal distance (m) of rope attachment in front of CG
+        self.b = 0.01             #  vertial distance (m) of rope attachment below CG
         self.lo = 8000 * 0.305         #  initial rope length (m)
 #        self.lo = 1000         #  initial rope length (m)
         # state variables 
@@ -180,10 +180,11 @@ class engine:
 
 #        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
 
-        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+#        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
 #        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
+        self.vpeak = 40   #  arbitrary to fit glider behavior...adjust this and rp.b
 
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
@@ -367,7 +368,7 @@ path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 
 control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
-setpoint = [2*pi/180  , 35, 60]  #last one is climb angle to transition to final control
+setpoint = [0*pi/180  , 35, 60]  #last one is climb angle to transition to final control
 
 
 #control =/ 'v'  # Use '' for none
