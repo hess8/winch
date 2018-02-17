@@ -79,9 +79,6 @@ def pid(var,time,setpoint,c,j,Nint):
     else:
         interr = 0
     return c[0]*err + c[1]*derr + c[2]*interr
-        
-
-
 
 class plots:
     def __init__(self,path):
@@ -252,46 +249,34 @@ class pilot:
         setpoint = 0.0
         tint = 0.5 #sec
         Nint = ceil(tint/ti.dt) 
-        cGo = True
         if '' in control:        
             ctype = ''
+            self.Me = 0       
         else:
             self.Me = 0 
+            time = gl.data['t']
             for ic,ctype in enumerate(control): #Each control has separate logic 
                 setpoint = self.setpoint[ic]
                 if ctype == 'vDdamp': # speed derivative control only (= phugoid damping)
-                    pvD = 8
-                    if not self.vDdamp and gl.y > 1.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
+                    pvD = 4
+                    if not self.vDdamp and gl.y > 100.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
                         self.vDdamp = True #turns on, stays on 
                         print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
                     if self.vDdamp:  
                         self.Me += pvD * gl.data[ti.i]['vD'] *gl.I 
-                elif ctype == 'v': #target v with setpoint
+                elif ctype == 'v' and gl.y > 1: #target v with setpoint'
+                    pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
+                    c = array([pp,pd,pint])* gl.I/gl.vb
                     v = gl.data['v']
+                    self.Me += pid(v,time,setpoint,c,ti.i,Nint)
                 elif ctype == 'alpha':
+                    pp = -100; pd = -20; pint = -40
+                    c = array([pp,pd,pint]) * gl.I
                     al = gl.data['alpha']
-                    
-            pp = 0; pd = 0; pint = 0
-            var = var/gl.vb
-            if gl.y < 1:
-                cGo = False
-        elif ctype =='alpha':
-            pp = -100; pd = -20; pint = -40
-        time = gl.data['t']
-        if cGo: 
-           
-#                print 'test'
-            else:
-                MePhug = 0
-#            print 'damping, MeP',self.vDdamp,
-            # elevator moment:
-            self.Me =  MePhug + gl.I*(pp*err + pd*derr + pint*interr) #normalize error constants by Iglider. 
-                        
-            pl.data[ti.i]['t'] = t #store error
-            pl.data[ti.i]['err'] = err
-            pl.data[ti.i]['Me'] = self.Me
-        else:        
-            self.Me = 0       
+                    self.Me += pid(al,time,setpoint,c,ti.i,Nint) 
+                       
+            pl.data[ti.i]['t'] = t  
+            pl.data[ti.i]['Me'] = self.Me            
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''
@@ -385,10 +370,11 @@ tEnd = 90      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-#control = 'alpha'  # Use '' for none
+#control = ['alpha']  # Use '' for none
+control = ['alpha','vDdamp']
 #setpoint = 2*pi/180   #alpha, 2 degrees
 #control = ['','']
-control = ['alpha','v']
+#control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
 setpoint = [2*pi/180  , 35, 60]  #last one is climb angle to transition to final control
 
@@ -430,8 +416,12 @@ if min(gl.yD) < 0 :
     negyD = where(gl.yD < 0)[0]
     itr = negyD[0]-1 #ode solver index for release time
     t = t[:itr] #shorten
-    negyDData = where(gl.data['yD']<0)[0]
-    ti.i = negyDData[0] - 1  #data index for release time
+    if min(gl.data['yD']<0):
+        negyDData = where(gl.data['yD']<0)[0]
+        ti.i = negyDData[0] - 1  #data index for release time
+    else:
+        ti.i = argmax(gl.data['t']) #data index for release time
+    
 else:
     itr = len(t)
 
