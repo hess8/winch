@@ -423,25 +423,26 @@ oData = op.data[:ti.i]
 
 close("all")
 plts = plots(path)   
-plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
-plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time')
+#plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+#plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time')
 gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
 alpha = gl.theta[:itr] - gamma  
-plts.xy([t],[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
-plts.xy([t],[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-plts.xy([tData],[gData['L']/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
-plts.xy([tData],[gData['rptorq'],gData['Malpha']],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
-plts.xy([tData],[100*pData['err'],pData['Me']],'time (sec)',' ',['errorx100 (rad/s)','elevator moment (Nm)'],'Pilot')
+#plts.xy([t],[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+#plts.xy([t],[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
+#plts.xy([tData],[gData['L']/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
+#plts.xy([tData],],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
 vrel =wi.v/en.v 
 Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
-plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
-plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+#plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
+#plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
    #glider speed and angles
 plts.xy([tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr]],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)'],'Glider velocities and angles')
    #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
+   #torques
+plts.xy([tData],[gData['rptorq'],gData['Malpha'],100*pData['err'],pData['Me']],'time (sec)','Torque (Nm)',['rope','alpha','errorx100 (rad/s)','elevator'],'Torques')
     #Engine and winch
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
     #Energy,Power
