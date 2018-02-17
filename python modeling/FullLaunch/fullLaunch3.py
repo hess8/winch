@@ -145,8 +145,8 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.2             #  vertial distance (m) of rope attachment below CG
-#        self.lo = 8000 * 0.305         #  initial rope length (m)
-        self.lo = 1000         #  initial rope length (m)
+        self.lo = 8000 * 0.305         #  initial rope length (m)
+#        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
         
@@ -204,7 +204,7 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         return
     def control(self,t,gl,rp,wi,en):
-        tRampUp = 4   #seconds
+        tRampUp = 3   #seconds
         tDown = tRampUp + 3
         tRampDown = 80
         thrmax = 1.0 
@@ -356,7 +356,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 40      # end time for simulation
+tEnd = 15      # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -446,7 +446,7 @@ plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gDa
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
 # Comments to user
 yfinal = gData['y'][-1]  
-vyfinal  = gData['yD'][-1]  
+vyfinal  = gData['yD'][-1]
 if vyfinal < 0.5: vyfinal = 0
 print 'Final height reached: {:5.1f} m, {:5.1f} ft.  Fraction of rope length: {:3.2f}'.format(yfinal,yfinal/0.305,yfinal/float(rp.lo))
 print 'Final vy: {:5.1f} m/s'.format(vyfinal)

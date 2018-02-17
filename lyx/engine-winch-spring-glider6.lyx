@@ -805,7 +805,7 @@ D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
 \end_layout
 
 \begin_layout Standard
-From Newton's third law using our dimensionless forces and velocities: 
+From Newton's second law: 
 \end_layout
 
 \begin_layout Standard
@@ -969,7 +969,7 @@ v_{w}=r_{drum}\omega_{w}
 \end_inset
 
  on the winch, and the rope creates a negative torque.
- Newton's third law for a rotating object is 
+ Newton's second law for a rotating object is 
 \begin_inset Formula 
 \begin{equation}
 I_{w}\dot{\omega}_{w}=\tau_{w}-r_{w}T\label{eq:winch angle diffeq}
@@ -1287,7 +1287,7 @@ A typical automotive torque converter (TC) in a hydraulic transmission has
 \begin_inset Formula $\omega_{rel}=\omega_{w}/\omega_{eng}$
 \end_inset
 
- is the speed ratio.
+ is the speed ratio or relative speed.
  The torque applied by the engine to the TC  impeller is 
 \begin_inset Formula $\tau_{out,eng}$
 \end_inset
