@@ -1,5 +1,5 @@
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
+# from IPython import get_ipython  
+# get_ipython().magic('reset -sf') #comment out this line if not running in Ipython; resets all variables to zero
 
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 Solves for the motion of a glider launched by a winch with a springy rope. 
@@ -77,10 +77,15 @@ def pid(var,time,setpoint,c,j,Nint):
     else:
         derr = 0
     # for the integral, last Nint average
-    if j >= Nint:            
-        interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
-    else:
-        interr = 0
+#    if j >= Nint:            
+#        interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
+#    else:
+#        interr = 0        
+    interr = sum(var[:j+1])/(j+1) - setpoint
+    print 'interr',interr
+    
+#    print 't,varj,err,derr,interr',time[j],var[j],err,derr,interr
+
     return c[0]*err + c[1]*derr + c[2]*interr
 
 class plots:
@@ -91,7 +96,7 @@ class plots:
     
     def xy(self,xs,ys,xlbl,ylbl,legendLabels,titlestr):
         '''To allow different time (x) arrays, we require the xs to be a list'''
-        if len(xs)<len(ys): #duplicate first x to every spot in new list
+        if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
             xs = [xs[0] for y in ys] 
         colorsList = [u'#30a2da', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
               u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 'darkviolet',
@@ -120,8 +125,10 @@ class timeinfo:
         function usually two or more steps per time step'''
         
         self.oldt = -1.0
-        self.i = -1   #counter for time step
+        self.i = 0   #counter for time step
         self.dt = (tEnd -tStart)/float((N-1))
+        self.tprobed = zeros(N*100)  #stores a t for each time the integrator enters stateDer
+        self.Nprobed = 0  #number of times integrator enters stateDer
     
 
 class glider:
@@ -258,8 +265,11 @@ class pilot:
 #        setpoint = 0.0
         tint = 0.5 #sec
         Nint = ceil(tint/ti.dt)   
-        time = gl.data['t']                   
-        if not gl.onGnd and not '' in control:
+        time = gl.data['t']
+        print 'time',time[ti.i]   
+        if time[ti.i]>4.5:
+            print 'pause'
+        if not '' in control and gl.data[ti.i]['L'] > 0.1 * gl.W: #lift must be significant to get a moment
             newMeSet = 0.0             
             for ic,ctype in enumerate(control): #Each control has its own logic 
                 setpoint = self.setpoint[ic]
@@ -282,7 +292,9 @@ class pilot:
                     newMeSet += pid(al,time,setpoint,c,ti.i,Nint)
             Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.SsSw * gl.CLelevD/(gl.Co + 2*pi*gl.data[ti.i]['alpha'])             
             self.elevSet  =  newMeSet/Mdelev    
-            self.Me = Mdelev * self.elev 
+            self.Me = Mdelev * self.elev
+            if time[ti.i]>4.5:
+                print 'pause'
         else:
             self.Me = 0
         pl.data[ti.i]['t'] = t  
@@ -290,7 +302,10 @@ class pilot:
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''
+    ti.Nprobed +=1
+    ti.tprobed[ti.Nprobed-1] = t
     gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
+    print 't,e,eset,M ',t,pl.elev,pl.elevSet,pl.Me
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
@@ -334,8 +349,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         dottheta = gl.thetaD    
         dotthetaD = 1/float(gl.I) * (ropetorq + M) 
     dotelev = 1/pl.humanT * (pl.elevSet-pl.elev)
-    if pl.elevSet > 0:
-        print 'test'
+#    if pl.elevSet > 0:
+#        print 'test'
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -344,8 +359,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 
     # by close to a nominal time step    
     if t - ti.oldt > 0.9*ti.dt: 
-        ti.i += 1 
-        
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
         gl.data[ti.i]['xD'] = gl.xD
@@ -369,15 +382,16 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         op.data[ti.i]['t']   = t
         op.data[ti.i]['Sth'] = op.Sth
-        
+
         ti.oldt = t
+        ti.i += 1 
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 6     # end time for simulation
+tEnd = 4.7     # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -411,6 +425,7 @@ S0 = zeros(10)
 # nonzero initial conditions
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
+
 if control[0] == 'alpha':
     gl.theta = setpoint[0]
 else:
@@ -422,8 +437,8 @@ S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
 #Split S (now a matrix with state variables in columns and times in rows)
 gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
-#If yD drops below zero, the sim went too long.  Remove time points after that. 
-if min(gl.yD) < 0 :
+#If yD dropped below zero, the release occured.  Remove the time steps after that. 
+if max(gl.yD)> 1 and min(gl.yD) < 0 :
     negyD = where(gl.yD < 0)[0]
     itr = negyD[0]-1 #ode solver index for release time
     t = t[:itr] #shorten
@@ -431,8 +446,7 @@ if min(gl.yD) < 0 :
         negyDData = where(gl.data['yD']<0)[0]
         ti.i = negyDData[0] - 1  #data index for release time
     else:
-        ti.i = argmax(gl.data['t']) #data index for release time
-    
+        ti.i = argmax(gl.data['t']) #data index for release time  
 else:
     itr = len(t)
 
@@ -463,8 +477,8 @@ Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr],180/pi*pl.elev[:itr]],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)','elevator'],'Glider velocities and angles')
+plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr],10*180/pi*pl.elev[:itr]],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)','elevator x10'],'Glider velocities and angles')
 #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
@@ -476,12 +490,12 @@ plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speed
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
 # Comments to user
-yfinal = gData['y'][-1]  
+yfinal = gData['y'][-1]
 vyfinal  = gData['yD'][-1]
 if vyfinal < 0.5: vyfinal = 0
 print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
 print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
-print 'Maximum Tension factor: {:3.2f}'.format(max(rp.T[:itr]/gl.W))
+print 'Maximum Tension factor: {:3.1f}'.format(max(rp.T[:itr]/gl.W))
 print 'Final vy: {:5.1f} m/s'.format(vyfinal)
 
 if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
