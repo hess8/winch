@@ -32,9 +32,10 @@ def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     gl.yD     = S[:,3]
     gl.theta  = S[:,4]
     gl.thetaD = S[:,5]
-    rp.T      = S[:,6]
-    wi.v      = S[:,7]
-    en.v      = S[:,8]
+    pl.elev   = S[:,6]
+    rp.T      = S[:,7]
+    wi.v      = S[:,8]
+    en.v      = S[:,9]
     return gl,rp,wi,tc,en,op,pl
     
     
@@ -46,9 +47,10 @@ def stateSplitVec(S,gl,rp,wi,tc,en,op,pl):
     gl.yD     = S[3]
     gl.theta  = S[4]
     gl.thetaD = S[5]
-    rp.T      = S[6]
-    wi.v      = S[7]
-    en.v      = S[8]
+    pl.elev   = S[6]
+    rp.T      = S[7]
+    wi.v      = S[8]
+    en.v      = S[9]
     return gl,rp,wi,tc,en,op,pl    
     
 def stateJoin(S,gl,rp,wi,tc,en,op,pl):
@@ -58,10 +60,11 @@ def stateJoin(S,gl,rp,wi,tc,en,op,pl):
     S[2] = gl.y        
     S[3] = gl.yD       
     S[4] = gl.theta    
-    S[5] = gl.thetaD   
-    S[6] = rp.T 
-    S[7] = wi.v
-    S[8] = en.v     
+    S[5] = gl.thetaD 
+    S[6] = pl.elev
+    S[7] = rp.T
+    S[8] = wi.v
+    S[9] = en.v     
     return S
     
 def pid(var,time,setpoint,c,j,Nint):
@@ -101,7 +104,8 @@ class plots:
                 self.i = 0
             xlabel(xlbl)
             ylabel(ylbl)
-        legend(loc='lower right')
+#        legend(loc='lower right')
+        legend(loc='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ylim([ymin,ymax])
         title(titlestr)
@@ -131,22 +135,21 @@ class glider:
         Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
-        self.ls = 4           #distance(m) between cg and stabilizer center        
+        self.ls = 4           # distance(m) between cg and stabilizer center        
         self.palpha = 1.8 * self.W        #   change in air-glider pitch moment (/rad) with angle of attack 
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
+        self.CLelev = 0.032*pi/180    # Lift coefficient for stabilator 0.032/deg 
         #logic
         self.onGnd = True
-
         # state variables 
         self.x = 0
         self.xD = 0
         self.y = 0    
         self.yD = 0
-        self.theta = 0
+        self.theta = 0  #pitch vs horizontal
         self.thetaD = 0 
-        
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
                                     ('v', float),('theta', float),('vD', float),('alpha', float),('L', float),('Malpha',float),\
@@ -243,38 +246,46 @@ class pilot:
         self.setpoint = setpoint
         self.vDdamp = False
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
+        self.humanT = 0.3 #sec 
+        #algebraic function
+        self.elevSet    
+        #state variable
+        self.elev = 0  # elevator deflection, differs from elevSet by about humanT
         return
         
     def control(self,t,ti,gl): 
-        setpoint = 0.0
+#        setpoint = 0.0
         tint = 0.5 #sec
-        Nint = ceil(tint/ti.dt) 
+        Nint = ceil(tint/ti.dt)   
+        time = gl.data['t']        
         if '' in control:        
             ctype = ''
             self.Me = 0       
         else:
-            self.Me = 0 
-            time = gl.data['t']
-            for ic,ctype in enumerate(control): #Each control has separate logic 
+            newMeSet = 0.0             
+            for ic,ctype in enumerate(control): #Each control has its own logic 
                 setpoint = self.setpoint[ic]
-                if ctype == 'vDdamp': # speed derivative control only (= phugoid damping)
+                if ctype == 'vDdamp': # speed derivative control only (also damps phugoid)
                     pvD = 4
-                    if not self.vDdamp and gl.y > 100.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
+                    if not self.vDdamp and gl.y > 30.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
                         self.vDdamp = True #turns on, stays on 
                         print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
                     if self.vDdamp:  
-                        self.Me += pvD * gl.data[ti.i]['vD'] *gl.I 
+                        newMeSet += pvD * gl.data[ti.i]['vD'] *gl.I   
                 elif ctype == 'v' and gl.y > 1: #target v with setpoint'
                     pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
                     c = array([pp,pd,pint])* gl.I/gl.vb
                     v = gl.data['v']
-                    self.Me += pid(v,time,setpoint,c,ti.i,Nint)
+                    newMeSet += pid(v,time,setpoint,c,ti.i,Nint)
                 elif ctype == 'alpha':
                     pp = -100; pd = -20; pint = -40
                     c = array([pp,pd,pint]) * gl.I
                     al = gl.data['alpha']
-                    self.Me += pid(al,time,setpoint,c,ti.i,Nint) 
-                       
+                    newMeSet += pid(al,time,setpoint,c,ti.i,Nint)
+            Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.CLelev/(gl.Co + 2*pi*gl.data[ti.i]['alpha']) 
+            self.elevSet  =  newMeSet/Mdelev    
+            self.Me = Mdelev * self.elev          
+            
             pl.data[ti.i]['t'] = t  
             pl.data[ti.i]['Me'] = self.Me            
 
@@ -299,9 +310,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     alpha = gl.theta - gamma # angle of attack
     L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
     D = L/float(gl.Q)*(1 + gl.Q*gl.dalpha*alpha**2)# + gl.de*pl.Me #drag
-    if alpha > gl.alphas: #stall
+    if alpha > gl.alphas: #stall mimic
         L = 0.75*L
-        D = L/float(gl.Q)
+        D = 4*L/float(gl.Q)
     M = (-gl.palpha*alpha + pl.Me) #torque of air on glider
     ropetorq = rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) #torque of rope on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
@@ -323,6 +334,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
         dottheta = gl.thetaD    
         dotthetaD = 1/float(gl.I) * (ropetorq + M) 
+    dotelev = -1/pl.humanT * (-pl.elev + pl.elevSet)
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -348,8 +360,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['rptorq'] = ropetorq
 #        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2 + en.me*en.v**2 + wi.me*wi.v**2) + gl.m  * g * gl.y 
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
-#        if rp.T > 1000:
-#            print 'pause'
         gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
@@ -360,13 +370,13 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         op.data[ti.i]['Sth'] = op.Sth
         
         ti.oldt = t
-    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotT,dotvw,dotve]
+    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 90      # end time for simulation
+tEnd = 40     # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -435,7 +445,7 @@ oData = op.data[:ti.i]
 
 close("all")
 plts = plots(path)   
-#plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+
 #plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time')
 gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
 alpha = gl.theta[:itr] - gamma  
@@ -448,6 +458,9 @@ Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 #plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
 #plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
 
+#glider position vs time
+plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
 plts.xy([tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr]],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)'],'Glider velocities and angles')

@@ -155,6 +155,13 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $\delta_{e},$
+\end_inset
+
+ elevator deflection 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $T$
 \end_inset
 
@@ -1670,17 +1677,21 @@ Pilot
 \end_layout
 
 \begin_layout Standard
-The pilot model will target different glider states during different phases
- of the flight such as constant angle of attack or constant pitch rotation
- rate during rotation.
- Generally it will include a PID controller in terms of the error 
+By deflecting the elevator the pilot model targets different glider states
+ during different phases of the flight such as constant angle of attack
+ or constant speed during rotation.
+ The pilot creates determines a new moment 
+\begin_inset Formula $M_{e,set},$
+\end_inset
+
+generally using a PID controller in terms of the error 
 \begin_inset Formula $\epsilon$
 \end_inset
 
 :
 \begin_inset Formula 
 \[
-M_{e}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
+M_{e,set}=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
 \]
 
 \end_inset
@@ -1691,10 +1702,6 @@ The targets and
 
 's can change during the flight.
  
-\end_layout
-
-\begin_layout Subsection*
-Elevator
 \end_layout
 
 \begin_layout Standard
@@ -1726,7 +1733,7 @@ stabilator
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}
+M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}=M_{\delta e}(\alpha)\delta_{e}
 \]
 
 \end_inset
@@ -1743,8 +1750,49 @@ where
 \begin_inset Formula $C_{L_{w}}(\alpha)$
 \end_inset
 
- is the wing lift coefficient.
+ is the wing lift coefficient; so
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}$
+\end_inset
+
+ .
  
+\end_layout
+
+\begin_layout Standard
+Adding the elevator deflection as a state variable allows us to include
+ the human response time 
+\begin_inset Formula $t_{h}$
+\end_inset
+
+ to avoid instantaneous (chattering) response, as well as gives us a way
+ to check for loss of elevator authority for large deflections.
+ So
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\delta_{e,set}=\frac{M_{e,set}}{M_{\delta e}(\alpha)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{\delta_{e}}=\frac{\delta_{e,set}-\delta_{e}}{t_{h}}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -1822,6 +1870,17 @@ Summary of equations of motion
 \begin_inset Formula 
 \[
 I_{g}\dot{\dot{\theta}}=\tau_{rope,glider}+M
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{\delta_{e}}=\frac{\delta_{e,set}(state)-\delta_{e}}{t_{h}}
 \]
 
 \end_inset
@@ -1985,8 +2044,15 @@ kgm
 \end_layout
 
 \begin_layout Standard
-Lift slope: From NACA report 278 the lift slope of the stabilator vs elevator
- deflection is 
+Elevator From NACA report 278 the lift slope of the 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ (stabilizer including elevator) vs elevator deflection is 
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
 \end_inset
 
@@ -2017,6 +2083,12 @@ Lift slope: From NACA report 278 the lift slope of the stabilator vs elevator
 
 .
  This is negligible compared to the other drags.
+ The moment due to elevator deflection is 
+\begin_inset Formula $M_{\delta e}(\alpha)\delta_{e}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}\delta_{e}$
+\end_inset
+
+.
+ 
 \end_layout
 
 \begin_layout Standard

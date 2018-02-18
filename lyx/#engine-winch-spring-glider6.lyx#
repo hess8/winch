@@ -155,6 +155,13 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $\delta_{e},$
+\end_inset
+
+ elevator deflection 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $T$
 \end_inset
 
@@ -609,7 +616,7 @@ The angle of attack of the glider
 \begin_inset Formula $\gamma$
 \end_inset
 
- (above the horizon):
+ (above the horizon); using radians:
 \end_layout
 
 \begin_layout Standard
@@ -628,10 +635,6 @@ The angle of attack of the glider
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 The winch is a distance 
 \begin_inset Formula $l_{o}$
 \end_inset
@@ -809,7 +812,7 @@ D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
 \end_layout
 
 \begin_layout Standard
-From Newton's third law using our dimensionless forces and velocities: 
+From Newton's second law: 
 \end_layout
 
 \begin_layout Standard
@@ -973,7 +976,7 @@ v_{w}=r_{drum}\omega_{w}
 \end_inset
 
  on the winch, and the rope creates a negative torque.
- Newton's third law for a rotating object is 
+ Newton's second law for a rotating object is 
 \begin_inset Formula 
 \begin{equation}
 I_{w}\dot{\omega}_{w}=\tau_{w}-r_{w}T\label{eq:winch angle diffeq}
@@ -1291,7 +1294,7 @@ A typical automotive torque converter (TC) in a hydraulic transmission has
 \begin_inset Formula $\omega_{rel}=\omega_{w}/\omega_{eng}$
 \end_inset
 
- is the speed ratio.
+ is the speed ratio or relative speed.
  The torque applied by the engine to the TC  impeller is 
 \begin_inset Formula $\tau_{out,eng}$
 \end_inset
@@ -1597,7 +1600,7 @@ P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{
  
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 Power flow
 \end_layout
 
@@ -1674,9 +1677,9 @@ Pilot
 \end_layout
 
 \begin_layout Standard
-The pilot model will target different glider states during different phases
- of the flight such as constant angle of attack or constant pitch rotation
- rate during rotation.
+By deflecting the elevator the pilot model targets different glider states
+ during different phases of the flight such as constant angle of attack
+ or constant speed during rotation.
  Generally it will include a PID controller in terms of the error 
 \begin_inset Formula $\epsilon$
 \end_inset
@@ -1684,7 +1687,7 @@ The pilot model will target different glider states during different phases
 :
 \begin_inset Formula 
 \[
-M_{e}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
+C_{pid}(t)=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
 \]
 
 \end_inset
@@ -1695,6 +1698,83 @@ The targets and
 
 's can change during the flight.
  
+\end_layout
+
+\begin_layout Standard
+The elevator is part of the horizontal 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ whose lift changes with the angle of the elevator: 
+\begin_inset Formula $L_{s}=\frac{1}{2}\rho SC_{Ls}v^{2}$
+\end_inset
+
+= 
+\begin_inset Formula $L\frac{C_{Ls}}{C_{Lw}}\frac{S_{w}}{S_{w}}$
+\end_inset
+
+.
+ Because we have already trimmed the glider, we are interested only in the
+ change with elevator deflection 
+\begin_inset Formula $\delta_{e}$
+\end_inset
+
+: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}=M_{\delta e}(\alpha)\delta_{e}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\,C_{Ls,\delta_{e}}=\frac{\partial C_{Ls}}{\partial\delta_{e}}$
+\end_inset
+
+ , and 
+\begin_inset Formula $C_{L_{w}}(\alpha)$
+\end_inset
+
+ is the wing lift coefficient; so
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}$
+\end_inset
+
+ .
+ 
+\end_layout
+
+\begin_layout Standard
+Adding the elevator deflection as a state variable allows us to include
+ the human response time 
+\begin_inset Formula $t_{h}$
+\end_inset
+
+ to avoid instantaneous (chattering) response, as well as gives us a way
+ to check for loss of elevator authority for large deflections.
+ 
+\begin_inset Formula 
+\[
+\dot{\delta_{e}}=-\frac{\delta_{e}}{t_{h}}+\frac{C_{pid}(state)}{t_{h}}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -1772,6 +1852,17 @@ Summary of equations of motion
 \begin_inset Formula 
 \[
 I_{g}\dot{\dot{\theta}}=\tau_{rope,glider}+M
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{\delta_{e}}=-\frac{\delta_{e}}{t_{h}}+\frac{C_{pid}(state)}{t_{h}}
 \]
 
 \end_inset
@@ -1935,12 +2026,19 @@ kgm
 \end_layout
 
 \begin_layout Standard
-From NACA report 278 the lift slope of the stabilator vs elevator deflection
- is 
+Elevator From NACA report 278 the lift slope of the 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ (stabilizer including elevator) vs elevator deflection is 
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
 \end_inset
 
-0.035/deg.
+0.032/deg.
  The drag is 
 \begin_inset Formula $C_{Ds}\approx\frac{1}{10}C_{Ls}$
 \end_inset
@@ -1966,15 +2064,12 @@ From NACA report 278 the lift slope of the stabilator vs elevator deflection
 \end_inset
 
 .
- This is 
+ This is negligible compared to the other drags.
+ The moment due to elevator deflection is 
 \end_layout
 
 \begin_layout Standard
-Check on 
-\begin_inset Formula $p_{\alpha}$
-\end_inset
-
-with fuselage included: From xflyr5 model: 
+Moment slope: From xflyr5 model: 
 \begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
 \end_inset
 
@@ -2015,11 +2110,75 @@ m/rad.
 \begin_inset Formula $p_{\alpha}\approx3W$
 \end_inset
 
-m, which is not too different.
+m, which is not too different (last time I used chord = 1)
 \end_layout
 
 \begin_layout Standard
-Torque capacity factor GM 350 transmission : K = 140 = rpm/
+Torque capacity factor: GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142
+ rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 13 rad/s/(Nm)
+\begin_inset Formula $^{\frac{1}{2}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Winch effective mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ R = 15 in = 0.4m.
+ Add 1500m of Spectra rope at about 20g/m at r=0.4m.
+ 
+\begin_inset Formula $I_{tot}=20$
+\end_inset
+
++30(.16)= 40
+\begin_inset Formula $kgm^{2}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $M_{eq}=40kgm^{2}/.16$
+\end_inset
+
+= 250 kg.
+ Ratio vs grob: 250/600 = 0.4
+\end_layout
+
+\begin_layout Standard
+Peak engine speed: USA 2nd gear: 1:1.52 transmission.
+ Spider gear differential: 1:3.7 (driveshaft turrns faster than winch, so
+ 
+\begin_inset Formula $\omega_{at\,w}$
+\end_inset
+
+= 1/(3.7*1.5).
+ 
+\begin_inset Formula $w_{at\,w}=\frac{\omega_{TC}}{5.5}$
+\end_inset
+
+.
+ So when engine turns 4500 rpm (max power) the winch turns at 820 rmp, x
+ 1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
+ We should use gear 3: 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+ = 49 m/s...now get 80 vs 50% out of engine at max power.
+ If we had no differential, then in 3rd gear the winch (locking the TC).
+ It would have to have a rope speed of 180 m/s to get the most power out
+ of the engine.
+ When we add the differential, then the rope speed would need to be 49 m/s
+ to match.
+ We have to have some slipping, so this would be the right ratio for the
+ most power.
+ If we use gear 2, then the peak speed becomes 33m/s, and again we have
+ to have some slippage so you can't get full power out of the engine in
+ gear 2.
+ But maybe we don't want to.
+ 
 \end_layout
 
 \end_body
