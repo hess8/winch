@@ -132,8 +132,8 @@ class glider:
         self.W = self.m*9.8          #   weight (N)
         self.Q = 20             #   L/D
         self.alphas = 6*3.14/180         #   stall angle vs glider zero
-        Co = 0.75             #   Lift coefficient {} at zero glider AoA
-        self.Lalpha = 2*pi*self.W/Co
+        self.Co = 0.75             #   Lift coefficient {} at zero glider AoA
+        self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
         self.palpha = 1.8 * self.W        #   change in air-glider pitch moment (/rad) with angle of attack 
@@ -141,6 +141,7 @@ class glider:
         self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.CLelev = 0.032*pi/180    # Lift coefficient for stabilator 0.032/deg 
+        self.SsSw = 0.1          #ratio of stabilizer area to wing area
         #logic
         self.onGnd = True
         # state variables 
@@ -248,7 +249,7 @@ class pilot:
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         self.humanT = 0.3 #sec 
         #algebraic function
-        self.elevSet    
+        self.elevSet = 0   
         #state variable
         self.elev = 0  # elevator deflection, differs from elevSet by about humanT
         return
@@ -257,11 +258,8 @@ class pilot:
 #        setpoint = 0.0
         tint = 0.5 #sec
         Nint = ceil(tint/ti.dt)   
-        time = gl.data['t']        
-        if '' in control:        
-            ctype = ''
-            self.Me = 0       
-        else:
+        time = gl.data['t']                   
+        if not gl.onGnd and not '' in control:
             newMeSet = 0.0             
             for ic,ctype in enumerate(control): #Each control has its own logic 
                 setpoint = self.setpoint[ic]
@@ -282,10 +280,11 @@ class pilot:
                     c = array([pp,pd,pint]) * gl.I
                     al = gl.data['alpha']
                     newMeSet += pid(al,time,setpoint,c,ti.i,Nint)
-            Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.CLelev/(gl.Co + 2*pi*gl.data[ti.i]['alpha']) 
+            Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.SsSw * gl.CLelev/(gl.Co + 2*pi*gl.data[ti.i]['alpha'])             
             self.elevSet  =  newMeSet/Mdelev    
-            self.Me = Mdelev * self.elev          
-            
+            self.Me = Mdelev * self.elev 
+        else:
+            self.Me = 0
             pl.data[ti.i]['t'] = t  
             pl.data[ti.i]['Me'] = self.Me            
 
@@ -334,7 +333,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
         dottheta = gl.thetaD    
         dotthetaD = 1/float(gl.I) * (ropetorq + M) 
-    dotelev = -1/pl.humanT * (-pl.elev + pl.elevSet)
+    dotelev = 1/pl.humanT * (pl.elevSet-pl.elev)
+    if pl.elevSet > 0:
+        print 'test'
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
     dotvw =  1/float(wi.me) * (Few - rp.T)
     dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -406,7 +407,7 @@ en = engine(wi.rdrum)
 op = operator(ntime)
 pl = pilot(ntime,control,setpoint)
   
-S0 = zeros(9)
+S0 = zeros(10)
 # nonzero initial conditions
 gl.xD = 1e-6  #to avoid div/zero
 gl.ve = 1e-6  #to avoid div/zero
@@ -462,8 +463,8 @@ Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-plts.xy([tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr]],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)'],'Glider velocities and angles')
+plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr],180/pi*pl.elev[:itr]],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)','elevator'],'Glider velocities and angles')
 #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
