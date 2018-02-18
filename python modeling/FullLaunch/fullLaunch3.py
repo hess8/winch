@@ -140,7 +140,7 @@ class glider:
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
-        self.CLelev = 0.032*pi/180    # Lift coefficient for stabilator 0.032/deg 
+        self.CLelevD = 0.032*180/pi    # (0.032 per degree) derivative of Lift coefficient for stabilator 0.032/deg 
         self.SsSw = 0.1          #ratio of stabilizer area to wing area
         #logic
         self.onGnd = True
@@ -280,13 +280,13 @@ class pilot:
                     c = array([pp,pd,pint]) * gl.I
                     al = gl.data['alpha']
                     newMeSet += pid(al,time,setpoint,c,ti.i,Nint)
-            Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.SsSw * gl.CLelev/(gl.Co + 2*pi*gl.data[ti.i]['alpha'])             
+            Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.SsSw * gl.CLelevD/(gl.Co + 2*pi*gl.data[ti.i]['alpha'])             
             self.elevSet  =  newMeSet/Mdelev    
             self.Me = Mdelev * self.elev 
         else:
             self.Me = 0
-            pl.data[ti.i]['t'] = t  
-            pl.data[ti.i]['Me'] = self.Me            
+        pl.data[ti.i]['t'] = t  
+        pl.data[ti.i]['Me'] = self.Me            
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''
@@ -377,7 +377,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 40     # end time for simulation
+tEnd = 6     # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
