@@ -125,7 +125,7 @@ class timeinfo:
         function usually two or more steps per time step'''
         
         self.oldt = -1.0
-        self.i = 0   #counter for time step
+        self.i = -1   #counter for time step.  Must start at -1 because we want to increment it in stateDer, not pl.control.
         self.dt = (tEnd -tStart)/float((N-1))
         self.tprobed = zeros(N*100)  #stores a t for each time the integrator enters stateDer
         self.Nprobed = 0  #number of times integrator enters stateDer
@@ -359,6 +359,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 
     # by close to a nominal time step    
     if t - ti.oldt > 0.9*ti.dt: 
+        ti.i += 1 
+        print 'ti.i,t',ti.i,t
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
         gl.data[ti.i]['xD'] = gl.xD
@@ -382,9 +384,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         op.data[ti.i]['t']   = t
         op.data[ti.i]['Sth'] = op.Sth
-
         ti.oldt = t
-        ti.i += 1 
+        
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
