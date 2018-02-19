@@ -80,7 +80,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -1678,13 +1677,13 @@ Pilot
 
 \begin_layout Standard
 By deflecting the elevator the pilot model targets different glider states
- during different phases of the flight such as constant angle of attack
- or constant speed during rotation.
- The pilot creates determines a new moment 
+ during different phases of the flight such as constant angle of attack,
+ constant speed or constant pitch rate.
+ The pilot determines a new moment 
 \begin_inset Formula $M_{e,set},$
 \end_inset
 
-generally using a PID controller in terms of the error 
+ represented by a PID controller in terms of the error 
 \begin_inset Formula $\epsilon$
 \end_inset
 
@@ -1718,10 +1717,14 @@ stabilator
 \end_inset
 
 = 
-\begin_inset Formula $L\frac{C_{Ls}}{C_{Lw}}\frac{S_{w}}{S_{w}}$
+\begin_inset Formula $L\frac{S_{w}}{S_{w}}\frac{C_{Ls}}{C_{Lw}}$
 \end_inset
 
-.
+.The ratio 
+\begin_inset Formula $\frac{S_{w}}{S_{w}}$
+\end_inset
+
+ between the stabilizer area and the wing area is about 1/10.
  Because we have already trimmed the glider, we are interested only in the
  change with elevator deflection 
 \begin_inset Formula $\delta_{e}$
@@ -1733,7 +1736,7 @@ stabilator
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}\delta_{e}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\frac{S_{s}}{S_{w}}\delta_{e}=M_{\delta e}(\alpha)\delta_{e}
+M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}\delta_{e}=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}=M_{\delta e}(\alpha)\delta_{e}
 \]
 
 \end_inset
@@ -1755,11 +1758,10 @@ where
 \end_inset
 
 
-\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}$
+\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}$
 \end_inset
 
  .
- The ratio between the stabilizer area and the wing area is about 1/10.
  
 \end_layout
 
@@ -1797,10 +1799,21 @@ Adding the elevator deflection as a state variable allows us to include
 \end_layout
 
 \begin_layout Standard
-The last equaton is the differential equation for the elevator deflection,
+The previous equaton is the differential equation for the elevator deflection,
  and includes the delay between the pilot's observations and the change
  in deflection.
- 
+ The moment reated by the current elevator setting is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{e}=M_{\delta e}(\alpha)\delta_{e}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2148,7 +2161,7 @@ m/rad.
 \begin_inset Formula $p_{\alpha}\approx3W$
 \end_inset
 
-m, which is not too different (last time I used chord = 1)
+m, which is not too different (earlier I used chord of 1m)
 \end_layout
 
 \begin_layout Standard

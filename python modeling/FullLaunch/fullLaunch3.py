@@ -109,8 +109,8 @@ class plots:
                 self.i = 0
             xlabel(xlbl)
             ylabel(ylbl)
-        legend(loc='lower right')
-#        legend(loc='upper left')
+#        legend(loc='lower right')
+        legend(loc='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ylim([ymin,ymax])
         title(titlestr)
@@ -161,8 +161,7 @@ class glider:
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
                                     ('v', float),('theta', float),('vD', float),('alpha', float),('L', float),('Malpha',float),\
-                                    ('D', float),('rptorq',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
-        return
+                                    ('D', float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
     
 class rope:
     def __init__(self):
@@ -179,6 +178,8 @@ class rope:
 #        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
+        # data
+        self.data = zeros(ntime,dtype = [('torq', float)]) 
         
 class winch:
     def __init__(self):
@@ -232,7 +233,7 @@ class operator:
     def __init__(self,ntime):
         self.Sth = 0
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
-        return
+         
     def control(self,t,gl,rp,wi,en):
         tRampUp = 2  #seconds
         tHold = 20
@@ -259,41 +260,56 @@ class pilot:
         self.elevSet = 0   
         #state variable
         self.elev = 0  # elevator deflection, differs from elevSet by about humanT
-        return
         
     def control(self,t,ti,gl): 
 #        setpoint = 0.0
         tint = 0.5 #sec
         Nint = ceil(tint/ti.dt)   
-        time = gl.data['t']  
-        if time[ti.i]>4.5:
-            print 'pause'
-        if not '' in control and gl.data[ti.i]['L'] > 0.0 * gl.W: #lift must be significant to get a moment
+        time = gl.data['t']
+        L = gl.data[ti.i]['L'] 
+        alpha = gl.data[ti.i]['alpha'] 
+        minLift = 0.01 * gl.W # when we start controlling elevator
+        maxElev = 30 * pi/180 #maximum deflection of elevator
+#         if time[ti.i]>4.5:
+#             print 'pause'
+        if not '' in control:
+            Mdelev = gl.ls * L * gl.SsSw * gl.CLelevD/(gl.Co + 2*pi*alpha) #ratio between moment and elevator deflection
             newMeSet = 0.0             
-            for ic,ctype in enumerate(control): #Each control has its own logic 
-                setpoint = self.setpoint[ic]
-                if ctype == 'vDdamp': # speed derivative control only (also damps phugoid)
-                    pvD = 4
-                    if not self.vDdamp and gl.y > 30.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
-                        self.vDdamp = True #turns on, stays on 
-                        print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
-                    if self.vDdamp:  
-                        newMeSet += pvD * gl.data[ti.i]['vD'] *gl.I   
-                elif ctype == 'v' and gl.y > 1: #target v with setpoint'
-                    pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
-                    c = array([pp,pd,pint])* gl.I/gl.vb
-                    v = gl.data['v']
-                    newMeSet += pid(v,time,setpoint,c,ti.i,Nint)
-                elif ctype == 'alpha':
-                    pp = -1; pd = -0.2; pint = -0.4
-                    c = array([pp,pd,pint]) * gl.I
-                    al = gl.data['alpha']
-                    newMeSet += pid(al,time,setpoint,c,ti.i,Nint)
-            Mdelev = gl.ls * gl.data[ti.i]['L'] * gl.SsSw * gl.CLelevD/(gl.Co + 2*pi*gl.data[ti.i]['alpha'])             
-            self.elevSet  =  newMeSet/Mdelev    
-            self.Me = Mdelev * self.elev
-            if time[ti.i]>4.5:
-                print 'pause'
+            if gl.onGnd: 
+                otherTorques = rp.data[ti.i]['torq']+ -gl.palpha*alpha 
+                if L < minLift: #set Me to give zero rotation
+                    self.Me = -otherTorques
+                else: #choose elevator setting to give zero rotation and let elevator and Me evolve.
+                    self.elevSet = -otherTorques/Mdelev
+                    if self.elevSet > maxElev: #limiter
+                        self.elevSet = maxElev
+                    elif self.elevSet < -maxElev:
+                        self.elevSet = -maxElev
+                    self.Me = Mdelev * self.elev
+            else: # in flight
+                for ic,ctype in enumerate(control): #Each control has its own logic 
+                    setpoint = self.setpoint[ic]
+                    if ctype == 'vDdamp': # speed derivative control only (also damps phugoid)
+                        pvD = 4
+                        if not self.vDdamp and gl.y > 30.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
+                            self.vDdamp = True #turns on, stays on 
+                            print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
+                        if self.vDdamp:  
+                            newMeSet += pvD * gl.data[ti.i]['vD'] *gl.I   
+                    elif ctype == 'v' and gl.y > 1: #target v with setpoint'
+                        pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
+                        c = array([pp,pd,pint])* gl.I/gl.vb
+                        v = gl.data['v']
+                        newMeSet += pid(v,time,setpoint,c,ti.i,Nint)
+                    elif ctype == 'alpha': # control AoA  
+                        pp = -1; pd = -0.2; pint = -0.4
+                        c = array([pp,pd,pint]) * gl.I
+                        al = gl.data['alpha']
+                        newMeSet += pid(al,time,setpoint,c,ti.i,Nint)            
+                self.elevSet  =  newMeSet/Mdelev    
+                self.Me = Mdelev * self.elev
+#             if time[ti.i]>4.5:
+#                 print 'pause'
         else:
             self.Me = 0
         pl.data[ti.i]['t'] = t  
@@ -374,11 +390,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
         gl.data[ti.i]['Malpha']  = -gl.palpha*alpha
-        gl.data[ti.i]['rptorq'] = ropetorq
-#        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2 + en.me*en.v**2 + wi.me*wi.v**2) + gl.m  * g * gl.y 
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
         gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+        rp.data[ti.i]['torq'] = ropetorq
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
         wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)         
@@ -393,7 +408,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 4.7     # end time for simulation
+tEnd = 8     # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -410,7 +425,7 @@ setpoint = [2*pi/180  , 35, 60]  #last one is climb angle to transition to final
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
 
-ntime = (tEnd - tStart)/dt + 1   # number of time steps expected
+ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow f
 t = linspace(tStart,tEnd,num=ntime)
 
 # create the objects we need from classes
@@ -422,7 +437,8 @@ tc = torqconv()
 en = engine(wi.rdrum)
 op = operator(ntime)
 pl = pilot(ntime,control,setpoint)
-  
+
+#initialize state vector to zero  
 S0 = zeros(10)
 # nonzero initial conditions
 gl.xD = 1e-6  #to avoid div/zero
@@ -459,6 +475,7 @@ wData = wi.data[:ti.i]
 pData = pl.data[:ti.i]
 eData = en.data[:ti.i]
 oData = op.data[:ti.i]
+rData = rp.data[:ti.i]
 
 close("all")
 plts = plots(path)   
@@ -479,13 +496,13 @@ Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr],10*180/pi*pl.elev[:itr]],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)','elevator x10'],'Glider velocities and angles')
+plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha,180/pi*gl.thetaD[:itr],180/pi*pl.elev[:itr]],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','pitch','climb','AoA','pitch rate (deg/sec)','elevator'],'Glider velocities and angles')
 #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
         'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
 #torques
-plts.xy([tData],[gData['rptorq'],gData['Malpha'],pData['Me']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator'],'Torques')
+plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator'],'Torques')
 #Engine and winch
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
 #Energy,Power

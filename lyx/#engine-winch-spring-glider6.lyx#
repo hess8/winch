@@ -80,7 +80,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -1815,6 +1814,17 @@ M_{e}=M_{\delta e}(\alpha)\delta_{e}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection*
+Ground roll
+\end_layout
+
+\begin_layout Standard
+The glider needs to be stable as it enter the rotation.
+ If we're choosing constant angle of attack, the elevator should already
+ have the setting needed.
+ We
 \end_layout
 
 \begin_layout Section
