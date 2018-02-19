@@ -19,7 +19,7 @@ Sth, throttle setting
 Me, pilot controlled moment (torque) from elevator
 '''
 import os
-from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where,amin,amax,argmin,argmax
+from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where,amin,amax,argmin,argmax,exp
 from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title
 from scipy.integrate import odeint
 g = 9.8
@@ -255,6 +255,7 @@ class pilot:
         self.ctrltype = ctrltype
         self.setpoint = setpoint
         self.vDdamp = False
+        self.tvDdampOn = None
         self.data = zeros(ntime,dtype = [('t', float),('err', float),('Me', float)])
         self.humanT = 0.3 #sec 
         #algebraic function
@@ -309,13 +310,16 @@ class pilot:
             else: # in flight
                 for ic,ctype in enumerate(control): #Each control has its own logic 
                     setpoint = self.setpoint[ic]
-                    if ctype == 'vDdamp': # speed derivative control only (also damps phugoid)
-                        pvD = 4
+                    if ctype == 'vDdamp': # speed derivative control only (damps phugoid)
                         if not self.vDdamp and gl.y > 30.0 and gl.data[ti.i]['vD'] < 0:  #reached peak velocity
-                            self.vDdamp = True #turns on, stays on 
+                            self.vDdamp = True #turns on, stays on '
+                            self.tvDdampOn = t          
                             print 'Turned on pitch oscillation damping at {:3.1f} sec'.format(t)
                         if self.vDdamp:  
-                            newMeSet += pvD * gl.data[ti.i]['vD'] *gl.I   
+                            pvD = 4.0
+                            tRise = 1.0  # sec.  Turn this on with a 2 sec rise time
+#                             newMeSet += pvD * gl.data[time.i]['vD'] *gl.I * (1-exp((t-self.tvDdampOn)/tRise))
+                            newMeSet += pvD * gl.data[ti.i]['vD'] *gl.I  
                     elif ctype == 'v' and gl.y > 1: #target v with setpoint'
                         newMeSet += vControl(time,setpoint,ti,Nint)  
                     elif ctype == 'alpha': # control AoA  
@@ -421,12 +425,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 60    # end time for simulation
+tEnd = 10    # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-control = ['alpha']  # Use '' for none
-# control = ['alpha','vDdamp']
+#control = ['alpha']  # Use '' for none
+control = ['alpha','vDdamp']
 #setpoint = 2*pi/180   #alpha, 2 degrees
 #control = ['','']
 #control = ['alpha','v']
