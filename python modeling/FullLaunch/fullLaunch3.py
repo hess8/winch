@@ -76,12 +76,12 @@ def pid(var,time,setpoint,c,j,Nint):
         derr = (var[j] - var[j-2])/(time[j]- time[j-2]) 
     else:
         derr = 0
-    # for the integral, last Nint average
-#    if j >= Nint:            
-#        interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
-#    else:
-#        interr = 0        
-    interr = sum(var[:j+1])/(j+1) - setpoint
+    #for the integral, last Nint average
+    if j >= Nint:            
+        interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
+    else:
+        interr = 0        
+#    interr = sum(var[:j+1])/(j+1) - setpoint
 #    print 'interr',interr
     
 #    print 't,varj,err,derr,interr',time[j],var[j],err,derr,interr
@@ -109,7 +109,7 @@ class plots:
                 self.i = 0
             xlabel(xlbl)
             ylabel(ylbl)
-        legend(loc ='lower right')
+#        legend(loc ='lower right')
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ylim([ymin,ymax])
@@ -264,7 +264,7 @@ class pilot:
         
     def control(self,t,ti,gl): 
         def alphaControl(time,setpoint,ti,Nint):
-            pp = -16; pd = -16; pint = -32.0
+            pp = -8; pd = -8; pint = -64.0
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -280,7 +280,7 @@ class pilot:
                 x = -xmax
             return x
 #        setpoint = 0.0
-        tint = 0.5 #sec
+        tint = 4.0 #sec
         Nint = ceil(tint/ti.dt)   
         time = gl.data['t']
         L = gl.data[ti.i]['L']
@@ -421,7 +421,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 20    # end time for simulation
+tEnd = 60    # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
