@@ -449,7 +449,7 @@ t = linspace(tStart,tEnd,num=ntime)
 # create the objects we need from classes
 ti = timeinfo(tStart,tEnd,ntime) 
 gl = glider(ntime)
-rp = rope()
+rp = rope() 
 wi = winch()
 tc = torqconv()
 en = engine(wi.rdrum)
