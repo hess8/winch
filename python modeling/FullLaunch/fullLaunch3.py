@@ -109,8 +109,8 @@ class plots:
                 self.i = 0
             xlabel(xlbl)
             ylabel(ylbl)
-#        legend(loc='lower right')
-        legend(loc='upper left')
+        legend(loc='lower right')
+#        legend(loc='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ylim([ymin,ymax])
         title(titlestr)
@@ -265,11 +265,10 @@ class pilot:
 #        setpoint = 0.0
         tint = 0.5 #sec
         Nint = ceil(tint/ti.dt)   
-        time = gl.data['t']
-        print 'time',time[ti.i]   
+        time = gl.data['t']  
         if time[ti.i]>4.5:
             print 'pause'
-        if not '' in control and gl.data[ti.i]['L'] > 0.1 * gl.W: #lift must be significant to get a moment
+        if not '' in control and gl.data[ti.i]['L'] > 0.0 * gl.W: #lift must be significant to get a moment
             newMeSet = 0.0             
             for ic,ctype in enumerate(control): #Each control has its own logic 
                 setpoint = self.setpoint[ic]
@@ -286,7 +285,7 @@ class pilot:
                     v = gl.data['v']
                     newMeSet += pid(v,time,setpoint,c,ti.i,Nint)
                 elif ctype == 'alpha':
-                    pp = -100; pd = -20; pint = -40
+                    pp = -1; pd = -0.2; pint = -0.4
                     c = array([pp,pd,pint]) * gl.I
                     al = gl.data['alpha']
                     newMeSet += pid(al,time,setpoint,c,ti.i,Nint)
@@ -342,12 +341,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     gl.onGnd = gl.y < 1.0 and L < gl.W #on ground 
     if gl.onGnd:  
         dotyD = 0 
-        dottheta = 0
-        dotthetaD = 0
+#         dottheta = 0
+#         dotthetaD = 0
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
-        dottheta = gl.thetaD    
-        dotthetaD = 1/float(gl.I) * (ropetorq + M) 
+    dottheta = gl.thetaD    
+    dotthetaD = 1/float(gl.I) * (ropetorq + M) 
     dotelev = 1/pl.humanT * (pl.elevSet-pl.elev)
 #    if pl.elevSet > 0:
 #        print 'test'
@@ -361,6 +360,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
         print 'ti.i,t',ti.i,t
+        if ti.i == 94:
+            print 'pause'
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
         gl.data[ti.i]['xD'] = gl.xD
