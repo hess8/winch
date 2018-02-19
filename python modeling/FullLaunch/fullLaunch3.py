@@ -143,11 +143,11 @@ class glider:
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-        self.palpha = 1.8 * self.W        #   change in air-glider pitch moment (/rad) with angle of attack 
+        self.palpha = 1.4     #   (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+        self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
         self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
-        self.CLelevD = 0.032*180/pi    # (0.032 per degree) derivative of Lift coefficient for stabilator 0.032/deg 
         self.SsSw = 0.1          #ratio of stabilizer area to wing area
         #logic
         self.onGnd = True
@@ -273,7 +273,7 @@ class pilot:
 #         if time[ti.i]>4.5:
 #             print 'pause'
         if not '' in control:
-            Mdelev = gl.ls * L * gl.SsSw * gl.CLelevD/(gl.Co + 2*pi*alpha) #ratio between moment and elevator deflection
+            Mdelev =  L * gl.pelev/(gl.Co + 2*pi*alpha) #ratio between moment and elevator deflection
             newMeSet = 0.0             
             if gl.onGnd: 
                 otherTorques = rp.data[ti.i]['torq']+ -gl.palpha*alpha 
@@ -342,7 +342,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if alpha > gl.alphas: #stall mimic
         L = 0.75*L
         D = 4*L/float(gl.Q)
-    M = (-gl.palpha*alpha + pl.Me) #torque of air on glider
+    M = (-L * gl.palpha * alpha/(gl.Co + 2*pi*alpha) + pl.Me) #torque of air on glider
     ropetorq = rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) #torque of rope on glider
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
     
