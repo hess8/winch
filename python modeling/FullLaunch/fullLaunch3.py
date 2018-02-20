@@ -242,17 +242,22 @@ class operator:
         tHold = 40
         tDown = tRampUp + tHold
         tRampDown = ti.tEnd - tRampUp - tHold
-        thrmax = 1.0 
+#        thrmax = 1.0 
+        thrmax = 0.7 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
             self.Sth =  thrmax
         elif t >= tDown:
             self.Sth = max(0,thrmax * (1-(t-tDown)/float(tRampDown)))
+            
+
+
          
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
+        self.MeSet = 0
         self.err = 0
         self.type = pilotType
         self.ctrltype = ctrltype
@@ -383,9 +388,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         dotyD = 0 
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
-    if gl.onGnd and pl.type == 'elevControl':
+    if gl.onGnd and pl.type == 'momentControl':
         dottheta = 0
-        dottheta = 0
+        dotthetaD = 0
     else:
         dottheta = gl.thetaD    
         dotthetaD = 1/float(gl.I) * (ropetorq + M)
@@ -457,7 +462,6 @@ tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
-
 
 ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow f
 t = linspace(tStart,tEnd,num=ntime)
