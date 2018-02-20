@@ -463,7 +463,7 @@ tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
-ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow f
+ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow for data points saved
 t = linspace(tStart,tEnd,num=ntime)
 
 # create the objects we need from classes
@@ -561,7 +561,7 @@ if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
     print '\tIf some of the plots have a time axis that is too short vs others, '
     print '\t...try making smoother controls.'
 
-print 'Done'
+print 'Done' 
 
 
 
