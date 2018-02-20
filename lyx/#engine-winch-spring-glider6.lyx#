@@ -80,7 +80,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -2288,7 +2287,7 @@ Peak engine speed: USA 2nd gear: 1:1.52 transmission.
 \end_inset
 
  = 49 m/s...now get 80 vs 50% out of engine at max power.
- If we had no differential, then in 3rd gear the winch (locking the TC).
+ If we had no differential, then in 3rd gear the winch (locking the TC),
  It would have to have a rope speed of 180 m/s to get the most power out
  of the engine.
  When we add the differential, then the rope speed would need to be 49 m/s
