@@ -129,6 +129,7 @@ class timeinfo:
         self.dt = (tEnd -tStart)/float((N-1))
         self.tprobed = zeros(N*100)  #stores a t for each time the integrator enters stateDer
         self.Nprobed = 0  #number of times integrator enters stateDer
+        self.tEnd = tEnd
     
 
 class glider:
@@ -175,8 +176,8 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.1             #  vertial distance (m) of rope attachment below CG
-        self.lo = 8000 * 0.305         #  initial rope length (m)
-#        self.lo = 1000         #  initial rope length (m)
+#        self.lo = 8000 * 0.305         #  initial rope length (m)
+        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
         # data
@@ -239,7 +240,7 @@ class operator:
         tRampUp = 2  #seconds
         tHold = 40
         tDown = tRampUp + tHold
-        tRampDown = 60
+        tRampDown = ti.tEnd - tRampUp - tHold
         thrmax = 1.0 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
@@ -425,15 +426,15 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 90 # end time for simulation
+tEnd = 35 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha']  # Use '' for none
 #control = ['alpha','vDdamp']
-control = ['alpha','v']
+#control = ['alpha','v']
 #setpoint = 2*pi/180   #alpha, 2 degrees
-#control = ['','']
+control = ['','']
 #control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
 setpoint = [2*pi/180  ,30, 20]  #last one is climb angle to transition to final control
@@ -475,12 +476,13 @@ gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
 
 #If yD dropped below zero, the release occured.  Remove the time steps after that. 
 if max(gl.yD)> 1 and min(gl.yD) < 0 :
-#    negyD =where(gl.yD < 0)[0]
-#    itr = negyD[0]-1 #ode solver index for release time
-    itr = argmin(gl.yD)
+    negyD =where(gl.yD < 0)[0]
+    itr = negyD[0]-1 #ode solver index for release time
+#    itr = argmin(gl.yD)
     t = t[:itr] #shorten
-    if min(gl.data['yD'] < 0):
-        ti.i = argmin(gl.data['yD'])  #data index for release time  
+    if min(gl.data['yD']) < 0:
+        negyD =where(gl.data['yD'] < 0)[0]
+        ti.i = negyD[0]-1  #data index for release time  
     else:
         ti.i = argmax(gl.data['t'])
 else:
