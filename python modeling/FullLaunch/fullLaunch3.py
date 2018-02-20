@@ -107,8 +107,8 @@ class plots:
             self.i += 1
             if self.i > len(colorsList)-1:
                 self.i = 0
-            xlabel(xlbl)
-            ylabel(ylbl)
+        xlabel(xlbl)
+        ylabel(ylbl)
         legend(loc ='lower right')
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
@@ -116,6 +116,39 @@ class plots:
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
         show()
+        
+    def xyy(self,xs,ys,yscalesMap,xlbl,ylbls,legendLabels,titlestr):
+        '''Allows plotting with two yscales, left (0) and right (1).  
+        So yscalesMap is e.g. [0,0,1,0] for 4 datasets'''
+        fig, ax0 = subplots()        
+        ax1 = ax0.twinx()
+        if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
+            xs = [xs[0] for y in ys] 
+        colorsList = [u'#30a2da', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
+              u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 'darkviolet',
+              u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#009E73','peru','slateblue'] # u'#F0E442'
+        ymaxs = [[],[]]       
+        for iy,y in enumerate(ys):
+            if yscalesMap[iy] == 0:
+                ax0.plot(xs[iy],y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])  
+            else:
+                ax1.plot(xs[iy],y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+            ymaxs[yscalesMap[iy]].append(max(y))
+            self.i += 1 
+            if self.i > len(colorsList)-1:
+                self.i = 0
+        ax0.set_xlabel(xlbl)
+        ax0.set_ylabel(ylbls[0])
+        ax1.set_ylabel(ylbls[1])
+        ax1.set_ylim([0,1.1*max(ymaxs[1])])
+        ax0.legend(loc ='lower right',framealpha=0.5)
+        ax1.legend(loc ='upper right',framealpha=0.5)
+#        legend(loc ='upper left')
+#        ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
+#        ylim([ymin,ymax])
+        title(titlestr)
+        savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
+        show()             
     
 class timeinfo:
     def __init__(self,tStart,tEnd,N):
@@ -537,9 +570,13 @@ plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
 plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*alpha,180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr]],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
+plts.i = 0 #restart color cycle
+plts.xyy([tData,t,tData,t,tData,t,t,t],[gData['v'],wi.v[:itr],gData['y']/rp.lo,rp.T[:itr]/gl.W,gData['L']/gl.W,180/pi*alpha,180/pi*gamma,180/pi*gl.thetaD[:itr]],\
+        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)','vr (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
+
 #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
-        'time (sec)','Force/W ',['lift','drag','tension','TC-winch'],'Forces')
+        'time (sec)','Forces/Weight',['lift','drag','tension','TC-winch'],'Forces')
 #torques
 plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator or ground'],'Torques')
 #Engine and winch
