@@ -403,8 +403,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         dotvw =  1/float(wi.me) * (Few - rp.T)
         dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
     else: #no torque converter
-        print 'Warning: made power independent of frequency (used vbest)!'
-        dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pmax / float(gl.vb) - rp.T)
+        #constant power:
+        print 'Warning: made power independent of frequency!'
+        dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pmax / float(en.v) - rp.T)
+        #constant torque:
+#        print 'Warning: made piston torque constant!'
+#        dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pmax / float(en.vpeak) - rp.T)
         dotve = dotvw
     # store data from this time step for use in controls or plotting.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 

@@ -1507,6 +1507,36 @@ F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}P_{a}(\omega_{eng})}{r_{
 
 \end_layout
 
+\begin_layout Standard
+For a less physical constant-power model, 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+F_{pistons}=\frac{S_{th}P_{max}}{v_{eng}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For a less-than physical constant-torque model, 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+F_{pistons}=\frac{S_{th}P_{max}}{v_{peak}}
+\]
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Torque converter and engine models
 \end_layout
