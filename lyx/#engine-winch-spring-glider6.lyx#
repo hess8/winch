@@ -80,6 +80,7 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
+
 bret_hess@byu.edu
 \end_layout
 
@@ -171,14 +172,14 @@ We solve a system of first order differential equations in the form:
 \begin_inset Formula $v_{w},$
 \end_inset
 
- rope uptake speed (m/s), or effective winch speed
+ rope uptake speed (m/s), or equivalent winch speed
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula $v_{e},$
 \end_inset
 
- effective engine speed (m/s)
+ equivalent engine speed (m/s)
 \end_layout
 
 \begin_layout Subsection*
@@ -256,7 +257,7 @@ Time-varying quantities derived from state variables
 \begin_inset Formula $\tau_{w}$
 \end_inset
 
-, torque of torque converter on winch (including transmission effective
+, torque of torque converter on winch (including transmission equivalent
  rotating mass)
 \end_layout
 
@@ -264,7 +265,7 @@ Time-varying quantities derived from state variables
 \begin_inset Formula $F_{e,w}$
 \end_inset
 
-, effective force of the above torque
+, equivalent force of the above torque
 \end_layout
 
 \begin_layout Standard
@@ -278,7 +279,7 @@ Time-varying quantities derived from state variables
 \begin_inset Formula $F_{e,e}$
 \end_inset
 
-, effective force of the above torque
+, equivalent force of the above torque
 \end_layout
 
 \begin_layout Standard
@@ -456,7 +457,7 @@ Winch
 \begin_inset Formula $m_{e,w}$
 \end_inset
 
-, effective mass of combined winch drum and transmission rotating parts,
+, equivalent mass of combined winch drum and transmission rotating parts,
  from the moment of inertia: 
 \begin_inset Formula $m_{e,w}=\frac{I_{winch}}{r_{drum}^{2}}$
 \end_inset
@@ -501,7 +502,7 @@ Engine
 \begin_inset Formula $m_{e,e}$
 \end_inset
 
-, effective mass of the engine rotating parts : 
+, equivalent mass of the engine rotating parts : 
 \begin_inset Formula $m_{e,e}=\frac{I_{engine}}{r_{drum}^{2}}$
 \end_inset
 
@@ -930,7 +931,7 @@ I_{g}\ddot{\theta}=\tau_{rope,glider}+M\label{eq:theta diffeq}
 \end_layout
 
 \begin_layout Section
-Effective winch and engine mass
+equivalent winch and engine mass
 \end_layout
 
 \begin_layout Standard
@@ -946,7 +947,7 @@ The winch and engine have rotational inertia that resists changing their
 \begin_inset Formula $m_{e,w}$
 \end_inset
 
-, as the effective mass of the winch and transmission rotating parts: 
+, as the equivalent mass of the winch and transmission rotating parts: 
 \begin_inset Formula $m_{e,w}=\frac{I_{winch}}{r_{drum}^{2}}$
 \end_inset
 
@@ -955,7 +956,7 @@ The winch and engine have rotational inertia that resists changing their
 \begin_inset Formula $m_{e,e}$
 \end_inset
 
-, is the effective mass of engine rotating parts: 
+, is the equivalent mass of engine rotating parts: 
 \begin_inset Formula $m_{e,e}=\frac{I_{engine}}{r_{drum}^{2}}$
 \end_inset
 
@@ -996,7 +997,7 @@ the winch
 \begin_inset Formula $I_{w}$
 \end_inset
 
- and one effective mass 
+ and one equivalent mass 
 \begin_inset Formula $m_{e,w}$
 \end_inset
 
@@ -1027,9 +1028,9 @@ I_{w}\dot{\omega}_{w}=\tau_{w}-r_{w}T\label{eq:winch angle diffeq}
 
 \begin_layout Standard
 .
- We rewrite this in terms of the uptake speed and winch effective mass and
- an effective force of the the converter if it acted directly at the the
- winch drum radius: 
+ We rewrite this in terms of the uptake speed and winch equivalent mass
+ and an equivalent force of the the converter if it acted directly at the
+ the winch drum radius: 
 \begin_inset Formula 
 \[
 F_{e,w}=\frac{\tau_{w}}{r_{drum}}:
@@ -1312,12 +1313,218 @@ reference "eq: Tension derivative"
 \end_layout
 
 \begin_layout Section
-Torque converter and engine and models
+Engine model without torque converter
 \end_layout
 
 \begin_layout Standard
-A typical automotive torque converter (TC) in a hydraulic transmission has
- a torque ratio that varies from about two to about one: 
+It's not safe to operate a winch without a torque converter because a manual
+ transmission (with clutch) had no fluid coupling and is too prone to engine
+ stalling under high load.
+ But we write the equations here to see how to model a drive without fluid
+ coupling, so we can see the effect of the torque converter in the next
+ section.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+I_{eng}\dot{\omega}_{eng}=\tau_{pist}-\tau_{out,eng}\label{eq:engine Diffeq-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The power curve 
+\begin_inset Formula $P_{a}(\omega_{eng})$
+\end_inset
+
+ is the power available from the pistons at each speed.
+ The throttle setting 
+\begin_inset Formula $S_{th}$
+\end_inset
+
+ determines actual power applied, with a simple linear model for now: 
+\begin_inset Formula 
+\[
+S_{th}P_{a}(\omega_{eng})=\omega_{eng}\tau_{pistons}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then 
+\begin_inset Formula 
+\begin{equation}
+\tau_{pistons}=\frac{S_{th}P_{a}(\omega_{eng})}{\omega_{eng}}\label{eq:piston torque-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We define an equivalent engine velocity 
+\begin_inset Formula $v_{e}=r_{drum}\omega_{eng,}$
+\end_inset
+
+ and rewrite eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:engine Diffeq-1"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+r_{drum}^{2}m_{e,e}\dot{\omega}_{eng}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\tau_{out,eng}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-r_{drum}F_{e,e}
+\]
+
+\end_inset
+
+
+\begin_inset Formula $F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}$
+\end_inset
+
+ is the equivalent force between the torque converter on the engine.
+ Again 
+\begin_inset Formula $r_{drum}$
+\end_inset
+
+ cancels to give us the engine differential equation (but will appear later
+ in 
+\begin_inset Formula $F_{e,e})$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-F_{e,e}\label{eq: Diffeq engine effective-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The power curve is modeled by three constants such that 
+\begin_inset Formula $P_{a}$
+\end_inset
+
+ peaks at 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+with power 
+\begin_inset Formula $P_{max}$
+\end_inset
+
+, and is zero at zero speed, and at some maximum speed.
+ 
+\begin_inset Formula 
+\[
+P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{v_{peak}}\right)^{2}-p_{e3}^{2}\left(\frac{v_{e}}{v_{peak}}\right)^{3}\right)
+\]
+
+\end_inset
+
+ 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+, in m/s is what the rope uptake speed would have to be in the case of direct
+ drive for maximum power and is determined not just by the engine peak rotation
+ rate, but by gearing in the transmission and differential.
+ In practice we must use a torque conveter, so 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+ must be higher than the rope uptake speed for there to be good power transmissi
+on.
+ 
+\end_layout
+
+\begin_layout Standard
+Without a torque converter, the winch, transmission and engine rotating
+ parts can be considered as one effective mass rotating together.
+ The pistons provide a torque directy to the winch.
+ 
+\end_layout
+
+\begin_layout Standard
+So eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:uptake speed diffeq (winch diffeq)"
+
+\end_inset
+
+ for the winch is modified to: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(m_{e,w}+m_{e,e})\dot{v_{w}}=F_{pistons}-T
+\]
+
+\end_inset
+
+ where 
+\begin_inset Formula 
+\[
+F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}P_{a}(\omega_{eng})}{r_{drum}\omega_{eng}}=\frac{S_{th}P_{a}(v_{eng})}{v_{eng}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Torque converter and engine models
+\end_layout
+
+\begin_layout Standard
+The torque converter (TC) couples the engine force (torque) to the winch
+ with fluid motion.
+ In q ways it is similar to the way that the rope couples the winch force
+ to the glider force through a springy material.
+ For the rope, the forces are proportional to the spring stretch.
+ In the TC, the forces are kinetic and proportional to the square of slipping
+ motion, which is given by a ratio of speeds.
+ 
+\end_layout
+
+\begin_layout Standard
+A typical automotive TC in a hydraulic transmission has a torque ratio that
+ varies from about two to about one: 
 \end_layout
 
 \begin_layout Standard
@@ -1436,131 +1643,17 @@ Typically,
 \end_inset
 
  0.13.
- This function switches the sign of torque when the winch moves faster than
- the engine, a feature we want in the model.
  
 \end_layout
 
 \begin_layout Standard
-The engine rotation is determined by its moment of inertia 
-\begin_inset Formula $I_{eng}$
-\end_inset
-
- (driveshaft, flywheel, pistons) and the torques on it.
- The pistons create a positive torque, and the torque at the impeller (the
- load) creates a negative one:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-I_{eng}\dot{\omega}_{eng}=\tau_{pist}-\tau_{out,eng}\label{eq:engine Diffeq}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The power curve 
-\begin_inset Formula $P_{a}(\omega_{eng})$
-\end_inset
-
- is the power available from the pistons at each speed.
- The throttle setting 
-\begin_inset Formula $S_{th}$
-\end_inset
-
- determines actual power applied, with a simple linear model for now: 
-\begin_inset Formula 
-\[
-S_{th}P_{a}(\omega_{eng})=\omega_{eng}\tau_{pistons}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Then 
-\begin_inset Formula 
-\begin{equation}
-\tau_{pistons}=\frac{S_{th}P_{a}(\omega_{eng})}{\omega_{eng}}\label{eq:piston torque}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-We define an effective engine velocity 
-\begin_inset Formula $v_{e}=r_{drum}\omega_{eng,}$
-\end_inset
-
- and rewrite eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:engine Diffeq"
-
-\end_inset
-
-:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-r_{drum}^{2}m_{e,e}\dot{\omega}_{eng}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\tau_{out,eng}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-r_{drum}F_{e,e}
-\]
-
-\end_inset
-
-
-\begin_inset Formula $F_{e,e}=\frac{\tau_{out,eng}}{r_{drum}}$
-\end_inset
-
- is the effective force between the torque converter on the engine.
- Again 
-\begin_inset Formula $r_{drum}$
-\end_inset
-
- cancels to give us the engine differential equation (but will appear later
- in 
-\begin_inset Formula $F_{e,e})$
-\end_inset
-
-:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-F_{e,e}\label{eq: Diffeq engine effective}
-\end{equation}
-
-\end_inset
-
 It will be easy to see how much the TC  is slipping (losing energy) from
- the effective engine speed when 
+ the equivalent engine speed when 
 \begin_inset Formula $v_{e}\neq v_{u}$
 \end_inset
 
- i.e when the effective engine speed is not equal to the rope uptake speed.
- We write the effective forces 
+ i.e when the equivalent engine speed is not equal to the rope uptake speed.
+ We write the equivalent forces 
 \begin_inset Formula $F_{e,e}$
 \end_inset
 
@@ -1593,48 +1686,11 @@ F_{e,w}=\frac{\tau_{w}}{r_{drum}}=F_{e,e}\left(2-\omega_{rel}\right)
 
 \end_inset
 
-Once the effective masses are defined, this is the only place that 
+Once the equivalent masses are defined, this is the only place that 
 \begin_inset Formula $r_{drum}$
 \end_inset
 
  exists in the model.
- We redefine 
-\begin_inset Formula $K_{o}$
-\end_inset
-
-in terms of velocity: 
-\end_layout
-
-\begin_layout Standard
-The power curve is modeled by three constants such that 
-\begin_inset Formula $P_{a}$
-\end_inset
-
- peaks at 
-\begin_inset Formula $v_{peak}$
-\end_inset
-
-with power 
-\begin_inset Formula $P_{max}$
-\end_inset
-
-.
- 
-\begin_inset Formula 
-\[
-P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{v_{peak}}\right)^{2}-p_{e3}^{2}\left(\frac{v_{e}}{v_{peak}}\right)^{3}\right)
-\]
-
-\end_inset
-
- 
-\begin_inset Formula $v_{peak}$
-\end_inset
-
-, in m/s is the rope uptake speed for maximum power and is determined not
- just by the engine peak rotation rate, but by gearing in the transmission.
- If the gearing is optimal, it should be close to the uptake speed during
- and right after rotation.
  
 \end_layout
 
@@ -2243,7 +2299,7 @@ Torque capacity factor: GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142
 \end_layout
 
 \begin_layout Standard
-Winch effective mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
+Winch equivalent mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
 \begin_inset Formula $kgm^{2}$
 \end_inset
 
@@ -2269,7 +2325,7 @@ Winch effective mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20
 
 \begin_layout Standard
 Peak engine speed: USA 2nd gear: 1:1.52 transmission.
- Spider gear differential: 1:3.7 (driveshaft turns faster than winch, so
+ Spider gear differential: 1:3.7 (driveshaft turns faster than winch), so
  
 \begin_inset Formula $\omega_{at\,w}$
 \end_inset

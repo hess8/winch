@@ -204,8 +204,9 @@ class torqconv:
          return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
 class engine:
-    def __init__(self,rdrum):
+    def __init__(self,tcUsed,rdrum):
         # Engine parameters  
+        self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 350             # engine horsepower
         self.Pmax = 750*self.hp        # engine watts
 #        self.rpmpeak = 6000       # rpm for peak power
@@ -250,9 +251,10 @@ class operator:
             self.Sth = max(0,thrmax * (1-(t-tDown)/float(tRampDown)))
          
 class pilot:
-    def __init__(self,ntime,ctrltype,setpoint):
+    def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
         self.err = 0
+        self.type = pilotType
         self.ctrltype = ctrltype
         self.setpoint = setpoint
         self.currCntrl = 0
@@ -296,7 +298,7 @@ class pilot:
             if gl.onGnd: 
                 otherTorques = rp.data[ti.i]['torq']+ alphatorq
                 if L < minLift: #set Me to give zero rotation
-                    self.Me = -otherTorques
+                    self.MeSet = -otherTorques
                     self.elevSet = limiter(self.Me/Mdelev,gl.maxElev)
 #                     print 'elev',t,self.elev, otherTorques
 #                     print 'test'
@@ -317,20 +319,22 @@ class pilot:
                 if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
                     pvD = 4
                     tRise = 1.0  # sec.  Turn this on with a rise time
-                    MeSet = pvD * gl.data[ti.i]['vD'] *gl.I * (1-exp(-(t-self.tSwitch)/tRise))                       
-#                        MeSet = pvD * gl.data[ti.i]['vD'] *gl.I  
+                    self.MeSet = pvD * gl.data[ti.i]['vD'] *gl.I * (1-exp(-(t-self.tSwitch)/tRise))                       
+#                        self.MeSet = pvD * gl.data[ti.i]['vD'] *gl.I  
                 elif ctype == 'v' and gl.y > 1: #target v with setpoint'
-                    MeSet = vControl(time,setpoint,ti,Nint)
+                    self.MeSet = vControl(time,setpoint,ti,Nint)
                 elif ctype == 'alpha': # control AoA  
-                    MeSet =  alphaControl(time,setpoint,ti,Nint)    
+                    self.MeSet =  alphaControl(time,setpoint,ti,Nint)    
                 
-                self.elevSet  =  limiter(MeSet/Mdelev,gl.maxElev)
+                self.elevSet  =  limiter(self.MeSet/Mdelev,gl.maxElev)
                 self.Me = Mdelev * self.elev
-#                print 't,gamma,control.MeSet,elevSet,elev',t,gamma,ctype,MeSet,self.elevSet,self.elev
+#                print 't,gamma,control.self.MeSet,elevSet,elev',t,gamma,ctype,self.MeSet,self.elevSet,self.elev
 #             if time[ti.i]>4.5:
 #                 print 'pause'
         else:
             self.Me = 0
+        if self.type == 'momentControl': #ignore elevator and simply set the moment required.
+            self.Me = self.MeSet            
         pl.data[ti.i]['t'] = t  
         pl.data[ti.i]['Me'] = self.Me            
 
@@ -377,17 +381,25 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     gl.onGnd = gl.y < 1.0 and L < gl.W #on ground 
     if gl.onGnd:  
         dotyD = 0 
-#         dottheta = 0
-#         dotthetaD = 0
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
-    dottheta = gl.thetaD    
-    dotthetaD = 1/float(gl.I) * (ropetorq + M)
-    dotelev = 1/pl.humanT * (pl.elevSet-pl.elev)   
+    if gl.onGnd and pl.type == 'elevControl':
+        dottheta = 0
+        dottheta = 0
+    else:
+        dottheta = gl.thetaD    
+        dotthetaD = 1/float(gl.I) * (ropetorq + M)
+    if pl.type == 'elevControl':
+        dotelev = 1/pl.humanT * (pl.elevSet-pl.elev)
+    else:
+        dotelev = 0   
     dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope)
-    dotvw =  1/float(wi.me) * (Few - rp.T)
-    dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
-
+    if en.tcUsed:
+        dotvw =  1/float(wi.me) * (Few - rp.T)
+        dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
+    else: #no torque converter
+        dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
+        dotve = dotvw
     # store data from this time step for use in controls or plotting.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 
     # by close to a nominal time step    
@@ -438,7 +450,10 @@ control = ['','']
 #control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
 setpoint = [2*pi/180  ,30, 20]  #last one is climb angle to transition to final control
-
+pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
+#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+#tcUsed = True   # uses the torque controller
+tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
@@ -453,9 +468,9 @@ gl = glider(ntime)
 rp = rope() 
 wi = winch()
 tc = torqconv()
-en = engine(wi.rdrum)
+en = engine(tcUsed,wi.rdrum)
 op = operator(ntime)
-pl = pilot(ntime,control,setpoint)
+pl = pilot(pilotType,ntime,control,setpoint)
 
 #initialize state vector to zero  
 S0 = zeros(10)
