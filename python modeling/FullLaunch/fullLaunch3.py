@@ -109,7 +109,7 @@ class plots:
                 self.i = 0
         xlabel(xlbl)
         ylabel(ylbl)
-        legend(loc ='lower right')
+        legend(loc ='lower right',framealpha=0.5)
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ylim([ymin,ymax])
@@ -214,7 +214,7 @@ class rope:
         # state variables 
         self.T = 0
         # data
-        self.data = zeros(ntime,dtype = [('torq', float)]) 
+        self.data = zeros(ntime,dtype = [('torq', float),('angle',float)]) 
         
 class winch:
     def __init__(self):
@@ -269,14 +269,15 @@ class operator:
     def __init__(self,ntime):
         self.Sth = 0
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
+        self.angleMax = 90*pi/180 #throttle goes to zero at this rope angle
          
-    def control(self,t,gl,rp,wi,en):
+    def linearDown(self,t):
         tRampUp = 2  #seconds
         tHold = 40
         tDown = tRampUp + tHold
         tRampDown = ti.tEnd - tRampUp - tHold
 #        thrmax = 1.0 
-        thrmax = 0.7 
+        thrmax = 0.5 
         if t <= tRampUp:
             self.Sth =  thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
@@ -284,9 +285,26 @@ class operator:
         elif t >= tDown:
             self.Sth = max(0,thrmax * (1-(t-tDown)/float(tRampDown)))
             
+    def angleDown(self,t,ti,gl,rp):
+        # The operator starts ramping down when the glider reaches a certain angle, linearly in angle
+        # until the power is zero at an angle greater angleMax.         
+        angleStartDown = 30*pi/180 #throttle goes to zero at this rope angle         
+        angleMax = self.angleMax         
+        tRampUp = 2  #seconds
+#        thrmax = 1.0 
+        thrmax = 0.7 
+        thetarope = rp.data[ti.i]['angle'] 
+        print 'rp angle',t,thetarope*180/pi,1-(thetarope - angleStartDown)/(angleMax - angleStartDown),gl.yD
+        if thetarope <0:
+            print 'pause'
+        if t < tRampUp:
+            self.Sth =  thrmax/float(tRampUp) * t
+        elif t >= tRampUp and thetarope < angleStartDown:
+            self.Sth =  thrmax
+        else: #angleStartDown < thetarope <= angleMax: 
+            self.Sth = max(0,thrmax * (1-(thetarope - angleStartDown)/(angleMax - angleStartDown)))
 
 
-         
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
@@ -389,10 +407,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 
     #----algebraic functions----#
     # Update controls
-    op.control(t,gl,rp,wi,en) 
+#    op.linearDown(t) 
+    op.angleDown(t,ti,gl,rp) 
     pl.control(t,ti,gl)
     #rope
-    thetarope = arctan(gl.y/float(rp.lo-gl.x))
+    thetarope = arctan(gl.y/float(rp.lo-gl.x)); 
+    if thetarope < 0: thetarope += 180 #to handle overflight of winch 
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
@@ -462,6 +482,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         rp.data[ti.i]['torq'] = ropetorq
+        rp.data[ti.i]['angle'] = thetarope
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
         wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)         
@@ -476,7 +497,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 35 # end time for simulation
+tEnd = 60 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
