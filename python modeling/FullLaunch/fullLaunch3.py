@@ -384,9 +384,6 @@ class pilot:
                 
                 self.elevSet  =  limiter(self.MeSet/Mdelev,gl.maxElev)
                 self.Me = Mdelev * self.elev
-#                print 't,gamma,control.self.MeSet,elevSet,elev',t,gamma,ctype,self.MeSet,self.elevSet,self.elev
-#             if time[ti.i]>4.5:
-#                 print 'pause'
         else:
             self.Me = 0
         if self.type == 'momentControl': #ignore elevator and simply set the moment required.
@@ -458,12 +455,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     else: #no torque converter
         dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
         dotve = dotvw
-    # store data from this time step for use in controls or plotting.  The ode solver enters this routine
+    # store data from this time step for use /in controls or plotting.  The ode solver enters this routine
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 
     # by close to a nominal time step    
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
-#        print t, 't,elev,elevSet ',pl.elev,pl.elevSet
+#        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
 #        print 'ti.i,t',ti.i,t
 
         gl.data[ti.i]['t']  = t
@@ -497,7 +494,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 60 # end time for simulation
+tEnd = 90 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -522,11 +519,12 @@ ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow for da
 t = linspace(tStart,tEnd,num=ntime)
 
 #Loop over parameters for study, optimization
-tRampUpList = linspace(1,10,4)
-# tRampUpList = [2.0] #If you only one to run one value
+tRampUpList = linspace(1,10,190)
+#tRampUpList = [5.52261306533] #If you only one to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 for iloop,tRampUp in enumerate(tRampUpList):
+    print '\nThrottle ramp up time', tRampUp    
     # create the objects we need from classes
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(ntime)
@@ -560,6 +558,11 @@ for iloop,tRampUp in enumerate(tRampUpList):
     eData = en.data[:ti.i]
     oData = op.data[:ti.i]
     rData = rp.data[:ti.i]
+    
+    #Debugging:
+    close('all')
+    plts = plots(path)  
+    plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time') 
     
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
     if max(gl.yD)> 1 and min(gl.yD) < 0 :
@@ -597,7 +600,6 @@ for iloop,tRampUp in enumerate(tRampUpList):
     
 
     # Comments to user
-    print '\nThrottle ramp up time', tRampUp
     print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
     print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
     print 'Maximum Tension factor: {:3.1f}'.format(Tmax)
@@ -659,5 +661,5 @@ heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum
 plts.i = 0 #restart color cycle
 plts.xyy([data['tRampUp']],[data['xRoll'],data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
         [0,0,0,0,0,1,1,1,0,0,0],'throttle ramp-up time (sec)',['Velocity (m/s), Angles (deg), %',"Relative forces,g's"],\
-        ['x gnd roll', 't gnd roll','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"g's",r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
+        ['x gnd roll', 't gnd roll','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"max g's",r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
 print 'Done'
