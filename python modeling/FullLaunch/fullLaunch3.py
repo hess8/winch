@@ -115,7 +115,7 @@ class plots:
         ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        show()
+#         show()
         
     def xyy(self,xs,ys,yscalesMap,xlbl,ylbls,legendLabels,titlestr):
         '''Allows plotting with two yscales, left (0) and right (1).  
@@ -148,7 +148,7 @@ class plots:
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        show()             
+#         show()             
     
 class timeinfo:
     def __init__(self,tStart,tEnd,N):
@@ -266,13 +266,14 @@ class engine:
         return self.Pmax*(self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3)
         
 class operator:
-    def __init__(self,ntime):
+    def __init__(self,tRampUp,ntime):
         self.Sth = 0
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
-        self.angleMax = 90*pi/180 #throttle goes to zero at this rope angle
+        self.angleMax = 80*pi/180 #throttle goes to zero at this rope angle
+        self.tRampUp = tRampUp
          
     def linearDown(self,t):
-        tRampUp = 2  #seconds
+        tRampUp = self.tRampUp
         tHold = 40
         tDown = tRampUp + tHold
         tRampDown = ti.tEnd - tRampUp - tHold
@@ -290,7 +291,7 @@ class operator:
         # until the power is zero at an angle greater angleMax.         
         angleStartDown = 30*pi/180 #throttle goes to zero at this rope angle         
         angleMax = self.angleMax         
-        tRampUp = 2  #seconds
+        tRampUp = self.tRampUp
 #        thrmax = 1.0 
         thrmax = 0.7 
         thetarope = rp.data[ti.i]['angle'] 
@@ -507,7 +508,7 @@ path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 control = ['','']
 #control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
-setpoint = [2*pi/180  ,30, 20]  #last one is climb angle to transition to final control
+setpoint = [1*pi/180  ,30, 20]  #last one is climb angle to transition to final control
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 #tcUsed = True   # uses the torque controller
@@ -519,33 +520,34 @@ tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow for data points saved
 t = linspace(tStart,tEnd,num=ntime)
 
-# create the objects we need from classes
-ti = timeinfo(tStart,tEnd,ntime) 
-gl = glider(ntime)
-rp = rope() 
-wi = winch()
-tc = torqconv()
-en = engine(tcUsed,wi.rdrum)
-op = operator(ntime)
-pl = pilot(pilotType,ntime,control,setpoint)
 
-#initialize state vector to zero  
-S0 = zeros(10)
-# nonzero initial conditions
-gl.xD = 1e-6  #to avoid div/zero
-gl.ve = 1e-6  #to avoid div/zero
-
-if control[0] == 'alpha':
-    gl.theta = setpoint[0]
-else:
-    gl.theta = 2*pi/180   #initial AoA, 2 degrees
     
 #Loop over parameters for study, optimization
-tRampUpList = linspace(1,8,15)
-tRampUpList = [2.0] #If you only one to run one value
-data = zeros(ntime,dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),\
-                                    ('thetaDotmax', float),('Tmax', float),('yDfinal', float),('alphaMax', float),('Lmax', float)])
+tRampUpList = linspace(1,10,3)
+# tRampUpList = [2.0] #If you only one to run one value
+data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),\
+                                    ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 for iloop,tRampUp in enumerate(tRampUpList):
+    # create the objects we need from classes
+    ti = timeinfo(tStart,tEnd,ntime) 
+    gl = glider(ntime)
+    rp = rope() 
+    wi = winch()
+    tc = torqconv()
+    en = engine(tcUsed,wi.rdrum)
+    op = operator(tRampUp,ntime)
+    pl = pilot(pilotType,ntime,control,setpoint)
+    
+    #initialize state vector to zero  
+    S0 = zeros(10)
+    # nonzero initial conditions
+    gl.xD = 1e-6  #to avoid div/zero
+    gl.ve = 1e-6  #to avoid div/zero
+    
+    if control[0] == 'alpha':
+        gl.theta = setpoint[0]
+    else:
+        gl.theta = 2*pi/180   #initial AoA, 2 degrees
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
     S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
@@ -573,28 +575,33 @@ for iloop,tRampUp in enumerate(tRampUpList):
             ti.i = argmax(gl.data['t'])
     else:
         itr = len(t)
-    #find ground roll length
+    #Determine misc results
+    gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
+    vrel =wi.v/en.v 
+    Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
+    #find ground roll
     iEndRoll = where(gl.y > 0.01)[0][0]
     xRoll = gl.x[iEndRoll]
     tRoll = t[iEndRoll]
     # final values     
     yfinal = gData['y'][-1]
-    vyfinal  = gData['yD'][-1]
-    if vyfinal < 0.5: vyfinal = 0
+    yDfinal  = gData['yD'][-1]
+    if yDfinal < 0.5: yDfinal = 0
     # max values
-    thetaDotmax = 180/pi*max(gl.thetaD[:itr])
+    thetaDmax = max(gl.thetaD[:itr])
     vmax = max(gData['v'])
-    Tmax =  max(rp.T[:itr]/gl.W)
+    Tmax =  max(rp.T[:itr])/gl.W
     alphaMax = max(gData['alpha'])
-    Lmax = max(gData['L'])
+    Lmax = max(gData['L'])/gl.W
+    gammaMax = max(gamma)
 
     # Comments to user
-    print 'Throttle ramp up time', tRampUp
+    print '\nThrottle ramp up time', tRampUp
     print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
     print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
-    print 'Maximum Tension factor: {:3.1f}'.format(max(rp.T[:itr]/gl.W))
+    print 'Maximum Tension factor: {:3.1f}'.format(Tmax)
     print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
-    print 'Final vy: {:5.1f} m/s'.format(vyfinal)
+    print 'Final vy: {:5.1f} m/s'.format(yDfinal)
     
     if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
         print '\nWarning...the integrator had a harder time with this model.'
@@ -605,24 +612,21 @@ for iloop,tRampUp in enumerate(tRampUpList):
     data[iloop]['xRoll'] = xRoll
     data[iloop]['tRoll'] = tRoll
     data[iloop]['yfinal'] = yfinal
+    data[iloop]['yDfinal'] = yDfinal
     data[iloop]['vmax'] = vmax
-    data[iloop]['thetaDotmax'] = thetaDotmax
+    data[iloop]['Lmax'] = Lmax    
     data[iloop]['Tmax'] = Tmax
-    data[iloop]['alphaMax'] = alphaMax
-    data[iloop]['Lmax'] = Lmax
-
-# plot results
+    data[iloop]['alphaMax'] = 180/pi*alphaMax
+    data[iloop]['gammaMax'] = 180/pi*gammaMax
+    data[iloop]['thetaDmax'] = 180/pi*thetaDmax
+# plot results for last one
 close('all')
 plts = plots(path)   
-#plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time')
-gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
-alpha = gl.theta[:itr] - gamma  
+#plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time') 
 #plts.xy([t],[180/pi*gl.theta[:itr],180/pi*gamma,180/pi*alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
 #plts.xy([t],[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
 #plts.xy([tData],[gData['L']/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
 #plts.xy([tData],],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
-vrel =wi.v/en.v 
-Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 #plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
 #plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
 
@@ -630,11 +634,11 @@ Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-plts.xy([tData,tData,tData,t,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*alpha,180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr]],\
+plts.xy([tData,tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gData['alpha'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr]],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,tData,t,tData,t,t,t],[gData['v'],wi.v[:itr],gData['y']/rp.lo,rp.T[:itr]/gl.W,gData['L']/gl.W,180/pi*alpha,180/pi*gamma,180/pi*gl.thetaD[:itr]],\
-        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)','vr (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
+plts.xyy([tData,t,tData,t,tData,tData,t,t],[gData['v'],wi.v[:itr],gData['y']/rp.lo,rp.T[:itr]/gl.W,gData['L']/gl.W,180/pi*gData['alpha'],180/pi*gamma,180/pi*gl.thetaD[:itr]],\
+        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
 
 #lift,drag,forces
 plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
@@ -648,10 +652,10 @@ plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gDa
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
 
 
+# plot loop results
+plts.i = 0 #restart color cycle
+plts.xyy([data['tRampUp']],[data['xRoll'],data['tRoll'],data['yfinal']/rp.lo*100,data['vmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+        [0,0,0,0,1,1,0,0,0],'throttle ramp-up time (sec)',['Velocity (m/s), Angles (deg), %','Relative forces'],\
+        ['x gnd roll', 't gnd roll','height/'+ r'$\l_o $%',r'$v_{max}$','T/W', 'L/W', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
 
-print 'Done' 
-
-
-
-
-
+print 'Done'
