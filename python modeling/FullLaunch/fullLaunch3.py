@@ -91,21 +91,21 @@ def pid(var,time,setpoint,c,j,Nint):
 class plots:
     def __init__(self,path):
         self.i = 0 #counter for plots, so each variable has a different color
-        self.path = path        
+        self.path = path
+        self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
+        u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'darkviolet',
+        u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#30a2da',u'#009E73','peru','slateblue'] # u'#F0E442',u'#467821'      
         return 
     
     def xy(self,xs,ys,xlbl,ylbl,legendLabels,titlestr):
         '''To allow different time (x) arrays, we require the xs to be a list'''
         if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
             xs = [xs[0] for y in ys] 
-        colorsList = [u'#30a2da', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
-              u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 'darkviolet',
-              u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#009E73','peru','slateblue'] # u'#F0E442'
         figure()
         for iy,y in enumerate(ys):
-            plot(xs[iy],y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+            plot(xs[iy],y,color=self.colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
             self.i += 1
-            if self.i > len(colorsList)-1:
+            if self.i > len(self.colorsList)-1:
                 self.i = 0
         xlabel(xlbl)
         ylabel(ylbl)
@@ -124,18 +124,15 @@ class plots:
         ax1 = ax0.twinx()
         if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
             xs = [xs[0] for y in ys] 
-        colorsList = [u'#30a2da', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
-              u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', u'#467821', u'#D55E00', 'darkviolet',
-              u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#009E73','peru','slateblue'] # u'#F0E442'
         ymaxs = [[],[]]       
         for iy,y in enumerate(ys):
             if yscalesMap[iy] == 0:
-                ax0.plot(xs[iy],y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])  
+                ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=2.0,label=legendLabels[iy])  
             else:
-                ax1.plot(xs[iy],y,color=colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+                ax1.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
             ymaxs[yscalesMap[iy]].append(max(y))
             self.i += 1 
-            if self.i > len(colorsList)-1:
+            if self.i > len(self.colorsList)-1:
                 self.i = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbls[0])
@@ -148,7 +145,7 @@ class plots:
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-#         show()             
+        show()             
     
 class timeinfo:
     def __init__(self,tStart,tEnd,N):
@@ -209,8 +206,8 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.1             #  vertial distance (m) of rope attachment below CG
-#        self.lo = 8000 * 0.305         #  initial rope length (m)
-        self.lo = 1000         #  initial rope length (m)
+        self.lo = 8000 * 0.305         #  initial rope length (m)
+#        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
         # data
@@ -266,11 +263,14 @@ class engine:
         return self.Pmax*(self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3)
         
 class operator:
-    def __init__(self,tRampUp,ntime):
+    def __init__(self,thrmax,tRampUp,ntime):
+        self.thrmax = thrmax        
+        self.tRampUp = tRampUp
         self.Sth = 0
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         self.angleMax = 80*pi/180 #throttle goes to zero at this rope angle
-        self.tRampUp = tRampUp
+
+        
          
     def linearDown(self,t):
         tRampUp = self.tRampUp
@@ -473,7 +473,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['yD'] = gl.yD
         gl.data[ti.i]['v']  = v
         gl.data[ti.i]['theta']  = gl.theta
-        gl.data[ti.i]['vD']  = (dotx * dotxD + doty * dotyD)/v
+        gl.data[ti.i]['vD']  = sqrt(dotxD**2 + dotyD**2)
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
@@ -508,11 +508,12 @@ path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 control = ['','']
 #control = ['alpha','v']
 #setpoint = [2*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
-setpoint = [1*pi/180  ,30, 20]  #last one is climb angle to transition to final control
+setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
+thrmax = 1.0
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
-#tcUsed = True   # uses the torque controller
-tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
+tcUsed = True   # uses the torque controller
+#tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
@@ -520,12 +521,10 @@ tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow for data points saved
 t = linspace(tStart,tEnd,num=ntime)
 
-
-    
 #Loop over parameters for study, optimization
-tRampUpList = linspace(1,10,3)
+tRampUpList = linspace(1,10,4)
 # tRampUpList = [2.0] #If you only one to run one value
-data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),\
+data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 for iloop,tRampUp in enumerate(tRampUpList):
     # create the objects we need from classes
@@ -535,7 +534,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
-    op = operator(tRampUp,ntime)
+    op = operator(thrmax,tRampUp,ntime)
     pl = pilot(pilotType,ntime,control,setpoint)
     
     #initialize state vector to zero  
@@ -547,7 +546,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     if control[0] == 'alpha':
         gl.theta = setpoint[0]
     else:
-        gl.theta = 2*pi/180   #initial AoA, 2 degrees
+        gl.theta = 0*pi/180   #initial AoA, 2 degrees
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
     S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
@@ -590,10 +589,12 @@ for iloop,tRampUp in enumerate(tRampUpList):
     # max values
     thetaDmax = max(gl.thetaD[:itr])
     vmax = max(gData['v'])
+    vDmax = max(gData['vD']) #max acceleration
     Tmax =  max(rp.T[:itr])/gl.W
     alphaMax = max(gData['alpha'])
     Lmax = max(gData['L'])/gl.W
     gammaMax = max(gamma)
+    
 
     # Comments to user
     print '\nThrottle ramp up time', tRampUp
@@ -614,6 +615,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     data[iloop]['yfinal'] = yfinal
     data[iloop]['yDfinal'] = yDfinal
     data[iloop]['vmax'] = vmax
+    data[iloop]['vDmax'] = vDmax
     data[iloop]['Lmax'] = Lmax    
     data[iloop]['Tmax'] = Tmax
     data[iloop]['alphaMax'] = 180/pi*alphaMax
@@ -653,9 +655,9 @@ plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']
 
 
 # plot loop results
+heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum
 plts.i = 0 #restart color cycle
-plts.xyy([data['tRampUp']],[data['xRoll'],data['tRoll'],data['yfinal']/rp.lo*100,data['vmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
-        [0,0,0,0,1,1,0,0,0],'throttle ramp-up time (sec)',['Velocity (m/s), Angles (deg), %','Relative forces'],\
-        ['x gnd roll', 't gnd roll','height/'+ r'$\l_o $%',r'$v_{max}$','T/W', 'L/W', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
-
+plts.xyy([data['tRampUp']],[data['xRoll'],data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+        [0,0,0,0,0,1,1,1,0,0,0],'throttle ramp-up time (sec)',['Velocity (m/s), Angles (deg), %',"Relative forces,g's"],\
+        ['x gnd roll', 't gnd roll','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"g's",r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
 print 'Done'
