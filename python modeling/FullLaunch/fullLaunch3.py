@@ -294,7 +294,6 @@ class operator:
 #        thrmax = 1.0 
         thrmax = 0.7 
         thetarope = rp.data[ti.i]['angle'] 
-        print 'rp angle',t,thetarope*180/pi,1-(thetarope - angleStartDown)/(angleMax - angleStartDown),gl.yD
         if thetarope <0:
             print 'pause'
         if t < tRampUp:
@@ -540,39 +539,81 @@ if control[0] == 'alpha':
     gl.theta = setpoint[0]
 else:
     gl.theta = 2*pi/180   #initial AoA, 2 degrees
-
-#integrate the ODEs
-S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
-#Split S (now a matrix with state variables in columns and times in rows)
-gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
-
-#If yD dropped below zero, the release occured.  Remove the time steps after that. 
-if max(gl.yD)> 1 and min(gl.yD) < 0 :
-    negyD =where(gl.yD < 0)[0]
-    itr = negyD[0]-1 #ode solver index for release time
-#    itr = argmin(gl.yD)
-    t = t[:itr] #shorten
-    if min(gl.data['yD']) < 0:
-        negyD =where(gl.data['yD'] < 0)[0]
-        ti.i = negyD[0]-1  #data index for release time  
+    
+#Loop over parameters for study, optimization
+tRampUpList = linspace(1,8,15)
+tRampUpList = [2.0] #If you only one to run one value
+data = zeros(ntime,dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),\
+                                    ('thetaDotmax', float),('Tmax', float),('yDfinal', float),('alphaMax', float),('Lmax', float)])
+for iloop,tRampUp in enumerate(tRampUpList):
+    #integrate the ODEs
+    S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
+    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
+    #Split S (now a matrix with state variables in columns and times in rows)
+    gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
+    #Shortened labels for results
+    tData = gl.data[:ti.i]['t']
+    gData = gl.data[:ti.i]
+    wData = wi.data[:ti.i]
+    pData = pl.data[:ti.i]
+    eData = en.data[:ti.i]
+    oData = op.data[:ti.i]
+    rData = rp.data[:ti.i]
+    
+    #If yD dropped below zero, the release occured.  Remove the time steps after that. 
+    if max(gl.yD)> 1 and min(gl.yD) < 0 :
+        negyD =where(gl.yD < 0)[0]
+        itr = negyD[0]-1 #ode solver index for release time
+    #    itr = argmin(gl.yD)
+        t = t[:itr] #shorten
+        if min(gl.data['yD']) < 0:
+            negyD =where(gl.data['yD'] < 0)[0]
+            ti.i = negyD[0]-1  #data index for release time  
+        else:
+            ti.i = argmax(gl.data['t'])
     else:
-        ti.i = argmax(gl.data['t'])
-else:
-    itr = len(t)
+        itr = len(t)
+    #find ground roll length
+    iEndRoll = where(gl.y > 0.01)[0][0]
+    xRoll = gl.x[iEndRoll]
+    tRoll = t[iEndRoll]
+    # final values     
+    yfinal = gData['y'][-1]
+    vyfinal  = gData['yD'][-1]
+    if vyfinal < 0.5: vyfinal = 0
+    # max values
+    thetaDotmax = 180/pi*max(gl.thetaD[:itr])
+    vmax = max(gData['v'])
+    Tmax =  max(rp.T[:itr]/gl.W)
+    alphaMax = max(gData['alpha'])
+    Lmax = max(gData['L'])
+
+    # Comments to user
+    print 'Throttle ramp up time', tRampUp
+    print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
+    print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
+    print 'Maximum Tension factor: {:3.1f}'.format(max(rp.T[:itr]/gl.W))
+    print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
+    print 'Final vy: {:5.1f} m/s'.format(vyfinal)
+    
+    if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
+        print '\nWarning...the integrator had a harder time with this model.'
+        print '\tIf some of the plots have a time axis that is too short vs others, '
+        print '\t...try making smoother controls.'
+    # Store loop results
+    data[iloop]['tRampUp'] = tRampUp
+    data[iloop]['xRoll'] = xRoll
+    data[iloop]['tRoll'] = tRoll
+    data[iloop]['yfinal'] = yfinal
+    data[iloop]['vmax'] = vmax
+    data[iloop]['thetaDotmax'] = thetaDotmax
+    data[iloop]['Tmax'] = Tmax
+    data[iloop]['alphaMax'] = alphaMax
+    data[iloop]['Lmax'] = Lmax
 
 # plot results
-tData = gl.data[:ti.i]['t']
-gData = gl.data[:ti.i]
-wData = wi.data[:ti.i]
-pData = pl.data[:ti.i]
-eData = en.data[:ti.i]
-oData = op.data[:ti.i]
-rData = rp.data[:ti.i]
-
 close('all')
 plts = plots(path)   
-
 #plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time')
 gamma = arctan(gl.yD[:itr]/gl.xD[:itr]) 
 alpha = gl.theta[:itr] - gamma  
@@ -605,19 +646,8 @@ plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speed
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
-# Comments to user
-yfinal = gData['y'][-1]
-vyfinal  = gData['yD'][-1]
-if vyfinal < 0.5: vyfinal = 0
-print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
-print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
-print 'Maximum Tension factor: {:3.1f}'.format(max(rp.T[:itr]/gl.W))
-print 'Final vy: {:5.1f} m/s'.format(vyfinal)
 
-if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
-    print '\nWarning...the integrator had a harder time with this model.'
-    print '\tIf some of the plots have a time axis that is too short vs others, '
-    print '\t...try making smoother controls.'
+
 
 print 'Done' 
 
