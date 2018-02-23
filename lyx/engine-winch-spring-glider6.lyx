@@ -169,7 +169,7 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $v_{w},$
+\begin_inset Formula $v_{r},$
 \end_inset
 
  rope uptake speed (m/s), or equivalent winch speed
@@ -1194,7 +1194,7 @@ change
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{\xi}=v_{w}-v_{gw}\label{eq:stretch velocity}
+\dot{\xi}=v_{r}-v_{gw}\label{eq:stretch velocity}
 \end{equation}
 
 \end_inset
@@ -1470,6 +1470,10 @@ on.
  
 \end_layout
 
+\begin_layout Section
+Winch and engine model without torque converter
+\end_layout
+
 \begin_layout Standard
 Without a torque converter, the winch, transmission and engine rotating
  parts can be considered as one effective mass rotating together.
@@ -1491,7 +1495,7 @@ reference "eq:uptake speed diffeq (winch diffeq)"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-(m_{e,w}+m_{e,e})\dot{v_{w}}=F_{pistons}-T
+(m_{e,w}+m_{e,e})\dot{v_{r}}=F_{pistons}-T
 \]
 
 \end_inset
@@ -1508,7 +1512,7 @@ F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}P_{a}(\omega_{eng})}{r_{
 \end_layout
 
 \begin_layout Section
-Torque converter and engine models
+Torque converter coupling engine to winch
 \end_layout
 
 \begin_layout Standard
