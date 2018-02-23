@@ -2065,12 +2065,39 @@ In three of the above, we've written the double-dot notation differently
  
 \end_layout
 
+\begin_layout Standard
+In the appendix 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Rope-sag-drag"
+
+\end_inset
+
+we explain small changes to 
+\begin_inset Formula $T$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta_{r}$
+\end_inset
+
+ at the glider that are caused by rope weight and drag.
+ 
+\end_layout
+
 \begin_layout Section
 Appendix
 \end_layout
 
 \begin_layout Subsection
 Rope sag and drag
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Rope-sag-drag"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -2092,7 +2119,7 @@ It drags the rope through the air with a velocity that is approximately
 \begin_inset Formula $s$
 \end_inset
 
- of the rope segement from the glider (as in a straight-line rope):
+ of the rope segement from the winch (as in a straight-line rope):
 \end_layout
 
 \begin_layout Standard
@@ -2128,11 +2155,11 @@ where
 \begin_inset Formula $d_{r}$
 \end_inset
 
-is the rope diameter, and 
+ is the rope diameter, and 
 \begin_inset Formula $v_{tr}$
 \end_inset
 
-is the speed of the rope, and 
+ is the speed of the rope, and 
 \begin_inset Formula $C_{dr}\approx1$
 \end_inset
 
@@ -2146,8 +2173,8 @@ is the speed of the rope, and
 \end_inset
 
 .
- Balancing the forces on the rope segment: The sum along the segment direction
- is:
+ The rope is in rough equilibrium, so the sum of forces along the segment
+ direction is:
 \begin_inset Formula 
 \[
 (T+dT/2)cos\left(\frac{d\theta}{2}\right)-(T-dT/2)cos\left(\frac{d\theta}{2}\right)-\mu g\,ds\,sin\theta=dT\,cos\left(\frac{d\theta}{2}\right)-\mu g\,ds\,sin\theta=0
@@ -2253,10 +2280,11 @@ where
 \end_layout
 
 \begin_layout Standard
-This doesn't have a simple solution.
- But because with plastic rope deviations from a straight line aren't large,
- we can think of this in a perturbative sense, so we break this into two
- separate effects below.
+This doesn't have a simple solution unless either the rope weight or drag
+ are zero.
+ But because with modern light rope, deviations from a straight line aren't
+ large, we can think of this in a perturbative sense, so we break this into
+ two separate effects below.
  
 \end_layout
 
@@ -2418,7 +2446,7 @@ c_{1}=\theta_{r}-\frac{1}{2}\frac{\mu g\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\
 So 
 \begin_inset Formula 
 \[
-\theta(l)\approx\frac{\mu g\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}l+\theta_{r}-\frac{1}{2}\frac{\mu g\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}l
+\theta_{r,glider}\approx\frac{\mu g\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}l+\theta_{r}-\frac{1}{2}\frac{\mu g\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}l
 \]
 
 \end_inset
@@ -2429,7 +2457,7 @@ So
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\theta(l)\approx\theta_{r}-\frac{1}{2}\frac{\mu g\,l\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}\,
+\theta_{r,glider}\approx\theta_{r}-\frac{1}{2}\frac{\mu g\,l\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}\,
 \]
 
 \end_inset
@@ -2440,7 +2468,7 @@ So
 \begin_layout Standard
 When the tension is applied with this new angle at the glider, it will pull
  it less forward, and more down.
- This will account for the energy lost in lifting the rope.
+ This will account for the energy spent in lifting the rope.
  
 \end_layout
 
@@ -2524,7 +2552,7 @@ Then the angle at the glider is approximately:
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\theta(l)=\frac{1}{3}\frac{p}{T}l^{3}+\theta_{r}-\frac{1}{12}\frac{p}{lT}l^{4}=\theta_{r}-\frac{pl^{3}}{4T}
+\theta_{r,glider}=\frac{1}{3}\frac{p}{T}l^{3}+\theta_{r}-\frac{1}{12}\frac{p}{lT}l^{4}=\theta_{r}-\frac{pl^{3}}{4T}
 \]
 
 \end_inset
@@ -2539,7 +2567,7 @@ We substitute write
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\theta(l)=\theta_{r}-\frac{C_{dr}\rho v_{t}^{2}d_{r}l}{8T}
+\theta_{r,glider}=\theta_{r}-\frac{C_{dr}\rho v_{t}^{2}d_{r}l}{8T}
 \]
 
 \end_inset
@@ -2552,6 +2580,45 @@ When the tension is applied with this new angle at the glider, it will pull
  it less forward, and more down.
  This will account for the energy lost in rope friction.
  
+\end_layout
+
+\begin_layout Subsubsection
+Combined effects
+\end_layout
+
+\begin_layout Standard
+In the 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $y$
+\end_inset
+
+ equations of motion for the glider, and the rope torque on the glider,
+ we substitute
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\theta_{r,glider}=\theta_{r}-\frac{C_{dr}\rho v_{t}^{2}d_{r}l}{8T}-\frac{1}{2}\frac{\mu g\,l\,cos\theta_{r}}{T_{winch}+\mu g\,l\,sin\theta_{r}}\label{eq: theta rope at glider}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+T_{glider}\approx T_{winch}+\mu g\,l\,sin\theta_{r}\label{eq:T at glider vs at winch}
+\end{equation}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -2646,7 +2713,7 @@ kgm
 = 0.1
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsubsection
 Elevator 
 \end_layout
 
@@ -2781,17 +2848,25 @@ Comparing to the xflyr5 model:
  We will then use this larger amount
 \end_layout
 
-\begin_layout Standard
-Torque capacity factor: GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142
- rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 13 rad/s/(Nm)
+\begin_layout Subsubsection
+Torque capacity factor: 
+\end_layout
+
+\begin_layout Paragraph
+GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60
+ rad/s/rpm * sqrt(0.74 ftlb/Nm) = 13 rad/s/(Nm)
 \begin_inset Formula $^{\frac{1}{2}}$
 \end_inset
 
 
 \end_layout
 
+\begin_layout Subsubsection
+Winch equivalent mass
+\end_layout
+
 \begin_layout Standard
-Winch equivalent mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
+: Utah Soaring Assn drum I = 70000 Lb in2 = 20 
 \begin_inset Formula $kgm^{2}$
 \end_inset
 
@@ -2815,8 +2890,12 @@ Winch equivalent mass: Utah Soaring Assn drum I = 70000 Lb in2 = 20
  Ratio vs grob: 250/600 = 0.4
 \end_layout
 
+\begin_layout Subsubsection
+Peak engine speed
+\end_layout
+
 \begin_layout Standard
-Peak engine speed: USA 2nd gear: 1:1.52 transmission.
+USA 2nd gear: 1:1.52 transmission.
  Spider gear differential: 1:3.7 (driveshaft turns faster than winch), so
  
 \begin_inset Formula $\omega_{at\,w}$
@@ -2845,7 +2924,6 @@ Peak engine speed: USA 2nd gear: 1:1.52 transmission.
  If we use gear 2, then the peak speed becomes 33m/s, and again we have
  to have some slippage so you can't get full power out of the engine in
  gear 2.
- But maybe we don't want to.
  
 \end_layout
 

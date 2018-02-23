@@ -210,28 +210,42 @@ class rope:
     def __init__(self,tau):
         # Rope parameters  
         self.tau = tau #sec.  Artificial damping of oscillations.          
-        Rrope = 0.005/2.0     #  rope radius (m)
-        self.A = pi*Rrope**2      #  rope area (m2)
+        self.d  = 0.005     #  rope diameter (m)
+        self.A = pi*self.d**2/4      #  rope area (m2)
         self.Y = 30e9             #  2400*9.8/(pi*(0.005/2)^2)/0.035  
                                  #  effective Young's modulus 30 GPa for rope from Dyneema
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.1             #  vertial distance (m) of rope attachment below CG
-        self.lo = 8000 * 0.305         #  initial rope length (m)
+        self.lo = 8000 * 0.305         #  8000 ft to meters initial rope length (m)
+        self.Cdr = 1.0           # rope drag coefficient
+        self.mu = 0.015          # rope linear mass density (kg/meter)
+
 #        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
         # data
-        self.data = zeros(ntime,dtype = [('T', float),('torq', float),('angle',float)]) 
+        self.data = zeros(ntime,dtype = [('T', float),('torq', float),('angle',float),('Pdeliv',float),('Edeliv',float)]) 
         # function of state:
         tint = 4*self.tau 
-        
-        Nint = min(ti.i,ceil(tint/ti.dt))
-        if ti.i >= 0:
-            self.Tavg = sum(self.data[ti.i-Nint:ti.i+1])/(Nint + 1)
-        else:
-            self.Tavg = 0
+        def avgT(self,ti):          
+            Nint = min(ti.i,ceil(tint/ti.dt))
+            if ti.i >= 0:
+                return sum(self.data[ti.i-Nint:ti.i+1])/(Nint + 1)
+            else:
+                return 0
+        def Tglider(self,thetarope):
+            g = 9.8  
+            return self.T + self.mu * g * sin(thetarope)
+            
+        def thetaRopeGlider(self,ti,thetarope,vtrans,lenrope):
+            rho = 1.22          # air density (kg/m^3)
+            g = 9.8            
+            dragCorr = self.Cdr * rho * vtrans**2 * self.d * lenrope / self.T / 8           
+            weightCorr = 0.5 * self.mu * g *  lenrope * cos(thetarope) / (self.T + self.mu * g * sin(thetarope))         
+            return thetarope - dragCorr - weightCorr
+            
 class winch:
     def __init__(self):
         # Winch parameters  
@@ -427,11 +441,15 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     op.angleDown(t,ti,gl,rp) 
     pl.control(t,ti,gl)
     #rope
-    thetarope = arctan(gl.y/float(rp.lo-gl.x)); 
+    thetarope = arctan(gl.y/float(rp.lo-gl.x));
     if thetarope < 0: thetarope += 180 #to handle overflight of winch 
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
+    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
+    vtrans = sqrt(v**2 - vgw**2) # velocity of glider perpendicular to straight line rope
+    thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
+    Tg = rp.Tglider(thetarope) #tension at glider corrected for rope weight
     gamma = arctan(gl.yD/gl.xD)  # climb angle.   
     alpha = gl.theta - gamma # angle of attack
     L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
@@ -441,22 +459,22 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         D = 4*L/float(gl.Q)
     alphatorq = -L * gl.palpha * alpha/(gl.Co + 2*pi*alpha)
     M = (alphatorq + pl.Me) #torque of air on glider
-    ropetorq = rp.T*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetarope) #torque of rope on glider
-    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
-    
+     
+    ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
+
     #winch-engine
     vrel = wi.v/en.v
     Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
     Few = Fee * (2-vrel)  # effective force between engine and winch through torque converter
     #----derivatives of state variables----#
-    dotx = gl.xD    
-    dotxD = 1/float(gl.m) * (rp.T*cos(thetarope) - D*cos(gamma) - L*sin(gamma)) #x acceleration
+    dotx = gl.xD       
+    dotxD = 1/float(gl.m) * (Tg*cos(thetaRG) - D*cos(gamma) - L*sin(gamma)) #x acceleration
     doty = gl.yD
     gl.onGnd = gl.y < 1.0 and L < gl.W #on ground 
     if gl.onGnd:  
         dotyD = 0 
     else:
-        dotyD = 1/float(gl.m) * (L*cos(gamma) - rp.T*sin(thetarope) - D*sin(gamma) - gl.W) #y acceleration
+        dotyD = 1/float(gl.m) * (L*cos(gamma) - Tg*sin(thetaRG) - D*sin(gamma) - gl.W) #y acceleration
     if gl.onGnd and pl.type == 'momentControl':
         dottheta = 0
         dotthetaD = 0
@@ -496,8 +514,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['D']  = D
         gl.data[ti.i]['Malpha']  = alphatorq
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
-        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
+#        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
+        gl.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG + gamma) 
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+        rp.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG) 
+        rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         rp.data[ti.i]['T'] = rp.T
         rp.data[ti.i]['torq'] = ropetorq
         rp.data[ti.i]['angle'] = thetarope
@@ -670,8 +691,8 @@ plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me']],'time (sec)','Torque
 #Engine and winch
 plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
 #Energy,Power
-plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to glider','in glider'],'Energy delivered and kept')        
-plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to glider'],'Power delivered')        
+plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
+plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,rData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
 
 # plot loop results
 heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum
