@@ -223,8 +223,15 @@ class rope:
         # state variables 
         self.T = 0
         # data
-        self.data = zeros(ntime,dtype = [('torq', float),('angle',float)]) 
+        self.data = zeros(ntime,dtype = [('T', float),('torq', float),('angle',float)]) 
+        # function of state:
+        tint = 4*self.tau 
         
+        Nint = min(ti.i,ceil(tint/ti.dt))
+        if ti.i >= 0:
+            self.Tavg = sum(self.data[ti.i-Nint:ti.i+1])/(Nint + 1)
+        else:
+            self.Tavg = 0
 class winch:
     def __init__(self):
         # Winch parameters  
@@ -459,8 +466,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if pl.type == 'elevControl':
         dotelev = 1/pl.humanT * (pl.elevSet-pl.elev)
     else:
-        dotelev = 0  
-    dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope) - rp.T/rp.tau
+        dotelev = 0 
+
+    dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope) - (rp.T-rp.Tavg)/rp.tau
     if en.tcUsed:
         dotvw =  1/float(wi.me) * (Few - rp.T)
         dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -490,6 +498,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
         gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+        rp.data[ti.i]['T'] = rp.T
         rp.data[ti.i]['torq'] = ropetorq
         rp.data[ti.i]['angle'] = thetarope
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
