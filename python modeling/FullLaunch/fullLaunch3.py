@@ -218,8 +218,8 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
         self.b = 0.1             #  vertial distance (m) of rope attachment below CG
-#        self.lo = 8000 * 0.305         #  8000 ft to meters initial rope length (m)
-        self.lo = 1000 
+        self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
+#        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
         self.mu = 0.015          # rope linear mass density (kg/meter)
 
@@ -238,14 +238,14 @@ class rope:
             return 0
     def Tglider(self,thetarope):
         g = 9.8  
-        return self.T + 0* self.mu * g * sin(thetarope)
+        return self.T + self.mu * g * sin(thetarope)
         
     def thetaRopeGlider(self,ti,thetarope,vtrans,lenrope):
         rho = 1.22          # air density (kg/m^3)
         g = 9.8            
         if self.T > 1 and thetarope > 1 * pi/180:     
             dragCorr = self.Cdr * rho * vtrans**2 * self.d * lenrope / self.T / 8           
-            weightCorr = 0*0.5 * self.mu * g *  lenrope * cos(thetarope) / (self.T + self.mu * g * sin(thetarope))
+            weightCorr = 0.5 * self.mu * g *  lenrope * cos(thetarope) / (self.T + self.mu * g * sin(thetarope))
             return thetarope + dragCorr + weightCorr
         else:
             return thetarope
@@ -314,32 +314,28 @@ class operator:
         tHold = 40
         tDown = tRampUp + tHold
         tRampDown = ti.tEnd - tRampUp - tHold
-#        thrmax = 1.0 
-        thrmax = 0.5 
         if t <= tRampUp:
-            self.Sth =  thrmax/float(tRampUp) * t
+            self.Sth =  self.thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
-            self.Sth =  thrmax
+            self.Sth =  self.thrmax
         elif t >= tDown:
-            self.Sth = max(0,thrmax * (1-(t-tDown)/float(tRampDown)))
+            self.Sth = max(0,self.thrmax * (1-(t-tDown)/float(tRampDown)))
             
     def angleDown(self,t,ti,gl,rp):
         # The operator starts ramping down when the glider reaches a certain angle, linearly in angle
         # until the power is zero at an angle greater angleMax.         
         angleStartDown = 30*pi/180 #throttle goes to zero at this rope angle         
         angleMax = self.angleMax         
-        tRampUp = self.tRampUp
-#        thrmax = 1.0 
-        thrmax = 0.7 
+        tRampUp = self.tRampUp 
         thetarope = rp.data[ti.i]['angle'] 
         if thetarope <0:
             print 'pause'
         if t < tRampUp:
-            self.Sth =  thrmax/float(tRampUp) * t
+            self.Sth =  self.thrmax/float(tRampUp) * t
         elif t >= tRampUp and thetarope < angleStartDown:
-            self.Sth =  thrmax
+            self.Sth =  self.thrmax
         else: #angleStartDown < thetarope <= angleMax: 
-            self.Sth = max(0,thrmax * (1-(thetarope - angleStartDown)/(angleMax - angleStartDown)))
+            self.Sth = max(0,self.thrmax * (1-(thetarope - angleStartDown)/(angleMax - angleStartDown)))
 
 
 class pilot:
@@ -545,15 +541,18 @@ tEnd = 90 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-#control = ['alpha','alpha']  # Use '' for none
-#setpoint = [0*pi/180,0*pi/180, 20]  #last one is climb angle to transition to final control
+control = ['alpha','alpha']  # Use '' for none
+setpoint = [0*pi/180,0*pi/180, 20]  #last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
-control = ['','']
+# control = ['','']
 #control = ['alpha','v']
-setpoint = [0*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
+# setpoint = [0*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
+# control = ['','']
+# setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+
 
 thrmax = 1.0
 ropetau = 2.0 #oscillation damping in rope, artificial
