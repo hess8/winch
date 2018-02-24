@@ -332,7 +332,7 @@ class operator:
         tint = tauOp 
         Nint = min(ti.i,ceil(tint/ti.dt))                  
         #throttle control
-
+        print 'thetarope,angleStartDown',thetarope,angleStartDown
         if thetarope < angleStartDown:
             pp = -0.1; pd = -.0; pint = -.2
             c = array([pp,pd,pint]) 
@@ -342,6 +342,7 @@ class operator:
                 self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
             else:
                 self.Sth = speedControl
+            
         else: #angleStartDown < thetarope <= angleMax: 
             self.Sth = max(0,self.thrmax * (1-(thetarope - angleStartDown)/(angleMax - angleStartDown)))
 
@@ -451,7 +452,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     pl.control(t,ti,gl)
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x));
-    if thetarope < 0: thetarope += 180 #to handle overflight of winch 
+    if thetarope < 0: thetarope += pi #to handle overflight of winch 
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
@@ -588,7 +589,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(ntime)
-    rp = rope(ropetau) 
+    rp = rope(0) 
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
