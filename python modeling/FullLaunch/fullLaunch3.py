@@ -233,7 +233,7 @@ class rope:
         tint = 4*self.tau         
         Nint = min(ti.i,ceil(tint/ti.dt))
         if ti.i >= 0:
-            return sum(self.data[ti.i-Nint:ti.i+1])/(Nint + 1)
+            return sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
         else:
             return 0
     def Tglider(self,thetarope):
@@ -263,7 +263,9 @@ class winch:
 class torqconv:
      def __init__(self):
          # TC parameters  
-         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
+#         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
+         self.Ko = 3            
+
          self.dw = 0.13
          #data
          self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
@@ -275,15 +277,15 @@ class engine:
         # Engine parameters  
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 390             # engine rated horsepower
-        self.Pmax = 0.9*750*self.hp        # engine watts.  0.9 is for other transmission losses
+        self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses
 #        self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
 
 #        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
 
-#        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
-        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+#        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
 
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
@@ -291,9 +293,9 @@ class engine:
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
         # state variables 
         self.v = 0            #engine effective speed (m/s)
-        self.Few = 0           # effective force between engine and winch (could go in either engine or winch or in its own class)
+        self.Few = 0          # effective force between engine and winch (could go in either engine or winch or in its own class)
          #data
-        self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
+        self.data = zeros(ntime,dtype = [('v',float),('Pdeliv',float),('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
     
     def Pavail(self,ve):            # power curve
         vr = ve/float(self.vpeak)
@@ -307,8 +309,6 @@ class operator:
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         self.angleMax = 80*pi/180 #throttle goes to zero at this rope angle
 
-        
-         
     def linearDown(self,t):
         tRampUp = self.tRampUp
         tHold = 40
@@ -321,19 +321,27 @@ class operator:
         elif t >= tDown:
             self.Sth = max(0,self.thrmax * (1-(t-tDown)/float(tRampDown)))
             
-    def angleDown(self,t,ti,gl,rp):
+    def angleDown(self,t,ti,gl,rp,en):
         # The operator starts ramping down when the glider reaches a certain angle, linearly in angle
         # until the power is zero at an angle greater angleMax.         
         angleStartDown = 30*pi/180 #throttle goes to zero at this rope angle         
         angleMax = self.angleMax         
         tRampUp = self.tRampUp 
-        thetarope = rp.data[ti.i]['angle'] 
-        if thetarope <0:
-            print 'pause'
-        if t < tRampUp:
-            self.Sth =  self.thrmax/float(tRampUp) * t
-        elif t >= tRampUp and thetarope < angleStartDown:
-            self.Sth =  self.thrmax
+        thetarope = rp.data[ti.i]['angle']
+        tauOp = 4.0 #sec response time
+        tint = tauOp 
+        Nint = min(ti.i,ceil(tint/ti.dt))                  
+        #throttle control
+
+        if thetarope < angleStartDown:
+            pp = -0.1; pd = -.0; pint = -.2
+            c = array([pp,pd,pint]) 
+            time = self.data['t']
+            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeak,c,ti.i,Nint))
+            if t <= tRampUp:
+                self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+            else:
+                self.Sth = speedControl
         else: #angleStartDown < thetarope <= angleMax: 
             self.Sth = max(0,self.thrmax * (1-(thetarope - angleStartDown)/(angleMax - angleStartDown)))
 
@@ -439,7 +447,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     #----algebraic functions----#
     # Update controls
 #    op.linearDown(t) 
-    op.angleDown(t,ti,gl,rp) 
+    op.angleDown(t,ti,gl,rp,en) 
     pl.control(t,ti,gl)
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x));
@@ -501,6 +509,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} thetarope:{:8.3f} thetaRG:{:8.3f}  T:{:8.3f} Tg:{:8.3f} '.format(t,gl.x,gl.xD,gl.y,gl.yD,thetarope,thetaRG,rp.T,Tg)
+#        print 't,new throttle,engine speed,vy',t,op.Sth,en.v,gl.yD
 
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
@@ -525,6 +534,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         rp.data[ti.i]['angle'] = thetarope
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
         wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+        en.data[ti.i]['v'] = en.v  
         en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)         
         en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         op.data[ti.i]['t']   = t
@@ -541,8 +551,8 @@ tEnd = 90 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-control = ['alpha','alpha']  # Use '' for none
-setpoint = [0*pi/180,0*pi/180, 20]  #last one is climb angle to transition to final control
+#control = ['alpha','alpha']  # Use '' for none
+#setpoint = [0*pi/180,0*pi/180, 20]  #last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
@@ -550,12 +560,12 @@ setpoint = [0*pi/180,0*pi/180, 20]  #last one is climb angle to transition to fi
 # control = ['','']
 #control = ['alpha','v']
 # setpoint = [0*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
-# control = ['','']
-# setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
 
 thrmax = 1.0
-ropetau = 2.0 #oscillation damping in rope, artificial
+#ropetau = 2.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 tcUsed = True   # uses the torque controller
@@ -564,7 +574,7 @@ tcUsed = True   # uses the torque controller
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
-ntime = ((tEnd - tStart)/dt + 1 ) * 2.0   # number of time steps to allow for data points saved
+ntime = ((tEnd - tStart)/dt + 1 ) * 4.0   # number of time steps to allow for data points saved
 
 
 #Loop over parameters for study, optimization
