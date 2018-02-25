@@ -227,7 +227,7 @@ class rope:
         # state variables 
         self.T = 0
         # data
-        self.data = zeros(ntime,dtype = [('T', float),('torq', float),('angle',float),('Pdeliv',float),('Edeliv',float)]) 
+        self.data = zeros(ntime,dtype = [('T', float),('torq', float),('theta',float),('Pdeliv',float),('Edeliv',float)]) 
         
     def avgT(self,ti):          
         tint = 4*self.tau         
@@ -324,16 +324,16 @@ class operator:
     def angleDown(self,t,ti,gl,rp,en):
         # The operator starts ramping down when the glider reaches a certain angle, linearly in angle
         # until the power is zero at an angle greater angleMax.         
-        angleStartDown = 30*pi/180 #throttle goes to zero at this rope angle         
+        angleSwitch = 90*pi/180 #throttle goes to zero at this rope angle         
         angleMax = self.angleMax         
         tRampUp = self.tRampUp 
-        thetarope = rp.data[ti.i]['angle']
+        thetarope = rp.data[ti.i]['theta']
         tauOp = 4.0 #sec response time
         tint = tauOp 
         Nint = min(ti.i,ceil(tint/ti.dt))                  
         #throttle control
-        print 'thetarope,angleStartDown',thetarope,angleStartDown
-        if thetarope < angleStartDown:
+#         print 'thetarope,angleSwitch',thetarope,angleSwitch
+        if thetarope < angleSwitch:
             pp = -0.1; pd = -.0; pint = -.2
             c = array([pp,pd,pint]) 
             time = self.data['t']
@@ -342,9 +342,8 @@ class operator:
                 self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
             else:
                 self.Sth = speedControl
-            
-        else: #angleStartDown < thetarope <= angleMax: 
-            self.Sth = max(0,self.thrmax * (1-(thetarope - angleStartDown)/(angleMax - angleStartDown)))
+        else: #angleSwitch < thetarope <= angleMax: 
+            self.Sth = max(0,self.thrmax * (1-(thetarope - angleSwitch)/(angleMax - angleSwitch)))
 
 
 class pilot:
@@ -532,7 +531,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         rp.data[ti.i]['T'] = rp.T
         rp.data[ti.i]['torq'] = ropetorq
-        rp.data[ti.i]['angle'] = thetarope
+        rp.data[ti.i]['theta'] = thetarope
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
         wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         en.data[ti.i]['v'] = en.v  
@@ -709,8 +708,8 @@ plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:
         'time (sec)','Forces/Weight',['lift','drag','tension','TC-winch'],'Forces')
 #torques
 plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator or ground'],'Torques')
-#Engine and winch
-plts.xy([t,t,tData],[en.v[:itr],wi.v[:itr],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Throttle',['engine speed','winch speed','throttle %'],'Engine and winch')        
+#Engine, rope and winch
+plts.xy([t,t,tData,tData],[en.v[:itr],wi.v[:itr],180/pi*rData['theta'],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','rope angle','throttle'],'Engine and rope')        
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,rData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        

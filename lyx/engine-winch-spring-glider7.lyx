@@ -2250,7 +2250,7 @@ So
 \end_layout
 
 \begin_layout Standard
-These doesn't have a simple solution unless either the rope weight or drag
+These don't have a simple solution unless either the rope weight or drag
  are zero.
  But with a light rope, deviations from a straight line aren't large, we
  can think of this in a perturbative sense, so we break this into the two
@@ -2861,7 +2861,7 @@ Winch equivalent mass
 
 .
  R = 15 in = 0.4m.
- Add 1500m of Spectra rope at about 20g/m at r=0.4m.
+ Add 1500m of Dyneema rope at 15g/m at r=0.4m.
  
 \begin_inset Formula $I_{tot}=20$
 \end_inset
