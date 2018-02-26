@@ -321,11 +321,23 @@ class operator:
         elif t >= tDown:
             self.Sth = max(0,self.thrmax * (1-(t-tDown)/float(tRampDown)))
             
-    def angleDown(self,t,ti,gl,rp,en):
-        # The operator starts ramping down when the glider reaches a certain angle, linearly in angle
-        # until the power is zero at an angle greater angleMax.         
-        angleSwitch = 90*pi/180 #throttle goes to zero at this rope angle         
-        angleMax = self.angleMax         
+    def control(self,t,ti,gl,rp,en):
+        # The operator changes the throttle to give certain engine speeds 
+        # as a function of rope angle (not climb angle).
+        def targetEngSpeed(thetarope,en):
+            vengTargets = {'gndRoll' : 1.0*en.vpeak,'rotation' : 0.8*en.vpeak, 'climb' : 0.6*en.vpeak,'taper' : 0.4*en.vpeak}
+            angleStartRot = 1 * pi/180
+            angleStartClimb = 5 * pi/180
+            angleStartDown = 10 * pi/180
+            if thetarope < angleStartRot:
+                return vengTargets['gndRoll']
+            elif  angleStartRot < thetarope < angleStartClimb:
+                return vengTargets['rotation']
+            elif  angleStartClimb < thetarope < angleStartDown:
+                return vengTargets['climb']
+            else:   
+                return vengTargets['taper']
+#        angleMax = self.angleMax         
         tRampUp = self.tRampUp 
         thetarope = rp.data[ti.i]['theta']
         tauOp = 4.0 #sec response time
@@ -333,18 +345,26 @@ class operator:
         Nint = min(ti.i,ceil(tint/ti.dt))                  
         #throttle control
 #         print 'thetarope,angleSwitch',thetarope,angleSwitch
-        if thetarope < angleSwitch:
-            pp = -0.1; pd = -.0; pint = -.2
-            c = array([pp,pd,pint]) 
-            time = self.data['t']
-            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeak,c,ti.i,Nint))
-            if t <= tRampUp:
-                self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
-            else:
-                self.Sth = speedControl
-        else: #angleSwitch < thetarope <= angleMax: 
-            self.Sth = max(0,self.thrmax * (1-(thetarope - angleSwitch)/(angleMax - angleSwitch)))
-
+#        if thetarope < angleSwitch:
+#            pp = -0.1; pd = -.0; pint = -.2
+#            c = array([pp,pd,pint]) 
+#            time = self.data['t']
+#            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeak,c,ti.i,Nint))
+#            if t <= tRampUp:
+#                self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+#            else:
+#                self.Sth = speedControl
+#        else: #angleSwitch < thetarope <= angleMax: 
+#            self.Sth = max(0,self.thrmax * (1-(thetarope - angleSwitch)/(angleMax - angleSwitch)))
+        pp = -0.1; pd = -.0; pint = -.2
+        c = array([pp,pd,pint]) 
+        time = self.data['t']
+        veTarget = targetEngSpeed(thetarope,en)
+        speedControl = min(self.thrmax,max(0,pid(en.data['v'],time,veTarget,c,ti.i,Nint)))
+        if t <= tRampUp:
+            self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+        else:
+            self.Sth = speedControl
 
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
@@ -447,7 +467,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     #----algebraic functions----#
     # Update controls
 #    op.linearDown(t) 
-    op.angleDown(t,ti,gl,rp,en) 
+    op.control(t,ti,gl,rp,en) 
     pl.control(t,ti,gl)
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x));
@@ -508,7 +528,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
-#        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} thetarope:{:8.3f} thetaRG:{:8.3f}  T:{:8.3f} Tg:{:8.3f} '.format(t,gl.x,gl.xD,gl.y,gl.yD,thetarope,thetaRG,rp.T,Tg)
+#         print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} thetarope:{:8.3f} thetaRG:{:8.3f}  T:{:8.3f} Tg:{:8.3f} '.format(t,gl.x,gl.xD,gl.y,gl.yD,thetarope*180/pi,thetaRG*180/pi,rp.T,Tg)
 #        print 't,new throttle,engine speed,vy',t,op.Sth,en.v,gl.yD
 
         gl.data[ti.i]['t']  = t
@@ -531,6 +551,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         rp.data[ti.i]['T'] = rp.T
         rp.data[ti.i]['torq'] = ropetorq
+#         if gl.y > 1:
+#             print 'pause'
         rp.data[ti.i]['theta'] = thetarope
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
         wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
@@ -547,7 +569,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 90 # end time for simulation
+tEnd = 70 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
