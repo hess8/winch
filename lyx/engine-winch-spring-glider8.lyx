@@ -661,11 +661,6 @@ reference "subsec:Rope-sag-drag"
 \end_inset
 
 ).
- The tension in the rope is 
-\begin_inset Formula $T$
-\end_inset
-
-.
  
 \end_layout
 
@@ -862,7 +857,12 @@ D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
 \end_layout
 
 \begin_layout Standard
-From Newton's second law: 
+The tension in the rope is 
+\begin_inset Formula $T$
+\end_inset
+
+.
+ From Newton's second law: 
 \end_layout
 
 \begin_layout Standard

@@ -236,6 +236,7 @@ class rope:
             return sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
         else:
             return 0
+            
     def Tglider(self,thetarope):
         g = 9.8  
         return self.T + self.mu * g * sin(thetarope)
@@ -265,7 +266,7 @@ class torqconv:
          # TC parameters  
          self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
 #         self.Ko = 3            
-
+         self.lowTorq = 4.0
          self.dw = 0.13
          #data
          self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
@@ -283,9 +284,9 @@ class engine:
 
 #        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
 
-        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+#        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
-#        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
 
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
@@ -467,8 +468,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     #----algebraic functions----#
     # Update controls
 #    op.linearDown(t) 
-    op.control(t,ti,gl,rp,en) 
+#    op.control(t,ti,gl,rp,en)
+    op.linearDown(t)
     pl.control(t,ti,gl)
+    
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x));
     if thetarope < 0: thetarope += pi #to handle overflight of winch 
@@ -494,7 +497,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     #winch-engine
     vrel = wi.v/en.v
     Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
-    Few = Fee * (2-vrel)  # effective force between engine and winch through torque converter
+    Few = Fee * (tc.lowTorq-vrel)  # effective force between engine and winch through torque converter
     #----derivatives of state variables----#
     dotx = gl.xD       
     dotxD = 1/float(gl.m) * (Tg*cos(thetaRG) - D*cos(gamma) - L*sin(gamma)) #x acceleration
