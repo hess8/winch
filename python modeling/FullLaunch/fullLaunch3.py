@@ -325,7 +325,7 @@ class operator:
         # The operator changes the throttle to give certain engine speeds 
         # as a function of rope angle (not climb angle).
         def targetEngSpeed(thetarope,en):
-            vengTargets = {'gndRoll' : 1.0*en.vpeak,'rotation' : 0.8*en.vpeak, 'climb' : 0.6*en.vpeak,'taper' : 0.4*en.vpeak}
+            vengTargets = {'gndRoll' : 1.0*en.vpeak,'rotation' : 0.9*en.vpeak, 'climb' : 0.8*en.vpeak,'taper' : 0.7*en.vpeak}
             angleStartRot = 1 * pi/180
             angleStartClimb = 5 * pi/180
             angleStartDown = 10 * pi/180
@@ -601,7 +601,7 @@ ntime = ((tEnd - tStart)/dt + 1 ) * 4.0   # number of time steps to allow for da
 
 #Loop over parameters for study, optimization
 #tRampUpList = linspace(1,10,50)
-tRampUpList = [2] #If you only one to run one value
+tRampUpList = [1] #If you only one to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 for iloop,tRampUp in enumerate(tRampUpList):
