@@ -9,7 +9,7 @@ State varables:
 x, horizontal glider CG position
 xD, horizontal glider CG velocity
 y, vertical glider CG position
-yD, vertical glider CG velocity
+#yD, vertical glider CG velocity
 theta, glider pitch angle above horizon
 thetaD, glider pitch rotation rate
 T, rope tension
@@ -269,7 +269,7 @@ class torqconv:
          # TC parameters  
          self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
 #         self.Ko = 3            
-         self.lowTorq = 4.0
+         self.lowTorq = 2.0
          self.dw = 0.13
          #data
          self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to TC by engine (impeller) rotation
@@ -287,9 +287,9 @@ class engine:
 
 #        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
 
-#        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
-        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+#        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
 
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
