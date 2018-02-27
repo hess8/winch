@@ -613,7 +613,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 10 # end time for simulation
+tEnd = 7 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -624,10 +624,10 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
-control = ['alpha','v']
-setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+#control = ['alpha','v']
+#setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
 
 thrmax = 1.0
@@ -645,7 +645,7 @@ ntime = ((tEnd - tStart)/dt + 1 ) * 16.0   # number of time steps to allow for d
 
 #Loop over parameters for study, optimization
 #tRampUpList = linspace(1,10,50)
-tRampUpList = [1] #If you only one to run one value
+tRampUpList = [1] #If you only want to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 for iloop,tRampUp in enumerate(tRampUpList):
