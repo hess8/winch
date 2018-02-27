@@ -206,7 +206,7 @@ class glider:
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('v', float),('theta', float),('vD', float),('alpha', float),('L', float),\
+                                    ('v', float),('theta', float),('vD', float),('vgw', float),('alpha', float),('L', float),\
                                     ('D', float),('L/D',float),('Malpha',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
     def findState(self,ti):
         '''Determine where in the launch the glider is'''
@@ -293,7 +293,7 @@ class torqconv:
      def __init__(self):
          # TC parameters  
 #         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
-         self.Ko = 1            
+         self.Ko = 2            
          self.lowTorq = 2.0
          self.dw = 0.13
          #data
@@ -348,7 +348,7 @@ class operator:
 
     def linearDown(self,t):
         tRampUp = self.tRampUp
-        tHold = 40
+        tHold = 0
         tDown = tRampUp + tHold
         tRampDown = ti.tEnd - tRampUp - tHold
         if t <= tRampUp:
@@ -573,6 +573,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['v']  = v
         gl.data[ti.i]['theta']  = gl.theta
         gl.data[ti.i]['vD']  = sqrt(dotxD**2 + dotyD**2)
+        gl.data[ti.i]['vgw']  = vgw
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
@@ -604,8 +605,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.findState(ti)
         # Update controls
     #    op.linearDown(t) 
-        op.control(t,ti,gl,rp,en)
-    #    op.linearDown(t)
+#        op.control(t,ti,gl,rp,en)
+        op.linearDown(t)
         pl.control(t,ti,gl)        
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
@@ -613,12 +614,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 7 # end time for simulation
+tEnd = 15 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-#control = ['alpha','alpha']  # Use '' for none
-#setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
+control = ['alpha','alpha']  # Use '' for none
+setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
@@ -626,11 +627,11 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 # control = ['','']
 #control = ['alpha','v']
 #setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+#control = ['','']
+#setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
 
-thrmax = 1.0
+thrmax =  1.0
 #ropetau = 2.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -775,7 +776,7 @@ plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:
 #torques
 plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator or ground'],'Torques')
 #Engine, rope and winch
-plts.xy([t,t,tData,tData],[en.v[:itr],wi.v[:itr],180/pi*rData['theta'],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','rope angle','throttle'],'Engine and rope')        
+plts.xy([t,t,tData,tData,tData],[en.v[:itr],wi.v[:itr],gData['vgw'],180/pi*rData['theta'],100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
 plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,rData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
