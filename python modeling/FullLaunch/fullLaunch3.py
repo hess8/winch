@@ -394,7 +394,7 @@ class pilot:
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
         def vControl(time,setpoint,ti,Nint):
-            pp = 8; pd = 4; pint = 0 #when speed is too high, pitch up
+            pp = 8; pd = 4; pint = 8 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
@@ -534,7 +534,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
-        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
+#        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #        print 't,new throttle,engine speed,vy',t,op.Sth,en.v,gl.yD
 
         gl.data[ti.i]['t']  = t
@@ -584,16 +584,16 @@ dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
-#setpoint = [0*pi/180,0*pi/180, 20]  #last one is climb angle to transition to final control
+#setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
-#control = ['alpha','v']
-# setpoint = [0*pi/180 , 1.0, 30]  #last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+control = ['alpha','v']
+setpoint = [3*pi/180 ,30.0, 10]  #last one is climb angle to transition to final control
+#control = ['','']
+#setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
 
 thrmax = 1.0
