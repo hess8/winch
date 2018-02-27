@@ -625,10 +625,10 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
-#control = ['alpha','v']
-#setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+control = ['alpha','v']
+setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
+#control = ['','']
+#setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
 
 thrmax =  1.0
