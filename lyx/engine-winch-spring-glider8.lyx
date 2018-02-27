@@ -240,10 +240,21 @@ Time-varying quantities derived from state variables
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\alpha$
+\begin_inset Formula $\alpha_{g}$
 \end_inset
 
 , angle of attack of glider
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\alpha_{w}$
+\end_inset
+
+, angle of attack of wings (differ from 
+\begin_inset Formula $\alpha_{g}$
+\end_inset
+
+ by a constant)
 \end_layout
 
 \begin_layout Standard
@@ -814,24 +825,15 @@ The drag ratio
 \begin_inset Formula $\alpha=0$
 \end_inset
 
-, so it has a quadratic dependence on 
-\begin_inset Formula $\alpha$
-\end_inset
-
 .
- For the case 
-\begin_inset Formula $Q=40,$
-\end_inset
-
- the drag ratio roughly doubles for an excursion of 1.5 degrees (0.025 rad)
- about the normal flying angle of attack.
+ We fit the polar curve to a 5th order polynomial.
  
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{C_{D}}{C_{L}}\approx\frac{1}{Q}\left(1+\frac{Q}{40}\left(\frac{1}{0.025}\right)^{2}\alpha^{2}\right)
+\frac{C_{D}}{C_{L}}\approx\frac{1}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{4}\alpha^{5}\right)
 \]
 
 \end_inset
@@ -848,7 +850,7 @@ The drag ratio
  and also include a small drag coefficient for the elevator moment::
 \begin_inset Formula 
 \[
-D=\frac{L}{Q}(1+Qd_{\alpha}\alpha^{2})+d_{e}M_{e}
+D=\frac{L}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{4}\alpha^{5}\right)+d_{e}M_{e}
 \]
 
 \end_inset

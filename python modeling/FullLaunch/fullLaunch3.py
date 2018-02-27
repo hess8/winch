@@ -176,10 +176,10 @@ class timeinfo:
 class glider:
     def __init__(self,ntime):
         # parameters
-        self.vb = 30              #   speed of glider at best glide angle
+        self.vb = 32              #   speed of glider at best glide angle
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
-        self.Q = 20             #   L/D
+        self.Q = 30             #   L/D
         self.alphas = 6*3.14/180         #   stall angle vs glider zero
         self.Co = 0.75             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/self.Co
@@ -189,7 +189,7 @@ class glider:
         self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
         self.maxElev = 30 * pi/180 # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
-        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
+#        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.SsSw = 0.1          #ratio of stabilizer area to wing area
         #logic
@@ -200,11 +200,14 @@ class glider:
         self.y = 0    
         self.yD = 0
         self.theta = 0  #pitch vs horizontal
-        self.thetaD = 0 
+        self.thetaD = 0
+        self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
+
+ 
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
-                                    ('v', float),('theta', float),('vD', float),('alpha', float),('L', float),('Malpha',float),\
-                                    ('D', float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
+                                    ('v', float),('theta', float),('vD', float),('alpha', float),('L', float),\
+                                    ('D', float),('L/D',float),('Malpha',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
     
 class rope:
     def __init__(self,tau):
@@ -485,7 +488,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     gamma = arctan(gl.yD/gl.xD)  # climb angle.   
     alpha = gl.theta - gamma # angle of attack
     L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
-    D = L/float(gl.Q)*(1 + gl.Q*gl.dalpha*alpha**2)# + gl.de*pl.Me #drag
+    D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)# + gl.de*pl.Me #drag  
     if alpha > gl.alphas: #stall mimic
         L = 0.75*L
         D = 4*L/float(gl.Q)
@@ -531,7 +534,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
-#         print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} thetarope:{:8.3f} thetaRG:{:8.3f}  T:{:8.3f} Tg:{:8.3f} '.format(t,gl.x,gl.xD,gl.y,gl.yD,thetarope*180/pi,thetaRG*180/pi,rp.T,Tg)
+        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #        print 't,new throttle,engine speed,vy',t,op.Sth,en.v,gl.yD
 
         gl.data[ti.i]['t']  = t
@@ -545,6 +548,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
+        if D > 1:
+            gl.data[ti.i]['L/D']  = L/D
+        else:
+            gl.data[ti.i]['L/D']  = gl.Q
         gl.data[ti.i]['Malpha']  = alphatorq
         gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
 #        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
@@ -723,8 +730,8 @@ plts = plots(path)
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-plts.xy([tData,tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gData['alpha'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr]],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
+plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[gData['xD'],gData['yD'],gData['v'],180/pi*gData['alpha'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr],gData['L/D']],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
 plts.i = 0 #restart color cycle
 plts.xyy([tData,t,tData,t,tData,tData,t,t],[gData['v'],wi.v[:itr],gData['y']/rp.lo,rp.T[:itr]/gl.W,gData['L']/gl.W,180/pi*gData['alpha'],180/pi*gamma,180/pi*gl.thetaD[:itr]],\
         [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
