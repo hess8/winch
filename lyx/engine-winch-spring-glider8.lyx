@@ -3125,11 +3125,11 @@ Winch equivalent mass
 \begin_inset Formula $kgm^{2}$
 \end_inset
 
-.
- R = 15 in = 0.4m.
- Add 1500m of Dyneema rope at 15g/m at r=0.4m.
+.We add half of that again for the transmission and drive shafts: R = 15
+ in = 0.4m.
+ Add 2000 m of Dyneema rope at 15g/m at r=0.4m.
  
-\begin_inset Formula $I_{tot}=20$
+\begin_inset Formula $I_{tot}=30$
 \end_inset
 
 +30(.16)= 40
@@ -3141,8 +3141,8 @@ Winch equivalent mass
 \begin_inset Formula $M_{eq}=40kgm^{2}/.16$
 \end_inset
 
-= 250 kg.
- Ratio vs grob: 250/600 = 0.4
+= 220 kg.
+ Ratio vs grob: 220/600 = 0.4
 \end_layout
 
 \begin_layout Subsubsection

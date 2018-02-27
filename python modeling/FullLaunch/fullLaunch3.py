@@ -193,7 +193,9 @@ class glider:
         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.SsSw = 0.1          #ratio of stabilizer area to wing area
         #logic
-        self.onGnd = True
+        self.lastvy = 0
+        self.vypeaked = False
+        self.state = 'onGnd'
         # state variables 
         self.x = 0
         self.xD = 0
@@ -202,12 +204,35 @@ class glider:
         self.theta = 0  #pitch vs horizontal
         self.thetaD = 0
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
-
- 
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),\
                                     ('v', float),('theta', float),('vD', float),('alpha', float),('L', float),\
                                     ('D', float),('L/D',float),('Malpha',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
+    def findState(self,ti):
+        '''Determine where in the launch the glider is'''
+        gd = self.data[ti.i]
+        
+       
+        
+        #One-time switches:
+        if not self.vypeaked and self.yD < self.lastvy:
+            self.vypeaked = True #change state     self.vypeaked = True #change state 
+        
+        #state
+        if self.y < 1.0 and gd['L'] < self.W:
+            self.state = 'onGnd'
+        elif not self.vypeaked and self.theta < 180/pi*30:
+            self.state = 'rotate'
+        elif not self.vypeaked and self.theta >= 180/pi*30:
+            self.state = 'climb' 
+        elif self.vypeaked and self.theta  < 180/pi*40:
+            self.state = 'roundout'  
+        
+        self.lastvy = gl.yD 
+            
+            
+        
+ 
     
 class rope:
     def __init__(self,tau):
@@ -267,8 +292,8 @@ class winch:
 class torqconv:
      def __init__(self):
          # TC parameters  
-         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
-#         self.Ko = 3            
+#         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
+         self.Ko = 1            
          self.lowTorq = 2.0
          self.dw = 0.13
          #data
@@ -281,7 +306,7 @@ class engine:
         # Engine parameters  
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 390             # engine rated horsepower
-        self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses
+        self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
 #        self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
 
@@ -295,6 +320,7 @@ class engine:
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.pe1 = 1.0; self.pe2 = 1.0; self.pe3 = 1.0 #  engine power curve parameters, gas engine
+        self.vrelMax = (self.pe2 + sqrt(self.pe2**2 + 4*self.pe1*self.pe3))/2/self.pe3  #speed ratio where Pavail goes to zero.  for the pe's = 1, this is 1.62  
         # state variables 
         self.v = 0            #engine effective speed (m/s)
         self.Few = 0          # effective force between engine and winch (could go in either engine or winch or in its own class)
@@ -312,6 +338,13 @@ class operator:
         self.Sth = 0
         self.data = zeros(ntime,dtype = [('t', float),('Sth', float)])
         self.angleMax = 80*pi/180 #throttle goes to zero at this rope angle
+        #logical
+        self.storedState = 'onGnd'
+        self.oldvTarget = 0
+        self.currvTarget = None
+        self.tSwitch = 0
+    
+
 
     def linearDown(self,t):
         tRampUp = self.tRampUp
@@ -326,25 +359,25 @@ class operator:
             self.Sth = max(0,self.thrmax * (1-(t-tDown)/float(tRampDown)))
             
     def control(self,t,ti,gl,rp,en):
-        # The operator changes the throttle to give certain engine speeds 
-        # as a function of rope angle (not climb angle).
-        def targetEngSpeed(thetarope,en):
-            vengTargets = {'gndRoll' : 1.0*en.vpeak,'rotation' : 0.9*en.vpeak, 'climb' : 0.8*en.vpeak,'taper' : 0.7*en.vpeak}
-            angleStartRot = 1 * pi/180
-            angleStartClimb = 5 * pi/180
-            angleStartDown = 10 * pi/180
-            if thetarope < angleStartRot:
-                return vengTargets['gndRoll']
-            elif  angleStartRot < thetarope < angleStartClimb:
-                return vengTargets['rotation']
-            elif  angleStartClimb < thetarope < angleStartDown:
-                return vengTargets['climb']
-            else:   
-                return vengTargets['taper']
+        ''' The operator changes the throttle to give certain engine speeds 
+        as a function of rpm history and rope angle (not climb angle).'''
+        def targetEngSpeed(thetarope,en,gl,tauOp): 
+            vengTargets = {'onGnd' : 1.0*en.vpeak,'rotate' : 0.9*en.vpeak, 'climb' : 0.8*en.vpeak,'roundout' : 0.7*en.vpeak}
+            target = vengTargets[gl.state] 
+            if gl.state != self.storedState: #have switched
+                self.tSwitch = t
+                self.oldvTarget = self.currvTarget
+                self.storedState = gl.state
+            else:
+                self.currvTarget = target
+            vsmooth = target +  (self.oldvTarget - target) *exp(-(t-self.tSwitch)/tauOp)
+#            print 'vsmooth',vsmooth
+            return vsmooth
+
 #        angleMax = self.angleMax         
-        tRampUp = self.tRampUp 
+#        tRampUp = self.tRampUp 
         thetarope = rp.data[ti.i]['theta']
-        tauOp = 4.0 #sec response time
+        tauOp = 1.0 #sec response time
         tint = tauOp 
         Nint = min(ti.i,ceil(tint/ti.dt))                  
         #throttle control
@@ -363,12 +396,12 @@ class operator:
         pp = -0.1; pd = -.0; pint = -.2
         c = array([pp,pd,pint]) 
         time = self.data['t']
-        veTarget = targetEngSpeed(thetarope,en)
+        veTarget = targetEngSpeed(thetarope,en,gl,tauOp)
         speedControl = min(self.thrmax,max(0,pid(en.data['v'],time,veTarget,c,ti.i,Nint)))
-        if t <= tRampUp:
-            self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
-        else:
-            self.Sth = speedControl
+#        if t <= tRampUp:
+#            self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+#        else:
+        self.Sth = speedControl
 
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
@@ -416,7 +449,7 @@ class pilot:
         crossAngle = pi/180*self.setpoint[2]  #climb angle to switch from one control to another
         if not '' in control:
             Mdelev =  max(0.1,L * gl.pelev/(gl.Co + 2*pi*alpha)) #ratio between moment and elevator deflection             
-            if gl.onGnd: 
+            if gl.state == "onGnd": 
                 otherTorques = rp.data[ti.i]['torq']+ alphatorq
                 if L < minLift: #set Me to give zero rotation
                     self.MeSet = -otherTorques
@@ -469,15 +502,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         en.v = 1e-6 #to handle v = 0 initial
 
     #----algebraic functions----#
-    # Update controls
-#    op.linearDown(t) 
-#    op.control(t,ti,gl,rp,en)
-    op.linearDown(t)
-    pl.control(t,ti,gl)
+
     
     #rope
     thetarope = arctan(gl.y/float(rp.lo-gl.x));
-    if thetarope < 0: thetarope += pi #to handle overflight of winch 
+    if thetarope <-1e-6: thetarope += pi #to handle overflight of winch 
     lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
@@ -505,12 +534,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     dotx = gl.xD       
     dotxD = 1/float(gl.m) * (Tg*cos(thetaRG) - D*cos(gamma) - L*sin(gamma)) #x acceleration
     doty = gl.yD
-    gl.onGnd = gl.y < 1.0 and L < gl.W #on ground 
-    if gl.onGnd:  
+    if gl.state == "onGnd":  
         dotyD = 0 
     else:
         dotyD = 1/float(gl.m) * (L*cos(gamma) - Tg*sin(thetaRG) - D*sin(gamma) - gl.W) #y acceleration
-    if gl.onGnd and pl.type == 'momentControl':
+    if gl.state == "onGnd" and pl.type == 'momentControl':
         dottheta = 0
         dotthetaD = 0
     else:
@@ -528,15 +556,15 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     else: #no torque converter
         dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
         dotve = dotvw
-    # store data from this time step for use /in controls or plotting.  The ode solver enters this routine
+    # The ode solver enters this routine
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 
     # by close to a nominal time step    
     if t - ti.oldt > 0.9*ti.dt: 
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-#        print 't,new throttle,engine speed,vy',t,op.Sth,en.v,gl.yD
-
+#        print 't,state',t,gl.state
+        # store data from this time step for use /in controls or plotting.  
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
         gl.data[ti.i]['xD'] = gl.xD
@@ -548,7 +576,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         gl.data[ti.i]['alpha']  = alpha
         gl.data[ti.i]['L']  = L
         gl.data[ti.i]['D']  = D
-        if D > 1:
+        if D > 10:
             gl.data[ti.i]['L/D']  = L/D
         else:
             gl.data[ti.i]['L/D']  = gl.Q
@@ -572,14 +600,20 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         op.data[ti.i]['t']   = t
         op.data[ti.i]['Sth'] = op.Sth
         ti.oldt = t
-        
+    #---update things that we don't want updated everytime ODEint enters stateDer
+        gl.findState(ti)
+        # Update controls
+    #    op.linearDown(t) 
+        op.control(t,ti,gl,rp,en)
+    #    op.linearDown(t)
+        pl.control(t,ti,gl)        
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 70 # end time for simulation
+tEnd = 10 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -591,7 +625,7 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
 control = ['alpha','v']
-setpoint = [3*pi/180 ,30.0, 10]  #last one is climb angle to transition to final control
+setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
@@ -606,7 +640,7 @@ tcUsed = True   # uses the torque controller
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
-ntime = ((tEnd - tStart)/dt + 1 ) * 4.0   # number of time steps to allow for data points saved
+ntime = ((tEnd - tStart)/dt + 1 ) * 16.0   # number of time steps to allow for data points saved
 
 
 #Loop over parameters for study, optimization
