@@ -618,8 +618,8 @@ tEnd = 15 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
-control = ['alpha','alpha']  # Use '' for none
-setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
+#control = ['alpha','alpha']  # Use '' for none
+#setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
@@ -627,8 +627,8 @@ setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to fi
 # control = ['','']
 #control = ['alpha','v']
 #setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
 
 
 thrmax =  1.0
