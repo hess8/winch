@@ -211,13 +211,9 @@ class glider:
     def findState(self,ti):
         '''Determine where in the launch the glider is'''
         gd = self.data[ti.i]
-        
-       
-        
         #One-time switches:
         if not self.vypeaked and self.yD < self.lastvy:
             self.vypeaked = True #change state     self.vypeaked = True #change state 
-        
         #state
         if self.y < 1.0 and gd['L'] < self.W:
             self.state = 'onGnd'
@@ -227,13 +223,8 @@ class glider:
             self.state = 'climb' 
         elif self.vypeaked and self.theta  < 180/pi*40:
             self.state = 'roundout'  
-        
         self.lastvy = gl.yD 
-            
-            
-        
- 
-    
+   
 class rope:
     def __init__(self,tau):
         # Rope parameters  
@@ -259,9 +250,11 @@ class rope:
         
     def avgT(self,ti):          
         tint = 4*self.tau         
-        Nint = min(ti.i,ceil(tint/ti.dt))
+        Nint = min(0,ti.i,ceil(tint/ti.dt))
         if ti.i >= 0:
+            print ti.i,sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
             return sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
+            
         else:
             return 0
             
@@ -293,7 +286,7 @@ class torqconv:
      def __init__(self):
          # TC parameters  
 #         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
-         self.Ko = 2            
+         self.Ko = 1.0          
          self.lowTorq = 2.0
          self.dw = 0.13
          #data
@@ -329,7 +322,12 @@ class engine:
     
     def Pavail(self,ve):            # power curve
         vr = ve/float(self.vpeak)
-        return self.Pmax*(self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3)
+#        if vr > 1:
+        pcurveEval = self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3
+#        else:
+#            p = 1.5
+#            pcurveEval = 1 - (1-vr)**p
+        return self.Pmax*pcurveEval
         
 class operator:
     def __init__(self,thrmax,tRampUp,ntime):
@@ -344,13 +342,30 @@ class operator:
         self.currvTarget = None
         self.tSwitch = 0
     
+    def preSet(self,t):
+        ### Ramp up, hold, then decrease to steady value
+        steadyThr = 0.6        
+        tRampUp = self.tRampUp
+        tHold = .5
+        tDown = tRampUp + tHold
+#        tRampDown = ti.tEnd - tRampUp - tHold
+        tRampDown = 1 #sec...transition to steady
+        if t <= tRampUp:
+            self.Sth =  self.thrmax/float(tRampUp) * t
+        elif tRampUp < t < tDown:
+            self.Sth =  self.thrmax
+        elif t >= tDown:
+            self.Sth = max(steadyThr,self.thrmax * (1-(t-tDown)/float(tRampDown)))
+            
 
 
     def linearDown(self,t):
         tRampUp = self.tRampUp
         tHold = 0
+        area = self.thrmax * 5  #Fixed area in seconds = 1/2 * thrmax *(trampUp + trampDown)
         tDown = tRampUp + tHold
-        tRampDown = ti.tEnd - tRampUp - tHold
+#        tRampDown = ti.tEnd - tRampUp - tHold
+        tRampDown = 2*area - tRampUp
         if t <= tRampUp:
             self.Sth =  self.thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
@@ -549,7 +564,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     else:
         dotelev = 0 
 
-    dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope) #- (rp.T-rp.Tavg)/rp.tau
+    dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope) #- (rp.T-rp.avgT(ti))/rp.tau
     if en.tcUsed:
         dotvw =  1/float(wi.me) * (Few - rp.T)
         dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
@@ -559,7 +574,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     # The ode solver enters this routine
     # usually two or more times per time step.  We advance the time step counter only if the time has changed 
     # by close to a nominal time step    
-    if t - ti.oldt > 0.9*ti.dt: 
+    if t - ti.oldt > 2.0*ti.dt: 
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
@@ -586,7 +601,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
         gl.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG + gl.theta) 
         gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
-        rp.data[ti.i]['Pdeliv'] = rp.T * wi.v + 0.5*lenrope/rp.Y/rp.A * rp.T * dotT
+        rp.data[ti.i]['Pdeliv'] = rp.T * wi.v #+ 0.5*lenrope/rp.Y/rp.A * rp.T * dotT
         rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
         rp.data[ti.i]['T'] = rp.T
         rp.data[ti.i]['torq'] = ropetorq
@@ -606,7 +621,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         # Update controls
     #    op.linearDown(t) 
 #        op.control(t,ti,gl,rp,en)
-        op.linearDown(t)
+        op.preSet(t)
         pl.control(t,ti,gl)        
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
@@ -614,7 +629,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 60 # end time for simulation
+tEnd = 70 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -625,14 +640,14 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
-control = ['alpha','v']
-setpoint = [3*pi/180 ,33.4, 10]  #last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  #last one is climb angle to transition to final control
+#control = ['alpha','v']
+#setpoint = [2*pi/180 ,33, 40]  #last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
 
 
 thrmax =  1.0
-#ropetau = 2.0 #oscillation damping in rope, artificial
+ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 tcUsed = True   # uses the torque controller
@@ -641,12 +656,12 @@ tcUsed = True   # uses the torque controller
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 
-ntime = ((tEnd - tStart)/dt + 1 ) * 16.0   # number of time steps to allow for data points saved
+ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for data points saved
 
 
 #Loop over parameters for study, optimization
 #tRampUpList = linspace(1,10,50)
-tRampUpList = [1] #If you only want to run one value
+tRampUpList = [5] #If you only want to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 for iloop,tRampUp in enumerate(tRampUpList):
@@ -655,7 +670,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(ntime)
-    rp = rope(0) 
+    rp = rope(ropetau) 
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
@@ -671,14 +686,12 @@ for iloop,tRampUp in enumerate(tRampUpList):
     if control[0] == 'alpha':
         gl.theta = setpoint[0]
     else:
-        gl.theta = 0*pi/180   #initial AoA, 2 degrees
+        gl.theta = 2*pi/180   #initial AoA, 2 degrees
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
     S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
-
-    
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
     if max(gl.yD)> 1 and min(gl.yD) < 0 :
         negyD =where(gl.yD < 0)[0]
