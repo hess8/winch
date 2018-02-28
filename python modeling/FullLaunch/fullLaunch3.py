@@ -20,7 +20,7 @@ Me, pilot controlled moment (torque) from elevator
 '''
 import os
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tanh,ceil,floor,where,amin,amax,argmin,argmax,exp
-from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title
+from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title,grid
 from scipy.integrate import odeint
 g = 9.8
  
@@ -110,6 +110,7 @@ class plots:
                 self.i = 0
         xlabel(xlbl)
         ylabel(ylbl)
+        grid(color='k', linestyle='--', linewidth=1)
         legend(loc ='lower right',framealpha=0.5)
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
@@ -139,6 +140,8 @@ class plots:
                 self.i = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbls[0])
+        ax0.grid(color='k', linestyle='--', linewidth=1)
+        ax1.grid(color='k', linestyle='--', linewidth=1)
         ax1.set_ylabel(ylbls[1])
         #Set limits: force the zeros on both sides to be the same
         min0 = min(0,min(ymins[0]))
@@ -460,11 +463,7 @@ class pilot:
         
     def control(self,t,ti,gl): 
         def alphaControl(time,setpoint,ti,Nint):
-<<<<<<< HEAD
-            pp = -100; pd = -6; pint = -64.0
-=======
             pp = -200; pd = -6; pint = -64.0
->>>>>>> 26fcc2e7a86fbe84c0af958e0dd17bdfbd087424
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -657,13 +656,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-<<<<<<< HEAD
-tEnd = 15 # end time for simulation
-=======
 tEnd = 65 # end time for simulation
->>>>>>> 26fcc2e7a86fbe84c0af958e0dd17bdfbd087424
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
+if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
 #setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
@@ -690,7 +686,7 @@ tcUsed = True   # uses the torque controller
 ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for data points saved
 
 #Loop over parameters for study, optimization
-tRampUpList = linspace(1,8,25)
+tRampUpList = linspace(1,8,50)
 #tRampUpList = [2,5] #If you only want to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
@@ -723,14 +719,9 @@ for iloop,tRampUp in enumerate(tRampUpList):
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
-<<<<<<< HEAD
     negvyTrigger = -0.1    
     if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger :
         negyD =where(gl.yD < negvyTrigger)[0] #glider losing altitude
-=======
-    if max(gl.yD)> 1 and min(gl.yD) < -0.1 :
-        negyD =where(gl.yD < -0.1)[0] #glider losing altitude
->>>>>>> 26fcc2e7a86fbe84c0af958e0dd17bdfbd087424
         itr = negyD[0]-1 #ode solver index for release time
     #    itr = argmin(gl.yD)
         t = t[:itr] #shorten
@@ -839,5 +830,5 @@ heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum
 plts.i = 0 #restart color cycle
 plts.xyy([data['tRampUp']],[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
         [0,0,0,0,0,1,1,1,1,0,0,0],'throttle ramp-up time (sec)',['Velocity (m/s), Angles (deg), m, sec %',"Relative forces,g's"],\
-        ['x gnd roll', 't gnd roll x 10','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$','max throttle',"max g's",r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
+        ['x gnd roll', 't gnd roll x 10','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
 print 'Done'
