@@ -344,20 +344,19 @@ class operator:
     
     def preSet(self,t):
         ### Ramp up, hold, then decrease to steady value
-        steadyThr = 0.6        
+        steadyThr = 0.5        
         tRampUp = self.tRampUp
         tHold = .5
         tDown = tRampUp + tHold
 #        tRampDown = ti.tEnd - tRampUp - tHold
-        tRampDown = 1 #sec...transition to steady
+        tRampDown1 = 1 #sec...transition to steady
+        tRampDown2 = 120 #longer ramp down
         if t <= tRampUp:
             self.Sth =  self.thrmax/float(tRampUp) * t
         elif tRampUp < t < tDown:
             self.Sth =  self.thrmax
         elif t >= tDown:
-            self.Sth = max(steadyThr,self.thrmax * (1-(t-tDown)/float(tRampDown)))
-            
-
+            self.Sth = max(steadyThr*(1-(t-tDown)/float(tRampDown2)),self.thrmax * (1-(t-tDown)/float(tRampDown1)))
 
     def linearDown(self,t):
         tRampUp = self.tRampUp
@@ -640,10 +639,10 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
-#control = ['alpha','v']
-#setpoint = [2*pi/180 ,33, 40]  #last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
+control = ['alpha','v']
+setpoint = [2*pi/180 ,33, 40]  #last one is climb angle to transition to final control
+#control = ['','']
+#setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
 
 
 thrmax =  1.0
