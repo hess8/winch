@@ -436,7 +436,7 @@ class pilot:
         
     def control(self,t,ti,gl): 
         def alphaControl(time,setpoint,ti,Nint):
-            pp = -6; pd = -6; pint = -64.0
+            pp = -100; pd = -6; pint = -64.0
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -628,7 +628,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 70 # end time for simulation
+tEnd = 15 # end time for simulation
 dt = 0.05       #nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -654,9 +654,7 @@ tcUsed = True   # uses the torque controller
 
 #control =/ 'v'  # Use '' for none
 #setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
-
 ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for data points saved
-
 
 #Loop over parameters for study, optimization
 #tRampUpList = linspace(1,10,50)
@@ -692,8 +690,9 @@ for iloop,tRampUp in enumerate(tRampUpList):
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
-    if max(gl.yD)> 1 and min(gl.yD) < 0 :
-        negyD =where(gl.yD < -0.1)[0] #glider losing altitude
+    negvyTrigger = -0.1    
+    if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger :
+        negyD =where(gl.yD < negvyTrigger)[0] #glider losing altitude
         itr = negyD[0]-1 #ode solver index for release time
     #    itr = argmin(gl.yD)
         t = t[:itr] #shorten
