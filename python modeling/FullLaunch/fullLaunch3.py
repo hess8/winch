@@ -92,6 +92,7 @@ class plots:
     def __init__(self,path):
         self.i = 0 #counter for plots, so each variable has a different color
         self.path = path
+        self.linew = 3.0
         self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
         u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'darkviolet',
         u'#CC79A7',  u'#0072B2',u'#56B4E9', u'#30a2da',u'#009E73','peru','slateblue'] # u'#F0E442',u'#467821'      
@@ -103,7 +104,7 @@ class plots:
             xs = [xs[0] for y in ys] 
         figure(figsize=(20, 10))
         for iy,y in enumerate(ys):
-            plot(xs[iy],y,color=self.colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+            plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
             self.i += 1
             if self.i > len(self.colorsList)-1:
                 self.i = 0
@@ -115,7 +116,8 @@ class plots:
         ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        show(block = False)
+#        show(block = False)
+        show()
         
     def xyy(self,xs,ys,yscalesMap,xlbl,ylbls,legendLabels,titlestr):
         '''Allows plotting with two yscales, left (0) and right (1).  
@@ -127,9 +129,9 @@ class plots:
         ymaxs = [[],[]]; ymins = [[],[]]       
         for iy,y in enumerate(ys):
             if yscalesMap[iy] == 0:
-                ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=2.0,label=legendLabels[iy])  
+                ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])  
             else:
-                ax1.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=2.0,label=legendLabels[iy])
+                ax1.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
             ymaxs[yscalesMap[iy]].append(max(y))
             ymins[yscalesMap[iy]].append(min(y))
             self.i += 1 
@@ -156,7 +158,8 @@ class plots:
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        show(block = False)             
+#        show(block = False)   
+        show()          
     
 class timeinfo:
     def __init__(self,tStart,tEnd,N):
@@ -286,7 +289,7 @@ class torqconv:
      def __init__(self):
          # TC parameters  
 #         self.Ko = 13             #TC capacity (rad/sec/(Nm)^1/2)  K = 142 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60 rad/s/rpm * sqrt(0.74 ftlb/Nm) = 12.8 (vs 12 in current model!)
-         self.Ko = 1.0          
+         self.Ko = 2.0          
          self.lowTorq = 2.0
          self.dw = 0.13
          #data
@@ -416,6 +419,24 @@ class operator:
 #            self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
 #        else:
         self.Sth = speedControl
+        
+    def constT(self,t,ti,gl,rp,en): 
+        tauOp = 1.0 #sec response time
+        tint = tauOp 
+        Nint = min(ti.i,ceil(tint/ti.dt)) 
+        pp = -1; pd = -.5; pint = -2
+        c = array([pp,pd,pint]) 
+        time = self.data['t']
+        tRampUp = self.tRampUp
+        targetTmax = 1.0
+        if t <= tRampUp:
+            targetT =  targetTmax/float(tRampUp) * t
+        else:
+            targetT = targetTmax
+                
+        
+        Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
+        self.Sth = Tcontrol    
 
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
@@ -436,7 +457,7 @@ class pilot:
         
     def control(self,t,ti,gl): 
         def alphaControl(time,setpoint,ti,Nint):
-            pp = -6; pd = -6; pint = -64.0
+            pp = -200; pd = -6; pint = -64.0
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -620,8 +641,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         # Update controls
     #    op.linearDown(t) 
 #        op.control(t,ti,gl,rp,en)
-        op.preSet(t)
-        pl.control(t,ti,gl)        
+#        op.preSet(t)
+        pl.control(t,ti,gl)
+        op.constT(t,ti,gl,rp,en)        
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
@@ -640,12 +662,12 @@ path = 'D:\\Winch launch physics\\results\\test2'  #for saving plots
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
 control = ['alpha','v']
-setpoint = [2*pi/180 ,33, 40]  #last one is climb angle to transition to final control
+setpoint = [4*pi/180 ,33, 40]  #last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
 
 
-thrmax =  0.8
+thrmax =  1.0
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -692,7 +714,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
-    if max(gl.yD)> 1 and min(gl.yD) < 0 :
+    if max(gl.yD)> 1 and min(gl.yD) < -0.1 :
         negyD =where(gl.yD < -0.1)[0] #glider losing altitude
         itr = negyD[0]-1 #ode solver index for release time
     #    itr = argmin(gl.yD)
