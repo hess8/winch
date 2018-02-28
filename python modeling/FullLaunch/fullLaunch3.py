@@ -645,7 +645,7 @@ setpoint = [2*pi/180 ,33, 40]  #last one is climb angle to transition to final c
 #setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
 
 
-thrmax =  1.0
+thrmax =  0.8
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -693,7 +693,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
     if max(gl.yD)> 1 and min(gl.yD) < 0 :
-        negyD =where(gl.yD < 0)[0]
+        negyD =where(gl.yD < -0.1)[0] #glider losing altitude
         itr = negyD[0]-1 #ode solver index for release time
     #    itr = argmin(gl.yD)
         t = t[:itr] #shorten
@@ -717,7 +717,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     vrel =wi.v/en.v 
     Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
     #ground roll
-    if max(gl.y) > 0:
+    if max(gl.y) > 0.01:
         iEndRoll = where(gl.y > 0.01)[0][0]
         xRoll = gl.x[iEndRoll]
         tRoll = t[iEndRoll]
@@ -777,8 +777,11 @@ plts = plots(path)
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[gData['xD'],gData['yD'],gData['v'],180/pi*gData['alpha'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr],gData['L/D']],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
+#plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[gData['xD'],gData['yD'],gData['v'],180/pi*gData['alpha'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr],gData['L/D']],\
+#        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
+plts.xy([tData,tData,tData,tData,t,t,t,t],[gData['xD'],gData['yD'],gData['v'],180/pi*gData['alpha'],180/pi*gl.theta[:itr],180/pi*gamma,180/pi*pl.elev[:itr],180/pi*gl.thetaD[:itr]],\
+        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
+
 plts.i = 0 #restart color cycle
 plts.xyy([tData,t,tData,t,tData,tData,t,t],[gData['v'],wi.v[:itr],gData['y']/rp.lo,rp.T[:itr]/gl.W,gData['L']/gl.W,180/pi*gData['alpha'],180/pi*gamma,180/pi*gl.thetaD[:itr]],\
         [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
