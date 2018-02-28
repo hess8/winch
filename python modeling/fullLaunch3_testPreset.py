@@ -647,9 +647,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         # Update controls
     #    op.linearDown(t) 
 #        op.control(t,ti,gl,rp,en)
-#        op.preSet(t)
+        op.preSet(t)
         pl.control(t,ti,gl)
-        op.constT(t,ti,gl,rp,en)        
+#         op.constT(t,ti,gl,rp,en)        
     return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
@@ -658,7 +658,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tStart = 0
 tEnd = 65 # end time for simulation
 dt = 0.05       #nominal time step, sec
-path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
+path = 'D:\\Winch launch physics\\results\\Feb28 2018 preset throttle, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
