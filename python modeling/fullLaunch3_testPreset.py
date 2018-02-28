@@ -241,8 +241,8 @@ class rope:
                                  #  effective Young's modulus 30 GPa for rope from Dyneema
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
-        self.a = 0.2             #  horizontal distance (m) of rope attachment in front of CG
-        self.b = 0.1             #  vertial distance (m) of rope attachment below CG
+        self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG
+        self.b = 0.5             #  vertial distance (m) of rope attachment below CG
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
@@ -672,7 +672,6 @@ control = ['alpha','v']
 setpoint = [4*pi/180 ,33, 20]  #last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
-
 
 thrmax =  1.0
 ropetau = 0.0 #oscillation damping in rope, artificial
