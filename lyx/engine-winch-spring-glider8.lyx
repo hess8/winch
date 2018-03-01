@@ -349,7 +349,7 @@ Glider
 \begin_inset Formula $Q$
 \end_inset
 
-, best L/D 
+, best L/D
 \end_layout
 
 \begin_layout Standard
@@ -664,7 +664,7 @@ The winch is a distance
 
 \end_inset
 
-above the horizon (this is altered in Appendix 
+above the horizon (this assumption is removed in Appendix 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Rope-sag-drag"
@@ -899,24 +899,17 @@ The rope is attached a distance
 \end_inset
 
  in front of it.
- The attachment point is at an angle from the CG 
-\begin_inset Formula $\phi=tan^{-1}(b/a)$
+ The moment arm is 
+\begin_inset Formula $b-a\,tan(\theta+\theta_{r}).$
 \end_inset
 
- below the glider longitudinal axis.
- When the rope pulls at an angle 
-\begin_inset Formula $\eta$
-\end_inset
+ So the torque is 
+\end_layout
 
- below the longitudinal axis, the torque about the CG is tension times 
-\begin_inset Formula $\sqrt{a^{2}+b^{2}}sin(\phi-\eta)$
-\end_inset
-
-.
- So
+\begin_layout Standard
 \begin_inset Formula 
 \[
-\tau_{rope,glider}=T\sqrt{a^{2}+b^{2}}sin(tan^{-1}(b/a)-\theta-\theta_{r})
+\tau_{rope,glider}=T(b-a\,tan(\theta+\theta_{r}))
 \]
 
 \end_inset
@@ -2877,6 +2870,157 @@ We cycle until the
 \end_layout
 
 \begin_layout Subsection
+Ground roll forces 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec: Ground roll forces"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The glider at rest sits inclined at an angle 
+\begin_inset Formula $\theta_{o}\approx7^{\circ}$
+\end_inset
+
+ because the glider longitudinal axis main wheel is farther (at 
+\begin_inset Formula $h_{m})$
+\end_inset
+
+ than it is at the tail wheel 
+\begin_inset Formula $(h_{t})$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The main wheel is a distance 
+\begin_inset Formula $d_{m}$
+\end_inset
+
+ in front of the CG, and the tail wheel is a distance 
+\begin_inset Formula $d_{t}$
+\end_inset
+
+ behind it.
+ 
+\end_layout
+
+\begin_layout Standard
+The easiest way to model the ground contact forces 
+\begin_inset Formula $G$
+\end_inset
+
+ on the tires as a function of time for the simulation is with a force that
+ drops to zero linearly in about a centimeter as the wheel moves upward,
+ in other words a spring-like force, which is what happens naturally with
+ the tires.
+ 
+\begin_inset Formula $\Delta r\approx1$
+\end_inset
+
+cm is the tire compression.
+ The value of 
+\begin_inset Formula $\Delta r$
+\end_inset
+
+ isn't important (10 cm or more would work too), but this technique makes
+ a smooth transition from full ground forces to zero during liftoff (
+\begin_inset Formula $\Delta r$
+\end_inset
+
+ would matter if were were modeling a landing)..
+ We expand eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:theta diffeq"
+
+\end_inset
+
+ to include the torques about the CG: 
+\begin_inset Formula 
+\[
+I_{g}\ddot{\theta}=\tau_{rope,glider}+M+(G_{m}d_{m}-G_{t}d_{t})cos\theta
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We write the wheel positons in terms of the glider height keeping the glider
+ CG at the ground as the zero:
+\begin_inset Formula 
+\[
+y_{m}=y+d_{m}sin\theta
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+y_{t}=y-d_{m}sin\theta)
+\]
+
+\end_inset
+
+When the glider is at rest, 
+\begin_inset Formula $G_{t}=Wd_{m}/(d_{m}+d_{t}),$
+\end_inset
+
+ and 
+\begin_inset Formula $G_{m}=Wd_{t}/(d_{m}+d_{t}).$
+\end_inset
+
+ So in the simulation we can eliminate 
+\begin_inset Formula $k$
+\end_inset
+
+ and just write this in terms of the transition distance 
+\begin_inset Formula $\Delta r$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y-d_{m}(sin\theta-sin\theta_{o})}{\Delta r}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+G_{t}=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{t}-y_{o,t}}{\Delta r}\right)=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y-d_{t}(sin\theta-sin\theta_{o})}{\Delta r}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and both are zero when their height is greater than 
+\begin_inset Formula $\Delta r$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection
 Parameters 
 \end_layout
 
@@ -3064,11 +3208,11 @@ stabilator
 \end_layout
 
 \begin_layout Standard
-Comparing to the xflyr5 model: 
+Comparing to the xflyr5 model for Grob: 
 \begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
 \end_inset
 
-0.04/deg = 2.3/rad.
+0.04/deg = 1.9/rad.
  The moment is 
 \begin_inset Formula $M=\frac{1}{2}\rho Sv^{2}cC_{m}$
 \end_inset
@@ -3082,7 +3226,7 @@ Comparing to the xflyr5 model:
 \begin_inset Formula $p_{\alpha}=\frac{1}{L}\frac{\partial M}{\partial\alpha}=\frac{\frac{1}{2}\rho Sv^{2}}{\frac{1}{2}\rho Sv^{2}}\frac{c}{C_{Lw}}\frac{\partial C_{m}}{\partial\alpha}=c\frac{C_{m,\alpha}}{C_{Lw}}=$
 \end_inset
 
- (0.6m)(2.3/rad)/
+ (0.6m)(1.9/rad)/
 \begin_inset Formula $($
 \end_inset
 
@@ -3090,7 +3234,7 @@ Comparing to the xflyr5 model:
 \begin_inset Formula $C_{o}+2\pi\alpha)$
 \end_inset
 
-.=1.4 m/rad/ 
+.=1.2 m/rad/ 
 \begin_inset Formula $($
 \end_inset
 

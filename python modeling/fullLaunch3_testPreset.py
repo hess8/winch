@@ -552,7 +552,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     #glider
     v = sqrt(gl.xD**2 + gl.yD**2) # speed
     vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
-    vtrans = sqrt(v**2 - vgw**2) # velocity of glider perpendicular to straight line rope
+    vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
     thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
     Tg = rp.Tglider(thetarope) #tension at glider corrected for rope weight
     gamma = arctan(gl.yD/gl.xD)  # climb angle.   
@@ -668,10 +668,10 @@ if not os.path.exists(path): os.mkdir(path)
 #setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
-control = ['alpha','v']
-setpoint = [4*pi/180 ,33, 20]  #last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
+# control = ['alpha','v']
+# setpoint = [4*pi/180 ,33, 20]  #last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
 
 thrmax =  1.0
 ropetau = 0.0 #oscillation damping in rope, artificial
@@ -685,8 +685,8 @@ tcUsed = True   # uses the torque controller
 ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for data points saved
 
 #Loop over parameters for study, optimization
-tRampUpList = linspace(1,8,50)
-# tRampUpList = [5] #If you only want to run one value
+# tRampUpList = linspace(1,8,50)
+tRampUpList = [5] #If you only want to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this, the run failed, so ignore this time point
