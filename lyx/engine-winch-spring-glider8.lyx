@@ -2975,7 +2975,16 @@ y_{t}=y-d_{t}sin\theta
 
 \end_inset
 
-When the glider is at rest, 
+
+\begin_inset Formula $y_{m,o}=d_{m}sin\theta_{o}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $y_{m,o}=-d_{m}sin\theta_{o}$
+\end_inset
+
+.When the glider is at rest, 
 \begin_inset Formula $G_{t}=Wd_{m}/(d_{m}+d_{t}),$
 \end_inset
 
@@ -2986,7 +2995,7 @@ When the glider is at rest,
  
 \begin_inset Formula 
 \[
-G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y+d_{m}(sin\theta-sin\theta_{o})}{\Delta r}\right)
+G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)
 \]
 
 \end_inset
@@ -2997,7 +3006,7 @@ G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right
 \begin_layout Standard
 \begin_inset Formula 
 \[
-G_{t}=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{t}-y_{o,t}}{\Delta r}\right)=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y-d_{t}(sin\theta-sin\theta_{o})}{\Delta r}\right)
+G_{t}=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{t}-y_{o,t}}{\Delta r}\right)
 \]
 
 \end_inset
@@ -3011,28 +3020,8 @@ and each is zero when the wheel has risen more than
 \end_inset
 
 .
- 
-\end_layout
-
-\begin_layout Standard
-Then the total torque of the two is 
-\begin_inset Formula 
-\[
-(G_{m}d_{m}-G_{t}d_{t})cos\theta=W\frac{d_{m}d_{t}}{d_{m}+d_{t}}\left(\frac{\left(d_{m}+d_{t}\right)(sin\theta-sin\theta_{o})}{\Delta r}\right)=W\frac{d_{m}d_{t}}{\Delta r}(sin\theta-sin\theta_{o})
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-when both wheels are on the ground.
- This looks like it has no y dependence, but it's implicit in where each
- of the two forces goes to zero.
- As the glider tail lifts up first, the tail force will go to zero.
- It's best to use the separate torques above.
- 
+ It's best not to sum these analytically since they go to zero at different
+ times.
 \end_layout
 
 \begin_layout Subsection
@@ -3128,7 +3117,52 @@ kgm
 \end_layout
 
 \begin_layout Subsubsection
-Elevator 
+Stabilizer and elevator moments
+\end_layout
+
+\begin_layout Standard
+Comparing to the xflyr5 model for Grob: 
+\begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
+\end_inset
+
+0.04/deg = 1.9/rad.
+ The moment is 
+\begin_inset Formula $M=\frac{1}{2}\rho Sv^{2}cC_{m}=p_{\text{\alpha}}\alpha$
+\end_inset
+
+, where 
+\begin_inset Formula $c\approx0.6m$
+\end_inset
+
+ is the mean chord.
+ So 
+\begin_inset Formula $p_{\alpha}=\frac{1}{L}\frac{\partial M}{\partial\alpha}=\frac{\frac{1}{2}\rho Sv^{2}}{\frac{1}{2}\rho Sv^{2}}\frac{c}{C_{Lw}}\frac{\partial C_{m}}{\partial\alpha}=c\frac{C_{m,\alpha}}{C_{Lw}}=$
+\end_inset
+
+ (0.6m)(1.9/rad)/
+\begin_inset Formula $($
+\end_inset
+
+
+\begin_inset Formula $C_{o}+2\pi\alpha)$
+\end_inset
+
+.=1.2 m/rad/ 
+\begin_inset Formula $($
+\end_inset
+
+
+\begin_inset Formula $C_{o}+2\pi\alpha)$
+\end_inset
+
+.
+ This is the same moment as from the stabilzer alone, without any other
+ body effects.
+ This is much too small, because when used in simulations the tail doesn't
+ get off the ground until rotation.
+ Instead, from the fact that the tail comes off the ground in a typical
+ winch launch at about 40knts = 20m/s, the factor is about 8x larger: 10
+ m/rad
 \end_layout
 
 \begin_layout Standard
@@ -3193,7 +3227,7 @@ stabilator
 \end_inset
 
 0.05/deg=3/rad.
- (This is half what is expected for a 2D airfoil).
+ (This is half what is expected for a long wing).
  Then 
 \begin_inset Formula $p_{e}(\alpha)=l_{s}\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\approx$
 \end_inset
@@ -3220,46 +3254,6 @@ stabilator
 
 .
  
-\end_layout
-
-\begin_layout Standard
-Comparing to the xflyr5 model for Grob: 
-\begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
-\end_inset
-
-0.04/deg = 1.9/rad.
- The moment is 
-\begin_inset Formula $M=\frac{1}{2}\rho Sv^{2}cC_{m}$
-\end_inset
-
-, where 
-\begin_inset Formula $c\approx0.6m$
-\end_inset
-
- is the mean chord.
- So 
-\begin_inset Formula $p_{\alpha}=\frac{1}{L}\frac{\partial M}{\partial\alpha}=\frac{\frac{1}{2}\rho Sv^{2}}{\frac{1}{2}\rho Sv^{2}}\frac{c}{C_{Lw}}\frac{\partial C_{m}}{\partial\alpha}=c\frac{C_{m,\alpha}}{C_{Lw}}=$
-\end_inset
-
- (0.6m)(1.9/rad)/
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+2\pi\alpha)$
-\end_inset
-
-.=1.2 m/rad/ 
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+2\pi\alpha)$
-\end_inset
-
-.So the fuselage (and perhaps wing) adds a little more to the moment slope
- vs alpha.
- We will then use this larger amount
 \end_layout
 
 \begin_layout Subsubsection

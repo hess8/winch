@@ -94,8 +94,8 @@ class plots:
         self.path = path
         self.linew = 3.0
         self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', u'#8b8b8b',
-        u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', u'#30a2da','darkviolet',
-        u'#CC79A7',  u'#0072B2',u'#009E73','peru','slateblue'] # u'#F0E442',u'#467821',u'#56B4E9',       
+        u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'darkviolet',
+        u'#CC79A7',  u'#0072B2', u'#30a2da',u'#009E73','peru','slateblue'] # u'#F0E442',u'#467821','slateblue'      u'#56B4E9',
         return 
     
     def xy(self,xs,ys,xlbl,ylbl,legendLabels,titlestr):
@@ -191,8 +191,8 @@ class glider:
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-        self.palpha = 1.4     #   (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-#        self.palpha = 3.0     #   (m/rad) coefficient for air-glider pitch moment from angle of attack (increased above xflr model to handle rope torque
+#        self.palpha = 1.4     #   This is from extimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+        self.palpha = 10      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
         self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
         self.maxElev = 30 * pi/180 # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
@@ -212,14 +212,15 @@ class glider:
         self.thetaD = 0
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
 #         self.deltar = 0.02  #ground contact force distance of action (m)
-        self.deltar = 1.0  #ground contact force distance of action (m)
+        self.deltar = 0.01  #ground contact force distance of action (m)
         self.d_m = 0.4  # distance main wheel to CG (m) 
         self.d_t = 3.1  # distance tail wheel to CG (m) 
-        self.theta0 = theta0        
+        self.theta0 = theta0  
         #data
         self.data = zeros(ntime,dtype = [('t', float),('x', float),('xD', float),('y', float),('yD', float),('v', float),\
                                     ('theta', float),('vD', float),('vgw', float),('alpha', float),('L', float),('D', float),('L/D',float),\
-                                    ('gndTorq',float),('Malpha',float),('Pdeliv',float),('Edeliv',float),('Emech',float)])
+                                    ('gndTorq',float),('Fmain',float),('Ftail',float),('Malpha',float),\
+                                    ('Pdeliv',float),('Edeliv',float),('Emech',float)])
     def findState(self,ti):
         '''Determine where in the launch the glider is'''
         gd = self.data[ti.i]
@@ -237,10 +238,41 @@ class glider:
             self.state = 'roundout'  
         self.lastvy = gl.yD 
     
-    def gndForces(self):
-        Fmain = max(0, self.W * self.d_t/(self.d_m + self.d_t) * (1-  (self.y + self.d_m*(sin(self.theta) - sin(self.theta0))/self.deltar)))
-        Ftail =  max(0, self.W * self.d_m/(self.d_m + self.d_t) * (1-  (self.y - self.d_t*(sin(self.theta) - sin(self.theta0))/self.deltar)))
+    def gndForces(self,ti,gl):
+#         ymain0 = self.d_m*sin(self.theta0)
+#         ytail0 = -self.d_t*sin(self.theta0)
+        del_ymain = self.y + self.d_m*(sin(self.theta) - sin(self.theta0))
+        del_ytail = self.y - self.d_t*(sin(self.theta) - sin(self.theta0))
+        damp = 1e4 #wheels damp, too.  If more than this it excites the short-period oscillation
+        if del_ymain < self.deltar:
+            Fmain =  self.W * self.d_t/(self.d_m + self.d_t) * (1-  del_ymain/self.deltar) - damp*gl.yD
+        else:
+            Fmain = 0
+        if del_ytail < self.deltar:
+            Ftail =  self.W * self.d_m/(self.d_m + self.d_t) * (1-  (del_ytail)/self.deltar) - damp*gl.yD
+        else:
+            Ftail = 0
         return [Fmain, Ftail]
+        
+#    def gndForces(self,ti): #averages, but makes program unstable
+##         ymain0 = self.d_m*sin(self.theta0)
+##         ytail0 = -self.d_t*sin(self.theta0)
+#        del_ymain = self.y + self.d_m*(sin(self.theta) - sin(self.theta0))
+#        del_ytail = self.y - self.d_t*(sin(self.theta) - sin(self.theta0))
+#        Nint = 4 #average to damp out spring oscillations
+#        if del_ymain < self.deltar:
+#            Fmain =  self.W * self.d_t/(self.d_m + self.d_t) * (1 - del_ymain/self.deltar)
+#        else:
+#            Fmain = 0
+#        if del_ytail < self.deltar:
+#            Ftail =  self.W * self.d_m/(self.d_m + self.d_t) * (1 - (del_ytail)/self.deltar)
+#        else:
+#            Ftail = 0
+#        self.data[ti.i]['Fmain']  = Fmain
+#        self.data[ti.i]['Ftail']  = Ftail
+#        FmainAvg = sum(self.data[ti.i-Nint:ti.i+1]['Fmain'])/Nint
+#        FtailAvg = sum(self.data[ti.i-Nint:ti.i+1]['Ftail'])/Nint
+#        return [FmainAvg, FtailAvg]
    
 class rope:
     def __init__(self,tau):
@@ -559,7 +591,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         L = 0.75*L
         D = 4*L/float(gl.Q)
     alphatorq = -L * gl.palpha * alpha/(gl.Co + 2*pi*alpha)
-    [Fmain, Ftail] = gl.gndForces()
+    [Fmain, Ftail] = gl.gndForces(ti,gl)
     gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
     M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
 #     ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
@@ -598,7 +630,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         ti.i += 1 
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-#         print 't,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta
+#        print 't,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta
         # store data from this time step for use /in controls or plotting.  
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
@@ -651,8 +683,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 65  # end time for simulation
-dt = 0.05       #nominal time step, sec
+tEnd = 10 # end time for simulation
+dt = 0.05 # nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -660,13 +692,13 @@ if not os.path.exists(path): os.mkdir(path)
 #setpoint = [3*pi/180,3*pi/180, 20]  #last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
-#setpoint = [0*pi/180,33, 20]  #last one is climb angle to transition to final control
+#setpoint = [0*pi/180,30, 20]  #last one is climb angle to transition to final control
 #setpoint = 2*pi/180   #alpha, 2 degrees
 # control = ['','']
 #control = ['alpha','v']
-#setpoint = [2*pi/180 ,33, 20]  #last one is climb angle to transition to final control
+#setpoint = [4*pi/180 ,33, 20]  #last one is climb angle to transition to final control
 control = ['','']
-setpoint = [0*pi/180 , 0*pi/180, 20]  #last one is climb angle to transition to final control
+setpoint = [0*pi/180 , 0*pi/180, 30]  #last one is climb angle to transition to final control
 
 
 thrmax =  1.0
@@ -688,10 +720,7 @@ data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRo
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
 for iloop,tRampUp in enumerate(tRampUpList):
     print '\nThrottle ramp up time', tRampUp    
-    if control[0] == 'alpha':
-        theta0= setpoint[0]
-    else:
-       theta0 = 2*pi/180   #initial AoA, 2 degrees
+    theta0 = 6*pi/180  # resting angle of glider on ground    
     # create the objects we need from classes
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
