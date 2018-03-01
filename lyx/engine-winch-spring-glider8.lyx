@@ -2881,19 +2881,17 @@ name "subsec: Ground roll forces"
 \end_layout
 
 \begin_layout Standard
+If we model the glider well whille in the ground roll then its transition
+ to flying in the simulation will be smooth.
+ 
+\end_layout
+
+\begin_layout Standard
 The glider at rest sits inclined at an angle 
 \begin_inset Formula $\theta_{o}\approx7^{\circ}$
 \end_inset
 
- because the glider longitudinal axis main wheel is farther (at 
-\begin_inset Formula $h_{m})$
-\end_inset
-
- than it is at the tail wheel 
-\begin_inset Formula $(h_{t})$
-\end_inset
-
-.
+ .
  
 \end_layout
 
@@ -2911,29 +2909,30 @@ The main wheel is a distance
 \end_layout
 
 \begin_layout Standard
-The easiest way to model the ground contact forces 
+The easiest way to numerically model the ground contact forces 
 \begin_inset Formula $G$
 \end_inset
 
  on the tires as a function of time for the simulation is with a force that
  drops to zero linearly in about a centimeter as the wheel moves upward,
- in other words a spring-like force, which is what happens naturally with
+ in other words a spring-like force, which is what actually happens with
  the tires.
  
 \begin_inset Formula $\Delta r\approx1$
 \end_inset
 
-cm is the tire compression.
+ cm is the tire compression.
  The value of 
 \begin_inset Formula $\Delta r$
 \end_inset
 
- isn't important (10 cm or more would work too), but this technique makes
- a smooth transition from full ground forces to zero during liftoff (
+ isn't important (10 cm or more would work too and might be more stable
+ numerically), but this technique makes a smooth transition from full ground
+ forces to zero during liftoff (
 \begin_inset Formula $\Delta r$
 \end_inset
 
- would matter if were were modeling a landing)..
+ would matter if we were modeling a landing)..
  We expand eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2953,8 +2952,11 @@ I_{g}\ddot{\theta}=\tau_{rope,glider}+M+(G_{m}d_{m}-G_{t}d_{t})cos\theta
 \end_layout
 
 \begin_layout Standard
-We write the wheel positons in terms of the glider height keeping the glider
- CG at the ground as the zero:
+We write the wheel positons in terms of the glider height 
+\begin_inset Formula $y$
+\end_inset
+
+ keeping the glider CG at the ground as the zero:
 \begin_inset Formula 
 \[
 y_{m}=y+d_{m}sin\theta
@@ -2968,7 +2970,7 @@ y_{m}=y+d_{m}sin\theta
 \begin_layout Standard
 \begin_inset Formula 
 \[
-y_{t}=y-d_{m}sin\theta)
+y_{t}=y-d_{t}sin\theta
 \]
 
 \end_inset
@@ -2981,18 +2983,10 @@ When the glider is at rest,
 \begin_inset Formula $G_{m}=Wd_{t}/(d_{m}+d_{t}).$
 \end_inset
 
- So in the simulation we can eliminate 
-\begin_inset Formula $k$
-\end_inset
-
- and just write this in terms of the transition distance 
-\begin_inset Formula $\Delta r$
-\end_inset
-
-
+ 
 \begin_inset Formula 
 \[
-G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y-d_{m}(sin\theta-sin\theta_{o})}{\Delta r}\right)
+G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y+d_{m}(sin\theta-sin\theta_{o})}{\Delta r}\right)
 \]
 
 \end_inset
@@ -3012,11 +3006,32 @@ G_{t}=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{t}-y_{o,t}}{\Delta r}\right
 \end_layout
 
 \begin_layout Standard
-and both are zero when their height is greater than 
+and each is zero when the wheel has risen more than 
 \begin_inset Formula $\Delta r$
 \end_inset
 
 .
+ 
+\end_layout
+
+\begin_layout Standard
+Then the total torque of the two is 
+\begin_inset Formula 
+\[
+(G_{m}d_{m}-G_{t}d_{t})cos\theta=W\frac{d_{m}d_{t}}{d_{m}+d_{t}}\left(\frac{\left(d_{m}+d_{t}\right)(sin\theta-sin\theta_{o})}{\Delta r}\right)=W\frac{d_{m}d_{t}}{\Delta r}(sin\theta-sin\theta_{o})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+when both wheels are on the ground.
+ This looks like it has no y dependence, but it's implicit in where each
+ of the two forces goes to zero.
+ As the glider tail lifts up first, the tail force will go to zero.
+ It's best to use the separate torques above.
  
 \end_layout
 
