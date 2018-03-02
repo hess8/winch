@@ -193,9 +193,10 @@ class glider:
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-#        self.palpha = 1.4     #   This is from extimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-        self.palpha = 10      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
+        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+#        self.palpha = 10      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
         self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
+#        self.pelev = 6     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
 #        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
@@ -214,7 +215,7 @@ class glider:
         self.thetaD = 0
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
 #         self.deltar = 0.02  #ground contact force distance of action (m)
-        self.deltar = 0.01  #ground contact force distance of action (m)
+        self.deltar = 0.05  #ground contact force distance of action (m)
         self.d_m = 0.4  # distance main wheel to CG (m) 
         self.d_t = 3.1  # distance tail wheel to CG (m) 
         self.theta0 = rad(theta0) 
@@ -252,7 +253,7 @@ class glider:
 #         ytail0 = -self.d_t*sin(self.theta0)
         del_ymain = self.y + self.d_m*(sin(self.theta) - sin(self.theta0))
         del_ytail = self.y - self.d_t*(sin(self.theta) - sin(self.theta0))
-        damp = 1e4 #wheels damp, too.  If more than this it excites the short-period oscillation
+        damp = 0 #wheels damp, too.  If more than this it excites the short-period oscillation
         if del_ymain < self.deltar:
             Fmain =  self.W * self.d_t/(self.d_m + self.d_t) * (1-  del_ymain/self.deltar) - damp*gl.yD
         else:
@@ -294,7 +295,7 @@ class rope:
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
-        self.b = 0.4            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
+        self.b = 0.1            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
@@ -445,7 +446,6 @@ class operator:
             vsmooth = target +  (self.oldvTarget - target) *exp(-(t-self.tSwitch)/tauOp)
 #            print 'vsmooth',vsmooth
             return vsmooth
-
 #        angleMax = self.angleMax         
 #        tRampUp = self.tRampUp 
         thetarope = rp.data[ti.i]['theta']
@@ -516,7 +516,9 @@ class pilot:
     def control(self,t,ti,gl):
         #all angles in routines are in radians (vs degrees on the main script input) 
         def alphaControl(time,setpoint,ti,Nint):
-            if gl.state == 'onGnd' and gl.theta < gl.theta0 - 0.1:
+            if gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1): #no elevator authority
+                pp =  0; pd =   0; pint =  0
+            elif gl.state == 'onGnd' and gl.theta < gl.theta0 - rad(1):
                 pp = -1; pd = -16; pint = -0
             else:
                 pp = -200; pd = -6; pint = -64.0
@@ -524,10 +526,13 @@ class pilot:
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
         def vControl(time,setpoint,ti,Nint):
-            pp = 8; pd = 4; pint = 8 #when speed is too high, pitch up
+            if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
+                pp =  0; pd =   0; pint =  0
+            else: 
+                pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
-            v = gl.data['v']
-            return pid(v,time,setpoint,c,ti.i,Nint)
+            varr = gl.data['v']
+            return pid(varr,time,setpoint,c,ti.i,Nint)
         def vDDamp(time,setpoint,ti,Nint):
             pp = 0; pd = 4; pint = 0 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
@@ -539,12 +544,13 @@ class pilot:
             elif x < -xmax:
                 x = -xmax
             return x
+        
         tint = 4.0 #sec
         Nint = ceil(tint/ti.dt)   
         time = gl.data['t']
         L = gl.data[ti.i]['L']
         alpha = gl.data[ti.i]['alpha']
-        gamma = arctan(gl.yD/gl.xD) 
+        gamma = gl.data[ti.i]['gamma']
         crossAngle = rad(self.setpoint[2])  #climb angle to switch from one control to another
         Mdelev =  max(0.1,L * gl.pelev/(gl.Co + 2*pi*alpha)) #ratio between moment and elevator deflection 
         if '' in control:
@@ -560,7 +566,7 @@ class pilot:
             # determine the moment demanded by the control            
             if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
                 self.MeTarget = vDDamp(time,setpoint,ti,Nint)
-            elif ctype == 'v' and gl.y > 1: #target v with setpoint'
+            elif ctype == 'v': #target v with setpoint'
                 self.MeTarget = vControl(time,setpoint,ti,Nint)
             elif ctype == 'alpha': # control AoA  
                 self.MeTarget =  alphaControl(time,rad(setpoint),ti,Nint)    
@@ -703,7 +709,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 12 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
@@ -711,13 +717,15 @@ if not os.path.exists(path): os.mkdir(path)
 #control = ['alpha','alpha']  # Use '' for none
 #setpoint = [3 ,3 , 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','vDdamp']
-control = ['alpha','v']
-setpoint = [2,33, 20]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['alpha','v']
+#setpoint = [2,33, 20]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['v','v']
+#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['','']
 #control = ['alpha','v']
 #setpoint = [4 ,33, 20]  #deg,speed, deg last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 
 thrmax =  1.0
@@ -817,7 +825,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
     print 'Final vy: {:5.1f} m/s'.format(yDfinal)
     if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
-        print '\nWarning...the integrator had a harder time with this model.'
+        print '\nWarning...the integrator struggled with this model.'
         print '\tIf some of the plots have a time axis that is too short vs others, '
         print '\t...try making smoother controls.'
     # check whether to keep this run as loop data
