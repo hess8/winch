@@ -474,7 +474,7 @@ class operator:
         tauOp = 1.0 #sec response time
         tint = tauOp 
         Nint = min(ti.i,ceil(tint/ti.dt)) 
-        pp = -1; pd = -.5; pint = -2
+        pp = -16; pd = -2; pint = -8
         c = array([pp,pd,pint]) 
         time = self.data['t']
         tRampUp = self.tRampUp
@@ -485,8 +485,6 @@ class operator:
                 targetT = 1.0* self.targetTmax
             else: 
                 targetT = self.targetTmax
-
-                
         Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
         self.Sth = Tcontrol    
 
@@ -701,7 +699,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 40 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
