@@ -510,12 +510,25 @@ class pilot:
     def control(self,t,ti,gl): 
         #all angles in routines are in radians (vs degrees on the main script input) 
         def alphaControl(time,setpoint,ti,Nint):
-            pp = -200; pd = -6; pint = -64.0
+            if gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1): #no elevator authority
+                pp =  0; pd =   0; pint =  0
+            elif gl.state == 'onGnd' and gl.theta < gl.theta0 - rad(1):
+                pp = -1; pd = -16; pint = -0
+            else:
+                pp = -200; pd = -6; pint = -64.0
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
         def vControl(time,setpoint,ti,Nint):
-            pp = 8; pd = 4; pint = 8 #when speed is too high, pitch up
+            if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
+                pp =  0; pd =   0; pint =  0
+            else: 
+                pp = 8; pd = 4; pint = 8 #when speed is too high, pitch up
+            c = array([pp,pd,pint])* gl.I/gl.vb
+            varr = gl.data['v']
+            return pid(varr,time,setpoint,c,ti.i,Nint)
+        def vDDamp(time,setpoint,ti,Nint):
+            pp = 0; pd = 4; pint = 0 #when speed is too high, pitch u
             c = array([pp,pd,pint])* gl.I/gl.vb
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
@@ -546,14 +559,11 @@ class pilot:
             setpoint = self.setpoint[self.currCntrl]
             # determine the moment demanded by the control            
             if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
-                pvD = 4
-                tRise = 1.0  # sec.  Turn this on with a rise time
-                self.MeTarget = pvD * gl.data[ti.i]['vD'] *gl.I * (1-exp(-(t-self.tSwitch)/tRise))                       
-#                        self.MeTarget = pvD * gl.data[ti.i]['vD'] *gl.I  
-            elif ctype == 'v' and gl.y > 1: #target v with setpoint'
+                self.MeTarget = vDDamp(time,setpoint,ti,Nint)
+            elif ctype == 'v': #target v with setpoint'
                 self.MeTarget = vControl(time,setpoint,ti,Nint)
             elif ctype == 'alpha': # control AoA  
-                self.MeTarget =  alphaControl(time,setpoint,ti,Nint)    
+                self.MeTarget =  alphaControl(time,rad(setpoint),ti,Nint)    
             # implement
             if self.type =='elevControl': 
                 self.elevTarget = limiter(self.MeTarget/Mdelev,gl.maxElev) # determine the elevator setting 
