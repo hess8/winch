@@ -706,10 +706,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################
 #                         Main script
 ##########################################################################                        
+tRampUpList = [3] #If you only want to run one value
 tStart = 0
 tEnd = 40 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
+thrmax =  1.0
 path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -726,7 +728,7 @@ setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition t
 #setpoint = [4 ,33, 20]  #deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-thrmax =  1.0
+
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 # pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -739,7 +741,6 @@ ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for d
 
 # Loop over parameters for study, optimization
 # tRampUpList = linspace(1,8,50)
-tRampUpList = [3] #If you only want to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
