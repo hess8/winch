@@ -193,8 +193,8 @@ class glider:
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-#        self.palpha = 10      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
+#        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+        self.palpha = 5      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
         self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
 #        self.pelev = 6     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
@@ -295,7 +295,7 @@ class rope:
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
-        self.b = 0.1            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
+        self.b = 0.2            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
@@ -358,7 +358,7 @@ class engine:
         # Engine parameters  
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 390             # engine rated horsepower
-        self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
+        self.Pmax = 0.85*750*self.hp        # engine watts.  0.85 is for other transmission losses besides TC
 #        self.rpmpeak = 6000       # rpm for peak power
 #        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
 
@@ -615,12 +615,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     [Fmain, Ftail] = gl.gndForces(ti,gl)
     gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
     M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
-#     ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
-#     ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
-    ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.data[ti.i-1]['theta']-thetaRG) #torque of rope on glider
-
-#     if t>0.126362685837:
-#         print 'ropetorq',ropetorq
+    ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
     #winch-engine
     vrel = wi.v/en.v
     Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
