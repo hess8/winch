@@ -389,7 +389,8 @@ class engine:
         return self.Pmax*pcurveEval
         
 class operator:
-    def __init__(self,thrmax,tRampUp,ntime):
+    def __init__(self,targetTmax,thrmax,tRampUp,ntime):
+        self.targetTmax = targetTmax
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
         self.Sth = 0
@@ -479,20 +480,17 @@ class operator:
         tauOp = 1.0 #sec response time
         tint = tauOp 
         Nint = min(ti.i,ceil(tint/ti.dt)) 
-        pp = -1; pd = -.5; pint = -2
+        pp = -16; pd = -2; pint = -8
         c = array([pp,pd,pint]) 
         time = self.data['t']
         tRampUp = self.tRampUp
-        targetTmax = 1.0
         if t <= tRampUp:
-            targetT =  targetTmax/float(tRampUp) * t
+            targetT =  self.targetTmax/float(tRampUp) * t
         else:
             if gl.state == 'roundout':
-                targetT = 1.0* targetTmax
+                targetT = 1.0* self.targetTmax
             else: 
-                targetT = targetTmax
-
-                
+                targetT = self.targetTmax
         Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
         self.Sth = Tcontrol    
 
@@ -529,7 +527,7 @@ class pilot:
             if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
                 pp =  0; pd =   0; pint =  0
             else: 
-                pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
+                pp = 8; pd = 4; pint = 8 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -603,7 +601,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
     thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
     Tg = rp.Tglider(thetarope) #tension at glider corrected for rope weight
-    if gl.xD > 1:
+    if gl.xD > 1: #avoid initial zeros problem
         gamma = arctan(gl.yD/gl.xD)  # climb angle.  
     else:
         gamma = 0
@@ -709,8 +707,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 40 # end time for simulation
 dt = 0.05 # nominal time step, sec
+targetTmax = 1.0
 path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -720,14 +719,13 @@ if not os.path.exists(path): os.mkdir(path)
 #control = ['alpha','v']
 #setpoint = [2,33, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['v','v']
-#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['v','v']
+setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['','']
 #control = ['alpha','v']
 #setpoint = [4 ,33, 20]  #deg,speed, deg last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-
-
+#control = ['','']
+#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 thrmax =  1.0
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
@@ -741,7 +739,7 @@ ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for d
 
 # Loop over parameters for study, optimization
 # tRampUpList = linspace(1,8,50)
-tRampUpList = [5] #If you only want to run one value
+tRampUpList = [3] #If you only want to run one value
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
@@ -756,7 +754,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
-    op = operator(thrmax,tRampUp,ntime)
+    op = operator(targetTmax,thrmax,tRampUp,ntime)
     pl = pilot(pilotType,ntime,control,setpoint)
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
