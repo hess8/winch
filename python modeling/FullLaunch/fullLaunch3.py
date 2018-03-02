@@ -579,136 +579,142 @@ class pilot:
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
-def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
-    '''First derivative of the state vector'''
-    ti.Nprobed +=1
-    ti.tprobed[ti.Nprobed-1] = t
-    gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
-#    print 't,e,eset,M ',t,pl.elev,pl.elevTarget,pl.Me
-    if gl.xD < 1e-6:
-        gl.xD = 1e-6 #to handle v = 0 initial
-    if en.v < 1e-6:
-        en.v = 1e-6 #to handle v = 0 initial
-
-    #----algebraic functions----#
-    #rope
-    thetarope = arctan(gl.y/float(rp.lo-gl.x));
-    if thetarope <-1e-6: thetarope += pi #to handle overflight of winch 
-    lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
-    #glider
-    v = sqrt(gl.xD**2 + gl.yD**2) # speed
-    vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
-    vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
-    thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
-    Tg = rp.Tglider(thetarope) #tension at glider corrected for rope weight
-    if gl.xD > 1: #avoid initial zeros problem
-        gamma = arctan(gl.yD/gl.xD)  # climb angle.  
-    else:
-        gamma = 0
-    alpha = gl.theta - gamma # angle of attack
-    L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
-    D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)# + gl.de*pl.Me #drag  
-    if alpha > gl.alphas: #stall mimic
-        L = 0.75*L
-        D = 4*L/float(gl.Q)
-    alphatorq = -L * gl.palpha * alpha/(gl.Co + 2*pi*alpha)
-    [Fmain, Ftail] = gl.gndForces(ti,gl)
-    gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
-    M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
-#     ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
-#     ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
-    ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.data[ti.i-1]['theta']-thetaRG) #torque of rope on glider
-
-#     if t>0.126362685837:
-#         print 'ropetorq',ropetorq
-    #winch-engine
-    vrel = wi.v/en.v
-    Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
-    Few = Fee * (tc.lowTorq-vrel)  # effective force between engine and winch through torque converter
-    #----derivatives of state variables----#
-    dotx = gl.xD       
-    dotxD = 1/float(gl.m) * (Tg*cos(thetaRG) - D*cos(gamma) - L*sin(gamma)) #x acceleration
-    doty = gl.yD
-    dotyD = 1/float(gl.m) * (L*cos(gamma) - Tg*sin(thetaRG) - D*sin(gamma) - gl.W  + Fmain + Ftail) #y acceleration
-    dottheta = gl.thetaD    
-    dotthetaD = 1/float(gl.I) * (ropetorq + M)
-    if pl.type == 'elevControl':
-        dotelev = 1/pl.humanT * (pl.elevTarget-pl.elev)
-    else:
-        dotelev = 0 
-
-    dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope) #- (rp.T-rp.avgT(ti))/rp.tau
-    if en.tcUsed:
-        dotvw =  1/float(wi.me) * (Few - rp.T)
-        dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
-    else: #no torque converter
-        dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
-        dotve = dotvw
-    # The ode solver enters this routine
-    # usually two or more times per time step.  We advance the time step counter only if the time has changed 
-    # by close to a nominal time step    
-    if t - ti.oldt > 2.0*ti.dt: 
-        ti.i += 1 
-#        print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-#        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-#        print 't,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta
-#         if rp.T > 10:
-#             print 'pause'
-        # store data from this time step for use /in controls or plotting.  
-        gl.data[ti.i]['t']  = t
-        gl.data[ti.i]['x']  = gl.x
-        gl.data[ti.i]['xD'] = gl.xD
-        gl.data[ti.i]['y']  = gl.y
-        gl.data[ti.i]['yD'] = gl.yD
-        gl.data[ti.i]['v']  = v
-        gl.data[ti.i]['theta']  = gl.theta
-        gl.data[ti.i]['gamma']  = gamma
-        gl.data[ti.i]['alpha']  = alpha
-        gl.data[ti.i]['vD']  = sqrt(dotxD**2 + dotyD**2)
-        gl.data[ti.i]['vgw']  = vgw
-        gl.data[ti.i]['L']  = L
-        gl.data[ti.i]['D']  = D
-        if D > 10:
-            gl.data[ti.i]['L/D']  = L/D
+def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
+    '''First derivative of the state vector'''  
+    if t > 15 and gl.yD < negvyTrigger: #glider has released, but the integrator must finish   
+        return zeros(len(S))
+    else: 
+        ti.Nprobed +=1
+        ti.tprobed[ti.Nprobed-1] = t
+        gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
+    #    print 't,e,eset,M ',t,pl.elev,pl.elevTarget,pl.Me
+        if gl.xD < 1e-6:
+            gl.xD = 1e-6 #to handle v = 0 initial
+        if en.v < 1e-6:
+            en.v = 1e-6 #to handle v = 0 initial
+    
+        #----algebraic functions----#
+        #rope
+        thetarope = arctan(gl.y/float(rp.lo-gl.x));
+        if thetarope <-1e-6: thetarope += pi #to handle overflight of winch 
+        lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
+        #glider
+        v = sqrt(gl.xD**2 + gl.yD**2) # speed
+        vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
+        vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
+        thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
+        Tg = rp.Tglider(thetarope) #tension at glider corrected for rope weight
+        if gl.xD > 1: #avoid initial zeros problem
+            gamma = arctan(gl.yD/gl.xD)  # climb angle.  
         else:
-            gl.data[ti.i]['L/D']  = gl.Q
-        gl.data[ti.i]['gndTorq']  = gndTorq
-        gl.data[ti.i]['Malpha']  = alphatorq
-        gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
-#        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
-        gl.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG + gl.theta) 
-        gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
-        rp.data[ti.i]['Pdeliv'] = rp.T * wi.v #+ 0.5*lenrope/rp.Y/rp.A * rp.T * dotT
-        rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
-        rp.data[ti.i]['T'] = rp.T
-        rp.data[ti.i]['torq'] = ropetorq
-#         if gl.y > 1:
-#             print 'pause'
-        rp.data[ti.i]['theta'] = thetarope
-        wi.data[ti.i]['Pdeliv'] = Few * wi.v
-        wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
-        en.data[ti.i]['v'] = en.v  
-        en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)         
-        en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
-        op.data[ti.i]['t']   = t
-        op.data[ti.i]['Sth'] = op.Sth
-        ti.oldt = t
-    #---update things that we don't want updated everytime ODEint enters stateDer
-        gl.findState(ti)
-        # Update controls
-    #    op.linearDown(t) 
-#        op.control(t,ti,gl,rp,en)
-#        op.preSet(t)
-        pl.control(t,ti,gl)
-        op.constT(t,ti,gl,rp,en)        
-    return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
+            gamma = 0
+        alpha = gl.theta - gamma # angle of attack
+        L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
+        D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)# + gl.de*pl.Me #drag  
+        if alpha > gl.alphas: #stall mimic
+            L = 0.75*L
+            D = 4*L/float(gl.Q)
+        alphatorq = -L * gl.palpha * alpha/(gl.Co + 2*pi*alpha)
+        [Fmain, Ftail] = gl.gndForces(ti,gl)
+        gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
+        M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
+    #     ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
+    #     ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
+        ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.data[ti.i-1]['theta']-thetaRG) #torque of rope on glider
+    
+    #     if t>0.126362685837:
+    #         print 'ropetorq',ropetorq
+        #winch-engine
+        vrel = wi.v/en.v
+        Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
+        Few = Fee * (tc.lowTorq-vrel)  # effective force between engine and winch through torque converter
+        #----derivatives of state variables----#
+        dotx = gl.xD       
+        dotxD = 1/float(gl.m) * (Tg*cos(thetaRG) - D*cos(gamma) - L*sin(gamma)) #x acceleration
+        doty = gl.yD
+        dotyD = 1/float(gl.m) * (L*cos(gamma) - Tg*sin(thetaRG) - D*sin(gamma) - gl.W  + Fmain + Ftail) #y acceleration
+        dottheta = gl.thetaD    
+        dotthetaD = 1/float(gl.I) * (ropetorq + M)
+        if pl.type == 'elevControl':
+            dotelev = 1/pl.humanT * (pl.elevTarget-pl.elev)
+        else:
+            dotelev = 0 
+    
+        dotT = rp.Y*rp.A*(wi.v - vgw)/float(lenrope) #- (rp.T-rp.avgT(ti))/rp.tau
+        if en.tcUsed:
+            dotvw =  1/float(wi.me) * (Few - rp.T)
+            dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Few / (2 - vrel))
+        else: #no torque converter
+            dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
+            dotve = dotvw
+        # The ode solver enters this routine
+        # usually two or more times per time step.  We advance the time step counter only if the time has changed 
+        # by close to a nominal time step    
+        if t - ti.oldt > 2.0*ti.dt: 
+            ti.i += 1 
+    #         if t > 15 and gl.yD<0:
+#             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+    #             print 'pause'
+    #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
+    #        print 't,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta
+    #         if rp.T > 10:
+    #             print 'pause'
+            # store data from this time step for use /in controls or plotting.  
+            gl.data[ti.i]['t']  = t
+            gl.data[ti.i]['x']  = gl.x
+            gl.data[ti.i]['xD'] = gl.xD
+            gl.data[ti.i]['y']  = gl.y
+            gl.data[ti.i]['yD'] = gl.yD
+            gl.data[ti.i]['v']  = v
+            gl.data[ti.i]['theta']  = gl.theta
+            gl.data[ti.i]['gamma']  = gamma
+            gl.data[ti.i]['alpha']  = alpha
+            gl.data[ti.i]['vD']  = sqrt(dotxD**2 + dotyD**2)
+            gl.data[ti.i]['vgw']  = vgw
+            gl.data[ti.i]['L']  = L
+            gl.data[ti.i]['D']  = D
+            if D > 10:
+                gl.data[ti.i]['L/D']  = L/D
+            else:
+                gl.data[ti.i]['L/D']  = gl.Q
+            gl.data[ti.i]['gndTorq']  = gndTorq
+            gl.data[ti.i]['Malpha']  = alphatorq
+            gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
+    #        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
+            gl.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG + gl.theta) 
+            gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+            rp.data[ti.i]['Pdeliv'] = rp.T * wi.v #+ 0.5*lenrope/rp.Y/rp.A * rp.T * dotT
+            rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+            rp.data[ti.i]['T'] = rp.T
+            rp.data[ti.i]['torq'] = ropetorq
+    #         if gl.y > 1:
+    #             print 'pause'
+            rp.data[ti.i]['theta'] = thetarope
+            wi.data[ti.i]['Pdeliv'] = Few * wi.v
+            wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+            en.data[ti.i]['v'] = en.v  
+            en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)         
+            en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+            op.data[ti.i]['t']   = t
+            op.data[ti.i]['Sth'] = op.Sth
+            ti.oldt = t
+        #---update things that we don't need done ODEint enters stateDer
+            gl.findState(ti)
+            # Update controls
+        #    op.linearDown(t) 
+    #        op.control(t,ti,gl,rp,en)
+    #        op.preSet(t)
+            pl.control(t,ti,gl)
+            op.constT(t,ti,gl,rp,en)        
+        return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
+
 
 ##########################################################################
 #                         Main script
 ##########################################################################                        
 tRampUpList = [3] #If you only want to run one value
 tStart = 0
-tEnd = 40 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
@@ -738,7 +744,7 @@ tcUsed = True   # uses the torque controller
 # control =/ 'v'  # Use '' for none
 # setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 ntime = ((tEnd - tStart)/dt + 1 ) * 64.0   # number of time steps to allow for data points saved
-
+negvyTrigger = -0.1  #when to release
 # Loop over parameters for study, optimization
 # tRampUpList = linspace(1,8,50)
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
@@ -766,18 +772,17 @@ for iloop,tRampUp in enumerate(tRampUpList):
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,))
+    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,negvyTrigger))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #If yD dropped below zero, the release occured.  Remove the time steps after that. 
-    negvyTrigger = -0.1    
-    if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger :
-        negyD =where(gl.yD < negvyTrigger)[0] #glider losing altitude
+    if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger/2 :
+        negyD =where(gl.yD < negvyTrigger/2)[0] #glider losing altitude
         itr = negyD[0]-1 #ode solver index for release time
     #    itr = argmin(gl.yD)
         t = t[:itr] #shorten
-        if min(gl.data['yD']) < 0:
-            negyD =where(gl.data['yD'] < 0)[0]
+        if min(gl.data['yD']) < negvyTrigger/2 :
+            negyD =where(gl.data['yD'] < negvyTrigger/2 )[0]
             ti.i = negyD[0]-1  #data index for release time  
         else:
             ti.i = argmax(gl.data['t'])

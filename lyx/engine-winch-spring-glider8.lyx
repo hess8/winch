@@ -80,7 +80,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -2995,7 +2994,7 @@ y_{t}=y-d_{t}sin\theta
  
 \begin_inset Formula 
 \[
-G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)
+G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right)-c_{damp}\dot{y}
 \]
 
 \end_inset
@@ -3006,7 +3005,7 @@ G_{m}=W\frac{d_{t}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{m}-y_{o,m}}{\Delta r}\right
 \begin_layout Standard
 \begin_inset Formula 
 \[
-G_{t}=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{t}-y_{o,t}}{\Delta r}\right)
+G_{t}=W\frac{d_{m}}{d_{m}+d_{t}}\,\,\left(1-\frac{y_{t}-y_{o,t}}{\Delta r}\right)-c_{damp}\dot{y}
 \]
 
 \end_inset
@@ -3022,6 +3021,11 @@ and each is zero when the wheel has risen more than
 .
  It's best not to sum these analytically since they go to zero at different
  times.
+ We also add some damping too each wheel through 
+\begin_inset Formula $c_{damp}.$
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -3161,8 +3165,12 @@ Comparing to the xflyr5 model for Grob:
  This is much too small, because when used in simulations the tail doesn't
  get off the ground until rotation.
  Instead, from the fact that the tail comes off the ground in a typical
- winch launch at about 40knts = 20m/s, the factor is about 8x larger: 10
- m/rad
+ winch launch at about 40knts = 20m/s, we use a
+\series bold
+ factor that is 4x larger
+\series default
+: 5m/rad.
+ 
 \end_layout
 
 \begin_layout Standard
