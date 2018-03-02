@@ -382,7 +382,8 @@ class engine:
         return self.Pmax*pcurveEval
         
 class operator:
-    def __init__(self,thrmax,tRampUp,ntime):
+    def __init__(self,targetTmax,thrmax,tRampUp,ntime):
+        self.targetTmax = targetTmax
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
         self.Sth = 0
@@ -477,14 +478,13 @@ class operator:
         c = array([pp,pd,pint]) 
         time = self.data['t']
         tRampUp = self.tRampUp
-        targetTmax = 1.0
         if t <= tRampUp:
-            targetT =  targetTmax/float(tRampUp) * t
+            targetT =  self.targetTmax/float(tRampUp) * t
         else:
             if gl.state == 'roundout':
-                targetT = 1.0* targetTmax
+                targetT = 1.0* self.targetTmax
             else: 
-                targetT = targetTmax
+                targetT = self.targetTmax
 
                 
         Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
@@ -701,8 +701,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 tStart = 0
-tEnd = 40 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
+targetTmax = 1.0
 path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
@@ -711,15 +712,13 @@ if not os.path.exists(path): os.mkdir(path)
 #control = ['alpha','vDdamp']
 #control = ['alpha','v']
 #setpoint = [2,33, 20]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['v','v']
-#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['v','v']
+setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['','']
 #control = ['alpha','v']
 #setpoint = [4 ,33, 20]  #deg,speed, deg last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-
-
+#control = ['','']
+#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 thrmax =  1.0
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
@@ -748,7 +747,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
-    op = operator(thrmax,tRampUp,ntime)
+    op = operator(targetTmax,thrmax,tRampUp,ntime)
     pl = pilot(pilotType,ntime,control,setpoint)
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
