@@ -701,7 +701,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
             wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             en.data[ti.i]['v'] = en.v  
             en.data[ti.i]['Pdeliv'] = op.Sth * en.Pavail(en.v)  
-            en.data[ti.i]['torq'] =  op.Sth * en.Pavail(en.v)/en.v * (wi.rdrum)**2            
+            en.data[ti.i]['torq'] =  op.Sth * en.Pavail(en.v)/(en.v/wi.rdrum*en.gear*en.diff)  #from pistons          
             en.data[ti.i]['Edeliv'] = en.data[ti.i - 1]['Edeliv'] + en.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             op.data[ti.i]['t']   = t
             op.data[ti.i]['Sth'] = op.Sth
@@ -903,8 +903,8 @@ plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me'],gData['gndTorq']],'ti
 #Engine, rope and winch
 plts.xy([t,t,tData,tData,tData],[en.v[:itr],wi.v[:itr],gData['vgw'],deg(rData['theta']),100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
 #-British units-
-plts.xy([t,tData,tData,t,tData,tData],[en.v[:itr]/wi.rdrum*60/2/pi*en.diff*en.gear/100,eData['Pdeliv']/750,eData['torq']/0.74/10,wi.v[:itr]*1.94,gData['vgw']*1.94,100*oData['Sth']],\
-    'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/100', 'pistons HP', 'pistons torque (ftlbs)/10','rope speed','glider radial speed','throttle'],'Engine British units')        
+plts.xy([t,tData,tData,t,tData,tData],[en.v[:itr]/wi.rdrum*60/2/pi*en.diff*en.gear/10,eData['Pdeliv']/750,eData['torq']*0.74,wi.v[:itr]*1.94,gData['vgw']*1.94,100*oData['Sth']],\
+    'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/10', 'pistons HP', 'pistons torque (ftlbs)','rope speed','glider radial speed','throttle'],'Engine British units')        
 
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
