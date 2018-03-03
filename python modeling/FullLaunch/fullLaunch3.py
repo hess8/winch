@@ -193,8 +193,8 @@ class glider:
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-#        self.palpha = 10      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
+#        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+        self.palpha = 5      #  increased 3x !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
         self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
 #        self.pelev = 6     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
@@ -389,7 +389,8 @@ class engine:
         return self.Pmax*pcurveEval
         
 class operator:
-    def __init__(self,targetTmax,thrmax,tRampUp,ntime):
+    def __init__(self,throttleType,targetTmax,thrmax,tRampUp,ntime):
+        self.throttleType = throttleType        
         self.targetTmax = targetTmax
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
@@ -401,22 +402,6 @@ class operator:
         self.oldvTarget = 0
         self.currvTarget = None
         self.tSwitch = 0
-    
-    def preSet(self,t):
-        ### Ramp up, hold, then decrease to steady value
-        steadyThr = 0.5        
-        tRampUp = self.tRampUp
-        tHold = .5
-        tDown = tRampUp + tHold
-#        tRampDown = ti.tEnd - tRampUp - tHold
-        tRampDown1 = 1 #sec...transition to steady
-        tRampDown2 = 120 #longer ramp down
-        if t <= tRampUp:
-            self.Sth =  self.thrmax/float(tRampUp) * t
-        elif tRampUp < t < tDown:
-            self.Sth =  self.thrmax
-        elif t >= tDown:
-            self.Sth = max(steadyThr*(1-(t-tDown)/float(tRampDown2)),self.thrmax * (1-(t-tDown)/float(tRampDown1)))
 
     def linearDown(self,t):
         tRampUp = self.tRampUp
@@ -432,68 +417,83 @@ class operator:
         elif t >= tDown:
             self.Sth = max(0,self.thrmax * (1-(t-tDown)/float(tRampDown)))
             
-    def control(self,t,ti,gl,rp,en):
-        ''' The operator changes the throttle to give certain engine speeds 
-        as a function of rpm history and rope angle (not climb angle).'''
-        def targetEngSpeed(thetarope,en,gl,tauOp): 
-            vengTargets = {'onGnd' : 1.0*en.vpeak,'rotate' : 0.9*en.vpeak, 'climb' : 0.8*en.vpeak,'roundout' : 0.7*en.vpeak}
-            target = vengTargets[gl.state] 
-            if gl.state != self.storedState: #have switched
-                self.tSwitch = t
-                self.oldvTarget = self.currvTarget
-                self.storedState = gl.state
-            else:
-                self.currvTarget = target
-            vsmooth = target +  (self.oldvTarget - target) *exp(-(t-self.tSwitch)/tauOp)
-#            print 'vsmooth',vsmooth
-            return vsmooth
-#        angleMax = self.angleMax         
-#        tRampUp = self.tRampUp 
-        thetarope = rp.data[ti.i]['theta']
-        tauOp = 1.0 #sec response time
-        tint = tauOp 
-        Nint = min(ti.i,ceil(tint/ti.dt))                  
-        #throttle control
-#         print 'thetarope,angleSwitch',thetarope,angleSwitch
-#        if thetarope < angleSwitch:
-#            pp = -0.1; pd = -.0; pint = -.2
-#            c = array([pp,pd,pint]) 
-#            time = self.data['t']
-#            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeak,c,ti.i,Nint))
-#            if t <= tRampUp:
-#                self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+#    def control(self,t,ti,gl,rp,en):
+#        ''' The operator changes the throttle to give certain engine speeds 
+#        as a function of rpm history and rope angle (not climb angle).'''
+#        def targetEngSpeed(thetarope,en,gl,tauOp): 
+#            vengTargets = {'onGnd' : 1.0*en.vpeak,'rotate' : 0.9*en.vpeak, 'climb' : 0.8*en.vpeak,'roundout' : 0.7*en.vpeak}
+#            target = vengTargets[gl.state] 
+#            if gl.state != self.storedState: #have switched
+#                self.tSwitch = t
+#                self.oldvTarget = self.currvTarget
+#                self.storedState = gl.state
 #            else:
-#                self.Sth = speedControl
-#        else: #angleSwitch < thetarope <= angleMax: 
-#            self.Sth = max(0,self.thrmax * (1-(thetarope - angleSwitch)/(angleMax - angleSwitch)))
-        pp = -0.1; pd = -.0; pint = -.2
-        c = array([pp,pd,pint]) 
-        time = self.data['t']
-        veTarget = targetEngSpeed(thetarope,en,gl,tauOp)
-        speedControl = min(self.thrmax,max(0,pid(en.data['v'],time,veTarget,c,ti.i,Nint)))
-#        if t <= tRampUp:
-#            self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
-#        else:
-        self.Sth = speedControl
-        
-    def constT(self,t,ti,gl,rp,en): 
-        tauOp = 1.0 #sec response time
-        tint = tauOp 
-        Nint = min(ti.i,ceil(tint/ti.dt)) 
-        pp = -16; pd = -2; pint = -8
-        c = array([pp,pd,pint]) 
-        time = self.data['t']
-        tRampUp = self.tRampUp
-        if t <= tRampUp:
-            targetT =  self.targetTmax/float(tRampUp) * t
-        else:
-            if gl.state == 'roundout':
-                targetT = 1.0* self.targetTmax
-            else: 
-                targetT = self.targetTmax
-        Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
-        self.Sth = Tcontrol    
+#                self.currvTarget = target
+#            vsmooth = target +  (self.oldvTarget - target) *exp(-(t-self.tSwitch)/tauOp)
+##            print 'vsmooth',vsmooth
+#            return vsmooth
+##        angleMax = self.angleMax         
+##        tRampUp = self.tRampUp 
+#        thetarope = rp.data[ti.i]['theta']
+#        tauOp = 1.0 #sec response time
+#        tint = tauOp 
+#        Nint = min(ti.i,ceil(tint/ti.dt))                  
+#        #throttle control
+##         print 'thetarope,angleSwitch',thetarope,angleSwitch
+##        if thetarope < angleSwitch:
+##            pp = -0.1; pd = -.0; pint = -.2
+##            c = array([pp,pd,pint]) 
+##            time = self.data['t']
+##            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeak,c,ti.i,Nint))
+##            if t <= tRampUp:
+##                self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+##            else:
+##                self.Sth = speedControl
+##        else: #angleSwitch < thetarope <= angleMax: 
+##            self.Sth = max(0,self.thrmax * (1-(thetarope - angleSwitch)/(angleMax - angleSwitch)))
+#        pp = -0.1; pd = -.0; pint = -.2
+#        c = array([pp,pd,pint]) 
+#        time = self.data['t']
+#        veTarget = targetEngSpeed(thetarope,en,gl,tauOp)
+#        speedControl = min(self.thrmax,max(0,pid(en.data['v'],time,veTarget,c,ti.i,Nint)))
+##        if t <= tRampUp:
+##            self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
+##        else:
+#        self.Sth = speedControl
 
+    def control(self,t,ti,gl,rp,en):
+        if self.throttleType == 'constT':
+            tauOp = 1.0 #sec response time
+            tint = tauOp 
+            Nint = min(ti.i,ceil(tint/ti.dt)) 
+            pp = -16; pd = -2; pint = -8
+            c = array([pp,pd,pint]) 
+            time = self.data['t']
+            tRampUp = self.tRampUp
+            if t <= tRampUp:
+                targetT =  self.targetTmax/float(tRampUp) * t
+            else:
+                if gl.state == 'roundout':
+                    targetT = 1.0* self.targetTmax
+                else: 
+                    targetT = self.targetTmax
+            Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
+            self.Sth = Tcontrol   
+        elif self.throttleType == 'preset':
+            ### Ramp up, hold, then decrease to steady value
+            steadyThr = 0.5        
+            tRampUp = self.tRampUp
+            tHold = .5
+            tDown = tRampUp + tHold
+    #        tRampDown = ti.tEnd - tRampUp - tHold
+            tRampDown1 = 1 #sec...transition to steady
+            tRampDown2 = 120 #longer ramp down
+            if t <= tRampUp:
+                self.Sth =  self.thrmax/float(tRampUp) * t
+            elif tRampUp < t < tDown:
+                self.Sth =  self.thrmax
+            elif t >= tDown:
+                self.Sth = max(steadyThr*(1-(t-tDown)/float(tRampDown2)),self.thrmax * (1-(t-tDown)/float(tRampDown1)))
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
@@ -527,7 +527,7 @@ class pilot:
             if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
                 pp =  0; pd =   0; pint =  0
             else: 
-                pp = 8; pd = 4; pint = 8 #when speed is too high, pitch up
+                pp = 16; pd = 8; pint = 8 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -705,7 +705,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
     #        op.control(t,ti,gl,rp,en)
     #        op.preSet(t)
             pl.control(t,ti,gl)
-            op.constT(t,ti,gl,rp,en)        
+            op.control(t,ti,gl,rp,en)        
         return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 
@@ -716,9 +716,11 @@ tRampUpList = [3] #If you only want to run one value
 tStart = 0
 tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
-targetTmax = 1.0
+targetTmax = 0.70
 thrmax =  1.0
-path = 'D:\\Winch launch physics\\results\\Feb28 2018 constant T, tramp loop'  #for saving plots
+#throttleType = 'constT'
+throttleType = 'preset'
+path = 'D:\\Winch launch physics\\results\\Mar2 2018 constant T, tramp loop'  #for saving plots
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
@@ -751,7 +753,7 @@ data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRo
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
 for iloop,tRampUp in enumerate(tRampUpList):
-    print '\nThrottle ramp up time', tRampUp    
+    print '\nThrottle ramp up time', tRampUp
     theta0 = 6   # deg resting angle of glider on ground    
     # create the objects we need from classes
     t = linspace(tStart,tEnd,num=ntime)    
@@ -761,7 +763,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
-    op = operator(targetTmax,thrmax,tRampUp,ntime)
+    op = operator(throttleType,targetTmax,thrmax,tRampUp,ntime)
     pl = pilot(pilotType,ntime,control,setpoint)
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
