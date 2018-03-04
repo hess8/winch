@@ -1436,8 +1436,12 @@ It's easier in practice to determine parameters for the torque available
 
 \end_inset
 
-The torque curve is modeled by a parabola, determined by three points: 1)
- 
+The torque curve is modeled by a cubic polynomial, determined the fact that
+ the power curve must peak at 
+\begin_inset Formula $v_{peakP},$
+\end_inset
+
+ and by three points: 1) 
 \begin_inset Formula $\tau_{a}(v_{peakP})=\frac{P_{max}}{\omega_{peak}},$
 \end_inset
 
@@ -1454,17 +1458,21 @@ The torque curve is modeled by a parabola, determined by three points: 1)
  
 \begin_inset Formula 
 \[
-\tau_{a}(v_{e})=\tau_{max}\left(c_{0}+c{}_{1}\frac{v_{e}}{v_{peakP}}-c_{2}\left(\frac{v_{e}}{v_{peakP}}\right)^{2}\right)
+\tau_{a}(v_{e})=\tau_{max}\left(c_{0}+c{}_{1}\frac{v_{e}}{v_{peakP}}-c_{2}\left(\frac{v_{e}}{v_{peakP}}\right)^{2}+c_{3}\left(\frac{v_{e}}{v_{peakP}}\right)^{3}\right)
 \]
 
 \end_inset
 
-The.three conditions on the parameters are 
-\begin_inset Formula $c_{0}+c{}_{1}-c_{2}=\frac{P_{max}}{\omega_{peakP\tau_{max}}},$
+The.four conditions on the parameters are 
+\begin_inset Formula $c_{1}-2c_{2}+3c_{3}=0,$
+\end_inset
+
+ 
+\begin_inset Formula $c_{0}+c{}_{1}-c_{2}+c_{3}=\frac{P_{max}}{\omega_{peakP\tau_{max}}},$
 \end_inset
 
  and 
-\begin_inset Formula $c_{0}+c{}_{1}\frac{v_{peak\tau}}{v_{peakP}}-c_{2}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{2}=1$
+\begin_inset Formula $c_{0}+c{}_{1}\frac{v_{peak\tau}}{v_{peakP}}-c_{2}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{2}+c_{3}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{3}=1$
 \end_inset
 
 ..

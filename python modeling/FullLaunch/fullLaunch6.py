@@ -377,11 +377,12 @@ class engine:
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.torqMax = 500/0.74  #ft lbs converted to Nm       
         self.vpeakTorq = 0.5 * self.vpeakP # engine speed for peak torque available.
-        self.c0 = .8; self.pe2 = 1 #
+        self.c0 = .1; self.pe2 = 1 #
         vr = self.vpeakTorq/self.vpeakP
         Pr = self.Pmax/(self.torqMax*self.omegaPeak)
-        self.c1 = -(1 - self.c0 + self.c0*vr**2 - Pr*vr**2)/((-1 + vr)*vr) #coefficient for torque curve
-        self.c2 = -(1 - self.c0 + self.c0*vr    - Pr*vr)/((-1 + vr)*vr) #coefficient for torque curve
+        self.c1 = -((-1 + self.c0 - 3 *self.c0*vr**2 + 3 *Pr*vr**2 + 2 *self.c0*vr**3 -  2 *Pr*vr**3)/((-1 + vr)**2 * vr)) #coefficient for torque curve
+        self.c2 = -(-2 + 2 *self.c0 - 3 *self.c0 * vr + 3 *Pr *vr + self.c0 *vr**3 - Pr *vr**3)/((-1 + vr)**2 *vr) #coefficient for torque curve
+        self.c3 = -((-1 + self.c0 - 2 *self.c0 *vr + 2 *Pr *vr + self.c0 *vr**2 - Pr *vr**2)/((-1 + vr)**2 *vr))      
         self.idle = self.vpeakP * 0.13
         # state variables 
         self.v = 0            #engine effective speed (m/s)
@@ -392,7 +393,7 @@ class engine:
     def Pavail(self,ve):            # power curve
         # First calculate available torque from pistons on engine rotating parts (torque curve).  
         vr = ve/self.vpeakP #relative engine speed vs peak power speed
-        torqAvail = self.torqMax * (self.c0 + self.c1*vr - self.c2*vr**2) #in Nm
+        torqAvail = self.torqMax * (self.c0 + self.c1*vr - self.c2*vr**2 + self.c3*vr**3) #in Nm
         return torqAvail * (ve/self.vpeakP*self.omegaPeak)
                 
 class operator:
