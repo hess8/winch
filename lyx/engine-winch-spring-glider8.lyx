@@ -80,6 +80,7 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
+
 bret_hess@byu.edu
 \end_layout
 
@@ -1353,6 +1354,9 @@ The power curve
 \end_inset
 
  determines actual power applied, with a simple linear model for now: 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \[
 S_{th}P_{a}(\omega_{eng})=\omega_{eng}\tau_{pistons}
@@ -1364,15 +1368,12 @@ S_{th}P_{a}(\omega_{eng})=\omega_{eng}\tau_{pistons}
 \end_layout
 
 \begin_layout Standard
-Then 
-\begin_inset Formula 
-\begin{equation}
-\tau_{pistons}=\frac{S_{th}P_{a}(\omega_{eng})}{\omega_{eng}}\label{eq:piston torque-1}
-\end{equation}
-
+The pistons deliver peak power at 
+\begin_inset Formula $\omega_{peak}$
 \end_inset
 
-
+.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1380,31 +1381,110 @@ We define an equivalent engine velocity
 \begin_inset Formula $v_{e}=r_{drum}\omega_{eng,}$
 \end_inset
 
- and rewrite eqn 
+ and 
+\begin_inset Formula $v_{peak}=r_{drum}\omega_{peak}$
+\end_inset
+
+.
+ The peak speed 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ in m/s is what the rope uptake speed would have to be in the case of direct
+ drive for maximum power and is determined not just by the engine peak rotation
+ rate, but by also by gearing in the transmission and differential.
+ In practice we must use a torque conveter, so 
+\begin_inset Formula $v_{peak}$
+\end_inset
+
+ must be higher than the rope uptake speed for there to be good power transmissi
+on.
+ 
+\end_layout
+
+\begin_layout Standard
+It's easier in practice to determine parameters for the torque available
+ (torque curve) than for the power curve: 
+\begin_inset Formula 
+\begin{equation}
+\tau_{pistons}=S_{th}\tau_{a}(v_{e})\label{eq:piston torque-1}
+\end{equation}
+
+\end_inset
+
+The torque curve is modeled by a parabola, determined by three points: 1)
+ 
+\begin_inset Formula $\tau_{a}(v_{peakP})=\frac{P_{max}}{\omega_{peak}},$
+\end_inset
+
+ 
+\begin_inset Formula $\tau_{a}(v_{peak\tau})=\tau_{max},$
+\end_inset
+
+ and 
+\begin_inset Formula $\tau_{a}(0)=\tau_{0},$
+\end_inset
+
+ the torque at the lowest speeds, which is determined by studying how fast
+ the glider can accelerate from rest under full winch throttle.
+ 
+\begin_inset Formula 
+\[
+\tau_{a}(v_{e})=\tau_{0}-\tau{}_{1}\frac{v_{e}}{v_{peakP}}+\tau_{2}\left(\frac{v_{e}}{v_{peakP}}\right)^{2}
+\]
+
+\end_inset
+
+The.three conditions on the parameters are 
+\begin_inset Formula $\tau_{0}-\tau{}_{1}+\tau_{2}=\frac{P_{max}}{\omega_{peak}},$
+\end_inset
+
+ and 
+\begin_inset Formula $\tau_{0}-\tau{}_{1}\frac{v_{peakP}}{v_{peakP}}+\tau_{2}\left(\frac{v_{peakP}}{v_{peakP}}\right)^{2}=\tau_{max}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We rewrite eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:engine Diffeq-1"
 
 \end_inset
 
-:
+ in terms of the equivlalent engine velocity:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-r_{drum}^{2}m_{e,e}\dot{\omega}_{eng}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\tau_{out,eng}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-r_{drum}F_{e,e}
+r_{drum}m_{e,e}\dot{v}_{e}=S_{th}\tau_{a}(v_{e})-r_{drum}F_{e,e}
 \]
 
 \end_inset
@@ -1414,65 +1494,18 @@ r_{drum}m_{e,e}\dot{v}_{e}=\frac{r_{drum}S_{th}P_{a}}{v_{e}}-r_{drum}F_{e,e}
 \end_inset
 
  is the equivalent force between the torque converter on the engine.
- Again 
-\begin_inset Formula $r_{drum}$
-\end_inset
-
- cancels to give us the engine differential equation (but will appear later
- in 
-\begin_inset Formula $F_{e,e})$
-\end_inset
-
-:
+ :
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-F_{e,e}\label{eq: Diffeq engine effective-1}
+m_{e,e}\dot{v}_{e}=\frac{S_{th}\tau_{a}(v_{e})}{r_{drum}}-F_{e,e}\label{eq: Diffeq engine effective-1}
 \end{equation}
 
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
-The power curve is modeled by three constants such that 
-\begin_inset Formula $P_{a}$
-\end_inset
-
- peaks at 
-\begin_inset Formula $v_{peak}$
-\end_inset
-
-with power 
-\begin_inset Formula $P_{max}$
-\end_inset
-
-, and is zero at zero speed, and at some maximum speed.
- 
-\begin_inset Formula 
-\[
-P_{a}(v_{e})=P_{max}\left(p_{e1}\frac{v_{e}}{v_{peak}}+p_{e2}\left(\frac{v_{e}}{v_{peak}}\right)^{2}-p_{e3}^{2}\left(\frac{v_{e}}{v_{peak}}\right)^{3}\right)
-\]
-
-\end_inset
-
- 
-\begin_inset Formula $v_{peak}$
-\end_inset
-
-, in m/s is what the rope uptake speed would have to be in the case of direct
- drive for maximum power and is determined not just by the engine peak rotation
- rate, but by gearing in the transmission and differential.
- In practice we must use a torque conveter, so 
-\begin_inset Formula $v_{peak}$
-\end_inset
-
- must be higher than the rope uptake speed for there to be good power transmissi
-on.
- 
 \end_layout
 
 \begin_layout Section
