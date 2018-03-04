@@ -354,47 +354,46 @@ class torqconv:
          return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
 class engine:
+    '''This version models the torque curve with parameters rather than the power curve'''
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 310            # engine  horsepower
         self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
 #        self.rpmpeak = 6000       # rpm for peak power
-#        self.vpeak = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
-#        self.vpeak = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+#        self.vpeakP = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
+#        self.vpeakP = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
 
-        self.rpmPeak = 4500  
+        self.rpmPeak = 4500
+        self.omegaPeak = self.rpmPeak*2*pi/60 
         self.gear = 1.5    # 2nd gear ratio
         self.diff = 3.7     #differential gear ratio        
-        self.vpeak = self.rpmPeak/60*2*pi/self.gear/self.diff*wi.rdrum
-#        self.vpeak = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+        self.vpeakP = self.omegaPeak*wi.rdrum/self.gear/self.diff
+#        self.vpeakP = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
-#        self.vpeak = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
+#        self.vpeakP = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
                           # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
-        self.pe1 = 0.8; self.pe2 = 1 #this curve (after peak speed is set) has only one adjustable parameter, which might as well be pe1 as a fraction of pe2.
-        self.pe3 = (self.pe1 + 2*self.pe2)/3.0 # This is set by requiring the peak to be at 1.  We will normalize later.
-#        self.pe1 = .653; self.pe2 = 1.69 ; self.pe3 = 1.35 #  engine power curve parameters, diesel engine
-        self.vrelMax = (self.pe2 + sqrt(self.pe2**2 + 4*self.pe1*self.pe3))/2/self.pe3  #speed ratio where Pavail goes to zero.  for the pe's = 1, this is 1.62  
-        self.idle = self.vpeak * 0.13
+        self.torqMax = 500/0.74  #ft lbs converted to Nm       
+        self.vpeakTorq = 0.5 * self.vpeakP # engine speed for peak torque available.
+        self.c0 = .8; self.pe2 = 1 #
+        vr = self.vpeakTorq/self.vpeakP
+        Pr = self.Pmax/(self.torqMax*self.omegaPeak)
+        self.c1 = -(1 - self.c0 + self.c0*vr**2 - Pr*vr**2)/((-1 + vr)*vr) #coefficient for torque curve
+        self.c2 = -(1 - self.c0 + self.c0*vr    - Pr*vr)/((-1 + vr)*vr) #coefficient for torque curve
+        self.idle = self.vpeakP * 0.13
         # state variables 
         self.v = 0            #engine effective speed (m/s)
         self.Few = 0          # effective force between engine and winch (could go in either engine or winch or in its own class)
          #data
         self.data = zeros(ntime,dtype = [('v',float),('Pdeliv',float),('torq',float),('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
-       
-    
+     
     def Pavail(self,ve):            # power curve
-        vr = ve/float(self.vpeak)
-        maxVal = self.pe1 + self.pe2 - self.pe3
-        if vr > 1:
-            pcurveEval = self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3
-        else:
-            pcurveEval = self.pe1 * vr + self.pe2 * (vr)**2 - self.pe3 * (vr)**3 #- initAdj * sin(vr**1.1 * pi)
-#            p = 1.6
-#            pcurveEval = 1 - (1-vr)**p
-        return self.Pmax*pcurveEval/maxVal
+        # First calculate available torque from pistons on engine rotating parts (torque curve).  
+        vr = ve/self.vpeakP #relative engine speed vs peak power speed
+        torqAvail = self.torqMax * (self.c0 + self.c1*vr - self.c2*vr**2) #in Nm
+        return torqAvail * (ve/self.vpeakP*self.omegaPeak)
                 
 class operator:
     def __init__(self,throttleType,targetTmax,thrmax,tRampUp,ntime):
@@ -429,7 +428,7 @@ class operator:
 #        ''' The operator changes the throttle to give certain engine speeds 
 #        as a function of rpm history and rope angle (not climb angle).'''
 #        def targetEngSpeed(thetarope,en,gl,tauOp): 
-#            vengTargets = {'onGnd' : 1.0*en.vpeak,'rotate' : 0.9*en.vpeak, 'climb' : 0.8*en.vpeak,'roundout' : 0.7*en.vpeak}
+#            vengTargets = {'onGnd' : 1.0*en.vpeakP,'rotate' : 0.9*en.vpeakP, 'climb' : 0.8*en.vpeakP,'roundout' : 0.7*en.vpeakP}
 #            target = vengTargets[gl.state] 
 #            if gl.state != self.storedState: #have switched
 #                self.tSwitch = t
@@ -452,7 +451,7 @@ class operator:
 ##            pp = -0.1; pd = -.0; pint = -.2
 ##            c = array([pp,pd,pint]) 
 ##            time = self.data['t']
-##            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeak,c,ti.i,Nint))
+##            speedControl = min(self.thrmax,pid(en.data['v'],time,en.vpeakP,c,ti.i,Nint))
 ##            if t <= tRampUp:
 ##                self.Sth = min(self.thrmax/float(tRampUp) * t, speedControl)
 ##            else:
@@ -873,7 +872,7 @@ plts = plots(path)
 #plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
 
 #plot engine power and torque curves from model parameters
-engvel = linspace(0,1.1*en.vpeak,100)
+engvel = linspace(0,1.1*en.vpeakP,100)
 rpm = engvel/wi.rdrum*60/2/pi*en.diff*en.gear
 omegaEng = [r_pm *2*pi/60 for r_pm in rpm]
 powr = [en.Pavail(engv)/750 for engv in engvel] #in HP
