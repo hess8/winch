@@ -377,13 +377,14 @@ class engine:
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.torqMax = 500/0.74  #ft lbs converted to Nm       
         self.vpeakTorq = 0.5 * self.vpeakP # engine speed for peak torque available.
-        self.c0 = .1; self.pe2 = 1 #
         vr = self.vpeakTorq/self.vpeakP
         Pr = self.Pmax/(self.torqMax*self.omegaPeak)
-        self.c1 = -((-1 + self.c0 - 3 *self.c0*vr**2 + 3 *Pr*vr**2 + 2 *self.c0*vr**3 -  2 *Pr*vr**3)/((-1 + vr)**2 * vr)) #coefficient for torque curve
-        self.c2 = -(-2 + 2 *self.c0 - 3 *self.c0 * vr + 3 *Pr *vr + self.c0 *vr**3 - Pr *vr**3)/((-1 + vr)**2 *vr) #coefficient for torque curve
-        self.c3 = -((-1 + self.c0 - 2 *self.c0 *vr + 2 *Pr *vr + self.c0 *vr**2 - Pr *vr**2)/((-1 + vr)**2 *vr))      
+        self.c0 = -((1 - 3* vr + 4* Pr* vr**2 - 2* Pr* vr**3)/(-1 + vr)**3) #coefficient for torque curve
+        self.c1 = -((6* vr - 8* Pr* vr + Pr* vr**2 + Pr* vr**3)/(-1 + vr)**3)
+        self.c2 = -((3 - 4* Pr + 3* vr - 4* Pr* vr + 2* Pr* vr**2)/(-1 + vr)**3)    
+        self.c3 = -((2 - 3* Pr + Pr* vr)/(-1 + vr)**3)
         self.idle = self.vpeakP * 0.13
+
         # state variables 
         self.v = 0            #engine effective speed (m/s)
         self.Few = 0          # effective force between engine and winch (could go in either engine or winch or in its own class)
@@ -880,7 +881,7 @@ powr = [en.Pavail(engv)/750 for engv in engvel] #in HP
 torq = zeros(len(engvel),dtype = float)
 for i in range(1,len(engvel)):
     torq[i] = en.Pavail(engvel[i])/omegaEng[i]*0.74 #leave zero speed at zero torque
-torq[0] = torq[1] #Avoid zero speed torq calculation
+torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero speed torq calculation by extrapolating
 plts.xy([rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
 
 #glider position vs time

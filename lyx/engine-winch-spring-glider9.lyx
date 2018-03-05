@@ -1441,21 +1441,19 @@ The torque curve is modeled by a cubic polynomial, determined the fact that
 \begin_inset Formula $v_{peakP},$
 \end_inset
 
- and by three points: 1) 
-\begin_inset Formula $\tau_{a}(v_{peakP})=\frac{P_{max}}{\omega_{peak}},$
+with value 
+\begin_inset Formula $\frac{P_{max}}{\omega_{peak}},$
 \end_inset
 
- 
-\begin_inset Formula $\tau_{a}(v_{peak\tau})=\tau_{max},$
+ and the torque curve must peak 
+\begin_inset Formula $v_{peak\tau}$
 \end_inset
 
- and 
-\begin_inset Formula $\tau_{a}(0)=\tau_{0},$
+with value 
+\begin_inset Formula $\tau_{max}$
 \end_inset
 
- the torque at the lowest speeds, which is determined by studying how fast
- the glider can accelerate from rest under full winch throttle.
- 
+
 \begin_inset Formula 
 \[
 \tau_{a}(v_{e})=\tau_{max}\left(c_{0}+c{}_{1}\frac{v_{e}}{v_{peakP}}-c_{2}\left(\frac{v_{e}}{v_{peakP}}\right)^{2}+c_{3}\left(\frac{v_{e}}{v_{peakP}}\right)^{3}\right)
@@ -1463,15 +1461,23 @@ The torque curve is modeled by a cubic polynomial, determined the fact that
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Standard
 The.four conditions on the parameters are 
-\begin_inset Formula $c_{1}-2c_{2}+3c_{3}=0,$
+\begin_inset Formula $c_{0}+2c_{1}-3c_{2}+4c_{3}=0,$
 \end_inset
 
  
 \begin_inset Formula $c_{0}+c{}_{1}-c_{2}+c_{3}=\frac{P_{max}}{\omega_{peakP\tau_{max}}},$
 \end_inset
 
- and 
+
+\begin_inset Formula $\,c{}_{1}-2c_{2}\frac{v_{peak\tau}}{v_{peakP}}+3c_{3}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{2}=0$
+\end_inset
+
+, 
 \begin_inset Formula $c_{0}+c{}_{1}\frac{v_{peak\tau}}{v_{peakP}}-c_{2}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{2}+c_{3}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{3}=1$
 \end_inset
 
@@ -1550,7 +1556,7 @@ reference "eq:uptake speed diffeq (winch diffeq)"
  where 
 \begin_inset Formula 
 \[
-F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}P_{a}(\omega_{eng})}{r_{drum}\omega_{eng}}=\frac{S_{th}P_{a}(v_{eng})}{v_{eng}}
+F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}\tau_{a}(v_{e})}{r_{drum}}
 \]
 
 \end_inset
