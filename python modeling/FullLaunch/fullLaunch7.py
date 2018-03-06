@@ -298,7 +298,7 @@ class rope:
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.hystRate = 100     # hysteresis rate (1/sec) for dynamic stiffness. To turn this effect off, make this rate large, not small
         self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
-        self.b = 0.2            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
+        self.b = 0.3            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
