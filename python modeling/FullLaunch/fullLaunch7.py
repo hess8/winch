@@ -95,17 +95,18 @@ def smooth(data,time):
 #    dt = 0.1 #sec
     smoothed = data
     tfinal = time[-1]
-    for i,t in enumerate(time):
-         if tsmooth/2  < t < tfinal - tsmooth/2:
-             dsum = 0
-             totweight = 0
-             iearly = where( time < t - tsmooth/2)[0][-1] 
-             ilater = where( time > t + tsmooth/2)[0][0]                 
-             for it in range(iearly,ilater+1): 
-                 weight = (time[it]-time[it-1])*(1-abs(time[it]-t)/(tsmooth/2))
-                 dsum +=  data[it] * weight
-                 totweight += weight            
-             smoothed[i] = dsum/totweight
+    for ism in range(N): #smooth any number of times.
+        for i,t in enumerate(time):
+             if tsmooth/2  < t < tfinal - tsmooth/2:
+                 dsum = 0
+                 totweight = 0
+                 iearly = where( time < t - tsmooth/2)[0][-1] 
+                 ilater = where( time > t + tsmooth/2)[0][0]                 
+                 for it in range(iearly,ilater+1): 
+                     weight = (time[it]-time[it-1])*(1-abs(time[it]-t)/(tsmooth/2))
+                     dsum += smoothed[it] * weight
+                     totweight += weight            
+                 smoothed[i] = dsum/totweight
     return smoothed
         
 class plots:
@@ -216,7 +217,7 @@ class glider:
 #        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
         self.palpha = 8      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
         self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
-#        self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
+#        self.pelev = 2.0     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
 #        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
@@ -252,8 +253,6 @@ class glider:
             self.vypeaked = True 
         #state
         if self.y < 1.0 and gd['L'] < self.W:
-            if t>11:
-                print 'test'
             self.state = 'onGnd'
         elif not self.vypeaked and self.theta < rad(10):
             self.state = 'rotate'
@@ -494,9 +493,9 @@ class pilot:
             elif gl.state == 'rotate': 
                 pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
             elif gl.state == 'climb': 
-                pp = 100; pd = 32; pint = 0 #when speed is too high, pitch up
+                pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
             elif gl.state == 'steady': 
-                pp = 64; pd = 32; pint = 0 #when speed is too high, pitch up
+                pp = 16; pd = 16; pint = 0 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -684,12 +683,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 20 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
-#smoothed = False
-smoothed = True
+smoothed = False
+#smoothed = True
 #throttleType = 'constT'
 throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
