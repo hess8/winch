@@ -215,9 +215,9 @@ class glider:
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
 #        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-        self.palpha = 8      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
-        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
-#        self.pelev = 2.0     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
+        self.palpha = 4      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
+#        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
+        self.pelev = 2.0     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
 #        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
@@ -493,9 +493,9 @@ class pilot:
             elif gl.state == 'rotate': 
                 pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
             elif gl.state == 'climb': 
-                pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
-            elif gl.state == 'steady': 
                 pp = 16; pd = 16; pint = 0 #when speed is too high, pitch up
+            elif gl.state == 'steady': 
+                pp = 48; pd = 0; pint = 40 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -556,8 +556,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
     if t > 15 and gl.yD < negvyTrigger: #glider has released, but the integrator must finish   
         return zeros(len(S))
     else: 
-        ti.Nprobed +=1
-        ti.tprobed[ti.Nprobed-1] = t
         gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
     #    print 't,e,eset,M ',t,pl.elev,pl.elevTarget,pl.Me
         if gl.xD < 1e-6:
@@ -624,7 +622,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         if t - ti.oldt > 1.0*ti.dt: 
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
-#             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,state,y',t,gl.state,gl.y
@@ -683,11 +681,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.5
 tStart = 0
-tEnd = 20 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
-smoothed = False
+smoothed = True
 #smoothed = True
 #throttleType = 'constT'
 throttleType = 'preset'
@@ -705,7 +703,7 @@ control = ['v','v']
 setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-print 'Controls', control
+#print 'Controls', control
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 # pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
