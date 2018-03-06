@@ -91,24 +91,66 @@ def pid(var,time,setpoint,c,j,Nint):
 
     return c[0]*err + c[1]*derr + c[2]*interr
     
+    
 def smooth(data,time):
     '''Smooths data with a running average over tsmooth. data and time are arrays
-    Points are not evenly spaced in time.'''
-    tsmooth = 1.0 #sec 
-    dt = 0.1 #sec
+    points are not evenly spaced in time. Smoothing is centered on t.
+    Use a triangular weighting'''
+    tsmooth = float(1.0) #sec (float is a precaution: it must not be an integer time)  
+#    dt = 0.1 #sec
     smoothed = data
+    tfinal = time[-1]
     for i,t in enumerate(time):
-        sum = 0
-        tsum = 0
-        if t < tsmooth + dt:
-            continue
-        else:
-            iearly = where( time < t - tsmooth)[0][-1]                 
-            for it in range(iearly,i+1): 
-                sum +=  data[it]*(time[it]-time[it-1])
-                tsum += (time[it]-time[it-1])              
-            smoothed[i] = sum/tsum
+         if tsmooth/2  < t < tfinal - tsmooth/2:
+             dsum = 0
+             totweight = 0
+             iearly = where( time < t - tsmooth/2)[0][-1] 
+             ilater = where( time > t + tsmooth/2)[0][0]                 
+             for it in range(iearly,ilater+1): 
+                 weight = (time[it]-time[it-1])*(1-abs(time[it]-t)/(tsmooth/2))
+                 print weight
+                 dsum +=  data[it] * weight
+                 totweight += weight            
+             smoothed[i] = dsum/totweight
     return smoothed
+    
+#def smooth(data,time):
+#    '''Smooths data with a running average over tsmooth. data and time are arrays
+#    points are not evenly spaced in time. Smoothing is centered on t.'''
+#    tsmooth = float(1.0) #sec (float is a precaution: it must not be an integer time)  
+#    dt = 0.1 #sec
+#    smoothed = data
+#    tfinal = time[-1]
+#    for i,t in enumerate(time):
+#         sum = 0
+#         tsum = 0
+#         if tsmooth/2 + dt < t < tfinal - tsmooth/2:
+#             iearly = where( time < t - tsmooth/2)[0][-1] 
+#             ilater = where( time > t + tsmooth/2)[0][0]                 
+#             for it in range(iearly,ilater+1): 
+#                 sum +=  data[it]*(time[it]-time[it-1])
+#                 tsum += (time[it]-time[it-1])              
+#             smoothed[i] = sum/tsum
+#    return smoothed
+#
+#def smooth(data,time):
+#    '''Smooths data with a running average over tsmooth. data and time are arrays
+#    Points are not evenly spaced in time.'''
+#    tsmooth = 1.0 #sec 
+#    dt = 0.1 #sec
+#    smoothed = zeros(len(data),dtype = float)
+#    for i,t in enumerate(time):
+#        sum = 0
+#        tsum = 0
+#        if t < tsmooth + dt:
+#            continue
+#        else:
+#            iearly = where( time < t - tsmooth)[0][-1]                 
+#            for it in range(iearly,i+1): 
+#                sum +=  data[it]*(time[it]-time[it-1])
+#                tsum += (time[it]-time[it-1])              
+#            smoothed[i] = sum/tsum
+#    return smoothed
         
 class plots:
     def __init__(self,path):
@@ -726,10 +768,13 @@ tEnd = 10 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
+#smoothed = False
+smoothed = True
 #throttleType = 'constT'
 throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
-path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
+#path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
+path = 'D:\\Winch launch physics\\results\\test2'
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
@@ -808,37 +853,63 @@ for iloop,tRampUp in enumerate(tRampUpList):
     oData = op.data[:ti.i]
     rData = rp.data[:ti.i]
 
+    if smoothed:
     #define smoothed data arrays before plotting
-    print 'Smoothing data'
-    xD = smooth(gData['xD'],tData)
-    print '1'
-    yD = smooth(gData['yD'],tData)
-    print '2'
-    v = smooth(gData['v'],tData)
-    y = smooth(gData['y'],tData)
-    alpha = smooth(gData['alpha'],tData)
-    theta = smooth(gl.theta[:itr],t)
-    gamma = smooth(gData['gamma'],tData)
-    elev = smooth(pData['elev'],tData)
-    thetaD = smooth(gl.thetaD[:itr],t)
-    wiv = smooth(wi.v[:itr],t)
-    env = smooth(en.v[:itr],t)
-    L = smooth(gData['L'],tData)
-    D = smooth(gData['D'],tData)
-    T = smooth(rp.T[:itr],t)
-    vgw = smooth(gData['vgw'],tData)
-    Malpha = smooth(gData['Malpha'],tData)
-    Me = smooth(pData['Me'],tData)
-    engP = smooth(eData['Pdeliv'],tData)
-    engTau = smooth(eData['torq'],tData)
-    Sth = smooth(oData['Sth'],tData)
-    winP = smooth(wData['Pdeliv'],tData)
-    ropP = smooth(rData['Pdeliv'],tData)
-    gliP = smooth(gData['Pdeliv'],tData)
-    gndTau = smooth(gData['gndTorq'],tData)
-    ropTau = smooth(rData['theta'],tData)
-    
-    
+        print 'Smoothing data'
+        xD = smooth(gData['xD'],tData)
+        yD = smooth(gData['yD'],tData)
+        v = smooth(gData['v'],tData)
+        y = smooth(gData['y'],tData)
+        alpha = smooth(gData['alpha'],tData)
+        theta = smooth(gl.theta[:itr],t)
+        gamma = smooth(gData['gamma'],tData)
+        elev = smooth(pData['elev'],tData)
+        thetaD = smooth(gl.thetaD[:itr],t)
+        wiv = smooth(wi.v[:itr],t)
+        env = smooth(en.v[:itr],t)
+        L = smooth(gData['L'],tData)
+        D = smooth(gData['D'],tData)
+        T = smooth(rp.T[:itr],t)
+        vgw = smooth(gData['vgw'],tData)
+        Malpha = smooth(gData['Malpha'],tData)
+        Me = smooth(pData['Me'],tData)
+        engP = smooth(eData['Pdeliv'],tData)
+        engTorq = smooth(eData['torq'],tData)
+        Sth = smooth(oData['Sth'],tData)
+        winP = smooth(wData['Pdeliv'],tData)
+        ropP = smooth(rData['Pdeliv'],tData)
+        gliP = smooth(gData['Pdeliv'],tData)
+        gndTorq = smooth(gData['gndTorq'],tData)
+        ropeTheta = smooth(rData['theta'],tData)
+        ropeTorq = smooth(rData['torq'],tData)
+    else:
+        #Shorten labels before plotting
+        xD = gData['xD']
+        yD = gData['yD']
+        v = gData['v']
+        y = gData['y']
+        alpha = gData['alpha']
+        theta = gl.theta[:itr]
+        gamma = gData['gamma']
+        elev = pData['elev']
+        thetaD = gl.thetaD[:itr]
+        wiv = wi.v[:itr]
+        env = en.v[:itr]
+        L = gData['L']
+        D = gData['D']
+        T = rp.T[:itr]
+        vgw = gData['vgw']
+        Malpha = gData['Malpha']
+        Me = pData['Me']
+        engP = eData['Pdeliv']
+        engTorq = eData['torq']
+        Sth = oData['Sth']
+        winP = wData['Pdeliv']
+        ropP = rData['Pdeliv']
+        gliP = gData['Pdeliv']
+        gndTorq = gData['gndTorq']
+        ropeTheta = rData['theta']
+        ropeTorq = rData['torq']
     
     #ground roll
     if max(gl.y) >gl.deltar:
@@ -938,11 +1009,11 @@ plts.xyy([tData,t,tData,t,tData,tData,tData,t],[v,wiv,y/rp.lo,T/gl.W,L/gl.W,deg(
 plts.xy([tData,tData,t,t],[L/gl.W,D/gl.W,T/gl.W,Few/gl.W],\
         'time (sec)','Forces/Weight',['lift','drag','tension','TC-winch'],'Forces')
 #torques
-plts.xy([tData],[rData['torq'],Malpha,Me,gndTau],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
+plts.xy([tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
 #Engine, rope and winch
-plts.xy([t,t,tData,tData,tData],[env,wiv,vgw,deg(ropTau),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
+plts.xy([t,t,tData,tData,tData],[env,wiv,vgw,deg(ropeTheta),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
 #-British units-
-plts.xy([t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTau*0.74,wiv*1.94,vgw*1.94,100*Sth],\
+plts.xy([t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTorq*0.74,wiv*1.94,vgw*1.94,100*Sth],\
     'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/10', 'pistons HP', 'pistons torque (ftlbs)','rope speed','glider radial speed','throttle'],'Engine British units')        
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
