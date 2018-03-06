@@ -3330,12 +3330,6 @@ Comparing to the xflyr5 model for Grob:
  body effects.
  This is much too small, because when used in simulations the tail doesn't
  get off the ground until rotation.
- Instead, from the fact that the tail comes off the ground in a typical
- winch launch at about 40knts = 20m/s, we use a
-\series bold
- factor that is 4x larger
-\series default
-: 5m/rad.
  
 \end_layout
 
@@ -3427,6 +3421,17 @@ stabilator
 \end_inset
 
 .
+ 
+\end_layout
+
+\begin_layout Standard
+Adjusting the pitch parameters.
+ With no rope torque, the tail should come up at about 30 knts or 15 m/s.
+ This sets the 
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+ factor to 8 m/rad.
  
 \end_layout
 

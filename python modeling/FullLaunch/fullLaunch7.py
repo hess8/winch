@@ -213,10 +213,10 @@ class glider:
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-        self.palpha = 8     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-#        self.palpha = 10      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
-#        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
-        self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
+#        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+        self.palpha = 8      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
+        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
+#        self.pelev = 1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
 #        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
@@ -236,8 +236,8 @@ class glider:
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
 #         self.deltar = 0.02  #ground contact force distance of action (m)
         self.deltar = 0.05  #ground contact force distance of action (m)
-        self.d_m = 0.4  # distance main wheel to CG (m) 
-        self.d_t = 3.1  # distance tail wheel to CG (m) 
+        self.d_m = 0.2  # distance main wheel to CG (m) 
+        self.d_t = 3.4  # distance tail wheel to CG (m) 
         self.theta0 = rad(theta0) 
         #data
         self.data = zeros(ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),('v', float),('theta', float),\
@@ -297,8 +297,8 @@ class rope:
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.hystRate = 100     # hysteresis rate (1/sec) for dynamic stiffness. To turn this effect off, make this rate large, not small
-        self.a = 0.0001             #  horizontal distance (m) of rope attachment in front of CG, for Grob
-        self.b = 0.0001            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
+        self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
+        self.b = 0.2            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
@@ -370,20 +370,11 @@ class engine:
         self.hp = 270            # engine  horsepower
         self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
         self.torqMax = 550/0.74*self.Pmax/(0.95*750*390)  #ft lbs converted to Nm.        
-
-#        self.rpmpeak = 6000       # rpm for peak power
-#        self.vpeakP = self.rpmpeak*2*pi/60*rdrum   #engine effectivespeed for peak power 
-#        self.vpeakP = 20   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
-
         self.rpmPeak = 4500
         self.omegaPeak = self.rpmPeak*2*pi/60 
         self.gear = 1.5    # 2nd gear ratio
         self.diff = 3.7     #differential gear ratio        
         self.vpeakP = self.omegaPeak*wi.rdrum/self.gear/self.diff
-#        self.vpeakP = 33   #  Gear 2: m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
-                          # 4500rpm /5.5 (gear and differential) = 820 rmp, x 1rad/sec/10rpm x 0.4m = 33m/s peak engine speed.
-#        self.vpeakP = 49   #  Gear 3:  m/s engine effectivespeed for peak power.  This is determined by gearing, not the pure engine rpms:  
-                          # 4500rpm /3.7 (differential) = 1200 rmp, x 1rad/sec/10rpm x 0.4m = 49 m/s peak engine speed.
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
         self.vpeakTorq = 0.5 * self.vpeakP # engine speed for peak torque available.
@@ -402,6 +393,7 @@ class engine:
         self.data = zeros(ntime,dtype = [('v',float),('Pdeliv',float),('torq',float),('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
      
     def Pavail(self,ve):            # power curve
+        
         # First calculate available torque from pistons on engine rotating parts (torque curve).  
         vr = ve/self.vpeakP #relative engine speed vs peak power speed
         torqAvail = self.torqMax * (self.c0 + self.c1*vr - self.c2*vr**2 + self.c3*vr**3) #in Nm
