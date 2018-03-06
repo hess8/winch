@@ -90,7 +90,24 @@ def pid(var,time,setpoint,c,j,Nint):
 #    print 't,varj,err,derr,interr',time[j],var[j],err,derr,interr
 
     return c[0]*err + c[1]*derr + c[2]*interr
-
+    
+def smooth(data,time):
+    '''Smooths data with a running average over tsmooth. data and time are arrays
+    Points are not evenly spaced in time.'''
+    tsmooth = 1.0 #sec 
+    dt = 0.1 #sec
+    sum = 0
+    smoothed = zeros(len(data),dtype = float)
+    for i,t in enumerate(time): 
+        if t < tsmooth + dt:
+            continue
+        else:
+            iearly = where( time < t - tsmooth)[0][-1]                 
+            for it in range(iearly,i+1): 
+                sum +=  data[it]*(time[it]-time[it-1])                        
+            smoothed[i] = sum/tsmooth
+    return smoothed
+        
 class plots:
     def __init__(self,path):
         self.i = 0 #counter for plots, so each variable has a different color
@@ -387,7 +404,7 @@ class engine:
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
-        self.hp = 300            # engine  horsepower
+        self.hp = 270            # engine  horsepower
         self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
         self.torqMax = 550/0.74*self.Pmax/(0.95*750*390)  #ft lbs converted to Nm.        
 
@@ -703,7 +720,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.5
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 10 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
@@ -788,36 +805,70 @@ for iloop,tRampUp in enumerate(tRampUpList):
     eData = en.data[:ti.i]
     oData = op.data[:ti.i]
     rData = rp.data[:ti.i]
+
+    #define smoothed data arrays before plotting
+    print 'Smoothing data'
+    xD = smooth(gData['xD'],tData)
+    print '1'
+    yD = smooth(gData['yD'],tData)
+    print '2'
+    v = smooth(gData['v'],tData)
+    y = smooth(gData['y'],tData)
+    alpha = smooth(gData['alpha'],tData)
+    theta = smooth(gl.theta[:itr],t)
+    gamma = smooth(gData['gamma'],tData)
+    elev = smooth(pData['elev'],tData)
+    thetaD = smooth(gl.thetaD[:itr],t)
+    wiv = smooth(wi.v[:itr],t)
+    env = smooth(en.v[:itr],t)
+    L = smooth(gData['L'],tData)
+    D = smooth(gData['D'],tData)
+    T = smooth(rp.T[:itr],t)
+    vgw = smooth(gData['vgw'],tData)
+    Malpha = smooth(gData['Malpha'],tData)
+    Me = smooth(pData['Me'],tData)
+    engP = smooth(eData['Pdeliv'],tData)
+    engTau = smooth(eData['torq'],tData)
+    Sth = smooth(oData['Sth'],tData)
+    winP = smooth(wData['Pdeliv'],tData)
+    ropP = smooth(rData['Pdeliv'],tData)
+    gliP = smooth(gData['Pdeliv'],tData)
+    gndTau = smooth(gData['gndTorq'])
+    ropTau = smooth(rData['theta'],tData)
+    
+    
+    
     #ground roll
     if max(gl.y) >gl.deltar:
         iEndRoll = where(gl.y > gl.deltar)[0][0]
         xRoll = gl.x[iEndRoll]
         tRoll = t[iEndRoll]
+        iEndRollData =  where(ti.data['t']>tRoll)[0][0]
     else:
         xRoll = 0  #didn't get off ground
         tRoll = 0
     #misc results 
-    vrel =wi.v/(en.v + 1e-6)
-    Few = (2-vrel)*tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3
-    Tavg = mean(rp.data[iEndRoll:]['T'])/gl.W
+    vrel =wiv/(env + 1e-6)
+    Few = (2-vrel)*tc.invK(vrel) * env**2 / float(wi.rdrum)**3
+    Tavg = mean(rp.data[iEndRollData:ti.i]['T'])/gl.W
     # final values     
-    yfinal = gData['y'][-1]
-    yDfinal  = gData['yD'][-1]
+    yfinal = y[-1]
+    yDfinal  = yD[-1]
     if yDfinal < 0.5: yDfinal = 0      
     # max values
-    thetaDmax = max(gl.thetaD[:itr])
-    vmax = max(gData['v'])
+    thetaDmax = max(theta)
+    vmax = max(v)
     vDmax = max(gData['vD']) #max acceleration
-    Sthmax = max(oData['Sth'])
-    Tmax =  max(rp.T[:itr])/gl.W
-    alphaMax = max(gData['alpha'])
-    Lmax = max(gData['L'])/gl.W
-    gammaMax = max(gData['gamma'])
+    Sthmax = max(Sth)
+    Tmax =  max(T)/gl.W
+    alphaMax = max(alpha)
+    Lmax = max(L)/gl.W
+    gammaMax = max(gamma)
     
     # Comments to user
     print 'Throttle ramp up time (after slack is out)', tRampUp
     print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
-    print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),deg(max(gl.thetaD[:itr])))
+    print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(v),deg(max(theta)))
     print 'Maximum Tension factor: {:3.1f}'.format(Tmax)
     print 'Average Tension factor: {:3.1f}'.format(Tavg)
     print 'Ground roll: {:5.0f} m, {:5.1f} sec (includes about 1 sec of slack removal)'.format(xRoll,tRoll)
@@ -849,13 +900,14 @@ for iloop,tRampUp in enumerate(tRampUpList):
 # plot results for last one
 close('all')
 plts = plots(path)   
-#plts.xy([tData],[gData['xD'],gData['yD'],gData['v']],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time') 
-#plts.xy([t],[deg(gl.theta[:itr],deg(gamma,deg(alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
-#plts.xy([t],[en.v[:itr],wi.v[:itr]],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-#plts.xy([tData],[gData['L']/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
+
+#plts.xy([tData],[xD,yD,v],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time') 
+#plts.xy([t],[deg(theta,deg(gamma,deg(alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+#plts.xy([t],[env,wiv],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
+#plts.xy([tData],[L/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
 #plts.xy([tData],],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
-#plts.xy([t],[rp.T[:itr]/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
-#plts.xy([tData],[oData['Sth']],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+#plts.xy([t],[T/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
+#plts.xy([tData],[Sth],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
 
 #plot engine power and torque curves from model parameters
 engvel = linspace(0,1.1*en.vpeakP,100)
@@ -872,28 +924,27 @@ plts.xy([rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pis
 plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
 plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
-#plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[gData['xD'],gData['yD'],gData['v'],deg(gData['alpha'],deg(gl.theta[:itr],deg(gamma,deg(pl.elev[:itr],deg(gl.thetaD[:itr],gData['L/D']],\
+#plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[xD,yD,v,deg(alpha,deg(theta,deg(gamma,deg(pl.elev[:itr],deg(theta,gData['L/D']],\
 #        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
-plts.xy([tData,tData,tData,tData,t,tData,tData,t],[gData['xD'],gData['yD'],gData['v'],deg(gData['alpha']),deg(gl.theta[:itr]),deg(gData['gamma']),deg(pData['elev']),deg(gl.thetaD[:itr])],\
+plts.xy([tData,tData,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(theta)],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,tData,t,tData,tData,tData,t],[gData['v'],wi.v[:itr],gData['y']/rp.lo,rp.T[:itr]/gl.W,gData['L']/gl.W,deg(gData['alpha']),deg(gData['gamma']),deg(gl.thetaD[:itr])],\
+plts.xyy([tData,t,tData,t,tData,tData,tData,t],[v,wiv,y/rp.lo,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(theta)],\
         [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
 #lift,drag,forces
-plts.xy([tData,tData,t,t],[gData['L']/gl.W,gData['D']/gl.W,rp.T[:itr]/gl.W,Few[:itr]/gl.W],\
+plts.xy([tData,tData,t,t],[L/gl.W,D/gl.W,T/gl.W,Few/gl.W],\
         'time (sec)','Forces/Weight',['lift','drag','tension','TC-winch'],'Forces')
 #torques
-plts.xy([tData],[rData['torq'],gData['Malpha'],pData['Me'],gData['gndTorq']],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
+plts.xy([tData],[rData['torq'],Malpha,Me,gndTau],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
 #Engine, rope and winch
-plts.xy([t,t,tData,tData,tData],[en.v[:itr],wi.v[:itr],gData['vgw'],deg(rData['theta']),100*oData['Sth']],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
+plts.xy([t,t,tData,tData,tData],[env,wiv,vgw,deg(ropTau),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
 #-British units-
-plts.xy([t,tData,tData,t,tData,tData],[en.v[:itr]/wi.rdrum*60/2/pi*en.diff*en.gear/10,eData['Pdeliv']/750,eData['torq']*0.74,wi.v[:itr]*1.94,gData['vgw']*1.94,100*oData['Sth']],\
+plts.xy([t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTau*0.74,wiv*1.94,vgw*1.94,100*Sth],\
     'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/10', 'pistons HP', 'pistons torque (ftlbs)','rope speed','glider radial speed','throttle'],'Engine British units')        
-
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
-plts.xy([tData],[eData['Pdeliv']/en.Pmax,wData['Pdeliv']/en.Pmax,rData['Pdeliv']/en.Pmax,gData['Pdeliv']/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
+plts.xy([tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
 # plot loop results
 heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
 plts.i = 0 #restart color cycle
