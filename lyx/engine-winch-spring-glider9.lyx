@@ -2917,6 +2917,124 @@ We cycle until the
 \end_layout
 
 \begin_layout Subsection
+Rope dynamic effects
+\end_layout
+
+\begin_layout Standard
+Rope specs are given in terms of near-static measurements.
+ On the other hand, dynamic experiments show that rope stretched (relaxed)
+ quickly has an intial increases stiffness at first, followed by a delayed
+ stretching (contraction).
+ This is hysteresis in the quasi-spring-like behavior.
+ To model this, we simply make the Young's modulus a function of the strain
+ derivative.
+ The strain is 
+\begin_inset Formula $\sigma=\Delta l/l$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Y=Y_{s}\left(1+\frac{\dot{|\sigma|}}{\sigma'}\right)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $p$
+\end_inset
+
+ is a power exponent and
+\begin_inset Formula $\sigma'$
+\end_inset
+
+ is a hysteresis strain rate (1/sec) that tells us what how large the strain
+ derivative must be to be important.
+ In terms of the tension change (using eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:stretch"
+
+\end_inset
+
+ and dropping the slow time dependence of 
+\begin_inset Formula $l$
+\end_inset
+
+ and any change in 
+\begin_inset Formula $Y$
+\end_inset
+
+) the first order strain rate is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{\sigma}=\frac{\dot{\xi}}{l}=\frac{\dot{T}}{Y_{s}A}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Y=Y_{s}\left(1+\frac{\frac{|\dot{T|}}{Y_{s}A}}{\sigma'}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=YA\frac{v_{r}(t)-v_{gw}(t)}{l(t)}=Y_{s}AY\left(1+\frac{\frac{|\dot{T|}}{Y_{s}A}}{\sigma'}\right)\frac{v_{r}(t)-v_{gw}(t)}{l(t)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=\frac{Y_{s}A}{l(t)}\frac{v_{r}(t)-v_{gw}(t)}{\left(1-\frac{|v_{r}(t)-v_{gw}(t)|}{l(t)\sigma'}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can make this a more general form by introducing a power 
+\begin_inset Formula $p$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=\frac{Y_{s}A}{l(t)}\frac{v_{r}(t)-v_{gw}(t)}{\left(1-\left(\frac{|v_{r}(t)-v_{gw}(t)|}{l(t)\sigma'}\right)^{p}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
 Ground roll forces 
 \begin_inset CommandInset label
 LatexCommand label
