@@ -87,7 +87,7 @@ def pid(var,time,setpoint,c,j,Nint):
     return c[0]*err + c[1]*derr + c[2]*interr
     
     
-def smooth(data,time):
+def smooth(data,time,N):
     '''Smooths data with a running average over tsmooth. data and time are arrays
     points are not evenly spaced in time. Smoothing is centered on t.
     Use a triangular weighting'''
@@ -687,8 +687,8 @@ tEnd = 20 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
-smoothed = False
-#smoothed = True
+#smoothed = False
+smoothed = True
 #throttleType = 'constT'
 throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
@@ -771,34 +771,34 @@ for iloop,tRampUp in enumerate(tRampUpList):
     if smoothed:
     #define smoothed data arrays before plotting
         print 'Smoothing data'
-        xD = smooth(gData['xD'],tData)
-        yD = smooth(gData['yD'],tData)
-        v = smooth(gData['v'],tData)
-        vD = smooth(gData['vD'],tData) 
-        x = smooth(gData['x'],tData)
-        y = smooth(gData['y'],tData)
-        alpha = smooth(gData['alpha'],tData)
-        theta = smooth(gl.theta[:itr],t)
-        gamma = smooth(gData['gamma'],tData)
-        elev = smooth(pData['elev'],tData)
-        thetaD0 = smooth(gl.thetaD[:itr],t); thetaD1 = smooth(thetaD0,t); thetaD = smooth(thetaD1,t)
-        wiv = smooth(wi.v[:itr],t)
-        env = smooth(en.v[:itr],t)
-        L = smooth(gData['L'],tData)
-        D = smooth(gData['D'],tData)
-        T = smooth(rp.T[:itr],t)
-        vgw = smooth(gData['vgw'],tData)
-        Malpha = smooth(gData['Malpha'],tData)
-        Me = smooth(pData['Me'],tData)
-        engP = smooth(eData['Pdeliv'],tData)
-        engTorq = smooth(eData['torq'],tData)
-        Sth = smooth(oData['Sth'],tData)
-        winP = smooth(wData['Pdeliv'],tData)
-        ropP = smooth(rData['Pdeliv'],tData)
-        gliP = smooth(gData['Pdeliv'],tData)
-        gndTorq = smooth(gData['gndTorq'],tData)
-        ropeTheta = smooth(rData['theta'],tData)
-        ropeTorq = smooth(rData['torq'],tData)
+        xD = smooth(gData['xD'],tData,1)
+        yD = smooth(gData['yD'],tData,1)
+        v = smooth(gData['v'],tData,1)
+        vD = smooth(gData['vD'],tData,1) 
+        x = smooth(gData['x'],tData,1)
+        y = smooth(gData['y'],tData,1)
+        alpha = smooth(gData['alpha'],tData,3)
+        theta = smooth(gl.theta[:itr],t,2)
+        gamma = smooth(gData['gamma'],tData,1)
+        elev = smooth(pData['elev'],tData,1)
+        thetaD= smooth(gl.thetaD[:itr],t,3)
+        wiv = smooth(wi.v[:itr],t,1)
+        env = smooth(en.v[:itr],t,1)
+        L = smooth(gData['L'],tData,3)
+        D = smooth(gData['D'],tData,2)
+        T = smooth(rp.T[:itr],t,1)
+        vgw = smooth(gData['vgw'],tData,1)
+        Malpha = smooth(gData['Malpha'],tData,1)
+        Me = smooth(pData['Me'],tData,1)
+        engP = smooth(eData['Pdeliv'],tData,1)
+        engTorq = smooth(eData['torq'],tData,1)
+        Sth = smooth(oData['Sth'],tData,1)
+        winP = smooth(wData['Pdeliv'],tData,1)
+        ropP = smooth(rData['Pdeliv'],tData,1)
+        gliP = smooth(gData['Pdeliv'],tData,1)
+        gndTorq = smooth(gData['gndTorq'],tData,1)
+        ropeTheta = smooth(rData['theta'],tData,1)
+        ropeTorq = smooth(rData['torq'],tData,1)
     else:
         #Shorten labels before plotting
         xD = gData['xD']
