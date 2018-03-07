@@ -647,8 +647,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #        print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
 #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #        print 't,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta
-#         if rp.T > 10:
-#             print 'pause'
+        if t > 40 and gl.yD<0:
+             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+             print
         # store data from this time step for use /in controls or plotting.  
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
@@ -703,7 +704,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################                        
 tRampUpList = [3] #If you only want to run one value
 tStart = 0
-tEnd = 40 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetTmax = 1.0
 thrmax =  1.0
