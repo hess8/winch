@@ -407,6 +407,7 @@ class operator:
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
         self.Sth = 0
+        self.SthOld = 0
         self.angleMax = rad(80) #throttle goes to zero at this rope angle
         #logical
         self.storedState = 'onGnd'
@@ -425,7 +426,8 @@ class operator:
             Nint = min(ti.i,ceil(tint/ti.dt)) 
 #            pp = -16; pd = -3; pint = -8
 #            pp = -8; pd = -2; pint = -8
-            pp = -2; pd = -2; pint = -8
+#            pp = -2; pd = -4; pint = -8
+            pp = -8; pd = -8; pint = -32           
             c0 = array([pp,pd,pint]) 
             #make these vary with tension, because the system is too loose at the beginning
             p = 1.0          
@@ -444,10 +446,13 @@ class operator:
             #limit the throttle change to 40%/second
             maxrate = 0.4 #40%/sec
             rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-            if rate > 0:
+            if en.v > en.vLimit:
+                self.Sth = 0.9 * self.Sth
+            elif rate > 0:
                 self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
             else:
                 self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+
                
         elif self.throttleType == 'preset':
             ### Ramp up, hold, then decrease to steady value
@@ -538,8 +543,6 @@ class pilot:
             elif x < -xmax:
                 x = -xmax
             return x
-#        def nonlin(self.Me,Mdelev):
-#            '''Make the control nonlinear, with it more sensitive near zero'''
         tint = 4.0 #sec
         Nint = ceil(tint/ti.dt)   
         time = ti.data['t']
@@ -618,9 +621,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
     #     ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
     #     ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
         ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.data[ti.i-1]['theta']-thetaRG) #torque of rope on glider
-    
-    #     if t>0.126362685837:
-    #         print 'ropetorq',ropetorq
         #winch-engine
         vrel = wi.v/en.v
         Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
@@ -643,10 +643,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         else: #no torque converter
             dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
             dotve = dotvw
-        if en.v + dotve*ti.dt > en.vLimit:
-            dotve = 0
-        if t>8:
-                print 'test'
         # The ode solver enters this routine
         # usually two or more times per time step.  We advance the time step counter only if the time has changed 
         # by close to a nominal time step    
@@ -693,7 +689,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
             gl.findState(t,ti)
             # Update controls
             pl.control(t,ti,gl)
-            op.control(t,ti,gl,rp,en)        
+            op.control(t,ti,gl,rp,en) 
+            op.SthOld = op.Sth
         return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
 ##########################################################################
