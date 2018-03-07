@@ -365,14 +365,16 @@ class engine:
     '''This version models the torque curve with parameters rather than the power curve'''
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
+        self.gear = 1.5    # 2nd gear ratio
+        self.diff = 3.7 
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 300            # engine  horsepower
         self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
         self.torqMax = 550/0.74*self.Pmax/(0.95*750*390)  #ft lbs converted to Nm.        
         self.rpmPeak = 4500
-        self.omegaPeak = self.rpmPeak*2*pi/60 
-        self.gear = 1.5    # 2nd gear ratio
-        self.diff = 3.7     #differential gear ratio        
+        self.omegaPeak = self.rpmPeak*2*pi/60 #peak power ening speed
+        self.vLimit = 5000*2*pi/60*wi.rdrum/self.gear/self.diff  #engine speed limiter
+    #differential gear ratio        
         self.vpeakP = self.omegaPeak*wi.rdrum/self.gear/self.diff
         self.me = 10.0            #  Engine effective mass (kg), effectively rotating at rdrum
         self.deltaEng = 1         #  time delay (sec) of engine power response to change in engine speed
@@ -427,7 +429,7 @@ class operator:
             c0 = array([pp,pd,pint]) 
             #make these vary with tension, because the system is too loose at the beginning
             p = 1.0          
-            c = c0 * (rp.T/gl.W + 0.1)**p 
+            c = c0 #* (rp.T/gl.W + 0.1)**p 
             time = ti.data['t']
             tRampUp = self.tRampUp
             thrSlack = 0.1
@@ -442,8 +444,6 @@ class operator:
             #limit the throttle change to 40%/second
             maxrate = 0.4 #40%/sec
             rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-            if abs(rate)>10:
-                print 'test'
             if rate > 0:
                 self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
             else:
@@ -643,18 +643,15 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         else: #no torque converter
             dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
             dotve = dotvw
+        if en.v + dotve*ti.dt > en.vLimit:
+            dotve = 0
+        if t>8:
+                print 'test'
         # The ode solver enters this routine
         # usually two or more times per time step.  We advance the time step counter only if the time has changed 
         # by close to a nominal time step    
         if t - ti.oldt > 1.0*ti.dt: 
             ti.i += 1 
-    #         if t > 15 and gl.yD<0:
-#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-    #             print 'pause'
-    #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-#            print 't,state,y',t,gl.state,gl.y
-    #         if rp.T > 10:
-    #             print 'pause'
             # store data from this time step for use /in controls or plotting.  
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
@@ -759,9 +756,9 @@ for iloop,tRampUp in enumerate(tRampUpList):
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
     gl.yD = 1e-6  #to avoid div/zero
-    gl.ve = 1e-6  #to avoid div/zero
+    gl.v = 1e-6  #to avoid div/zero
+    en.v = en.idle
     gl.theta  = rad(theta0)
-    en.ve = en.idle
     #initialize state vector to zero  
     S0 = zeros(10)
     #integrate the ODEs
