@@ -693,7 +693,16 @@ glider as a whole
 \begin_inset Formula $\alpha=0$
 \end_inset
 
-.
+ ( greater than when the wing angle of attack is zero, i.e trimmed glider
+ flight at 
+\begin_inset Formula $v_{b}.$
+\end_inset
+
+ (For the Grob Twin Astir, this angle is 1.25 degrees from the chord, where
+\begin_inset Formula $C_{o}$
+\end_inset
+
+= 0.650).
  So 
 \begin_inset Formula $L(0)=\frac{1}{2}\rho SC_{o}v_{b}^{2}=W$
 \end_inset
@@ -1436,38 +1445,53 @@ It's easier in practice to determine parameters for the torque available
 
 \end_inset
 
-The torque curve is modeled by a parabola, determined by three points: 1)
- 
-\begin_inset Formula $\tau_{a}(v_{peakP})=\frac{P_{max}}{\omega_{peak}},$
+The torque curve is modeled by a cubic polynomial, determined the fact that
+ the power curve must peak at 
+\begin_inset Formula $v_{peakP},$
 \end_inset
 
- 
-\begin_inset Formula $\tau_{a}(v_{peak\tau})=\tau_{max},$
+with value 
+\begin_inset Formula $\frac{P_{max}}{\omega_{peak}},$
 \end_inset
 
- and 
-\begin_inset Formula $\tau_{a}(0)=\tau_{0},$
+ and the torque curve must peak 
+\begin_inset Formula $v_{peak\tau}$
 \end_inset
 
- the torque at the lowest speeds, which is determined by studying how fast
- the glider can accelerate from rest under full winch throttle.
- 
+with value 
+\begin_inset Formula $\tau_{max}$
+\end_inset
+
+
 \begin_inset Formula 
 \[
-\tau_{a}(v_{e})=\tau_{0}-\tau{}_{1}\frac{v_{e}}{v_{peakP}}+\tau_{2}\left(\frac{v_{e}}{v_{peakP}}\right)^{2}
+\tau_{a}(v_{e})=\tau_{max}\left(c_{0}+c{}_{1}\frac{v_{e}}{v_{peakP}}-c_{2}\left(\frac{v_{e}}{v_{peakP}}\right)^{2}+c_{3}\left(\frac{v_{e}}{v_{peakP}}\right)^{3}\right)
 \]
 
 \end_inset
 
-The.three conditions on the parameters are 
-\begin_inset Formula $\tau_{0}-\tau{}_{1}+\tau_{2}=\frac{P_{max}}{\omega_{peak}},$
+
+\end_layout
+
+\begin_layout Standard
+The.four conditions on the parameters are 
+\begin_inset Formula $c_{0}+2c_{1}-3c_{2}+4c_{3}=0,$
 \end_inset
 
- and 
-\begin_inset Formula $\tau_{0}-\tau{}_{1}\frac{v_{peakP}}{v_{peakP}}+\tau_{2}\left(\frac{v_{peakP}}{v_{peakP}}\right)^{2}=\tau_{max}$
+ 
+\begin_inset Formula $c_{0}+c{}_{1}-c_{2}+c_{3}=\frac{P_{max}}{\omega_{peakP\tau_{max}}},$
 \end_inset
 
-.
+
+\begin_inset Formula $\,c{}_{1}-2c_{2}\frac{v_{peak\tau}}{v_{peakP}}+3c_{3}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{2}=0$
+\end_inset
+
+, 
+\begin_inset Formula $c_{0}+c{}_{1}\frac{v_{peak\tau}}{v_{peakP}}-c_{2}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{2}+c_{3}\left(\frac{v_{peak\tau}}{v_{peakP}}\right)^{3}=1$
+\end_inset
+
+..
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1541,7 +1565,7 @@ reference "eq:uptake speed diffeq (winch diffeq)"
  where 
 \begin_inset Formula 
 \[
-F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}P_{a}(\omega_{eng})}{r_{drum}\omega_{eng}}=\frac{S_{th}P_{a}(v_{eng})}{v_{eng}}
+F_{pistons}=\frac{\tau_{pistons}}{r_{drum}}=\frac{S_{th}\tau_{a}(v_{e})}{r_{drum}}
 \]
 
 \end_inset
@@ -2065,7 +2089,7 @@ m_{e,w}\dot{v_{r}}=F_{e,w}-T
 \begin_layout Standard
 \begin_inset Formula 
 \[
-m_{e,e}\dot{v}_{e}=\frac{S_{th}P_{a}(v_{e})}{v_{e}}-\frac{F_{e,w}}{\left(2-v_{r}/v_{e}\right)}
+m_{e,e}\dot{v}_{e}=\frac{S_{th}\tau_{a}(v_{e})}{r_{drum}}-F_{e,e}
 \]
 
 \end_inset
@@ -2902,6 +2926,124 @@ We cycle until the
 \end_layout
 
 \begin_layout Subsection
+Rope dynamic effects
+\end_layout
+
+\begin_layout Standard
+Rope specs are given in terms of near-static measurements.
+ On the other hand, dynamic experiments show that rope stretched (relaxed)
+ quickly has an intial increases stiffness at first, followed by a delayed
+ stretching (contraction).
+ This is hysteresis in the quasi-spring-like behavior.
+ To model this, we simply make the Young's modulus a function of the strain
+ derivative.
+ The strain is 
+\begin_inset Formula $\sigma=\Delta l/l$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Y=Y_{s}\left(1+\frac{\dot{|\sigma|}}{\sigma'}\right)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $p$
+\end_inset
+
+ is a power exponent and
+\begin_inset Formula $\sigma'$
+\end_inset
+
+ is a hysteresis strain rate (1/sec) that tells us what how large the strain
+ derivative must be to be important.
+ In terms of the tension change (using eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:stretch"
+
+\end_inset
+
+ and dropping the slow time dependence of 
+\begin_inset Formula $l$
+\end_inset
+
+ and any change in 
+\begin_inset Formula $Y$
+\end_inset
+
+) the first order strain rate is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{\sigma}=\frac{\dot{\xi}}{l}=\frac{\dot{T}}{Y_{s}A}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Y=Y_{s}\left(1+\frac{\frac{|\dot{T|}}{Y_{s}A}}{\sigma'}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=YA\frac{v_{r}(t)-v_{gw}(t)}{l(t)}=Y_{s}AY\left(1+\frac{\frac{|\dot{T|}}{Y_{s}A}}{\sigma'}\right)\frac{v_{r}(t)-v_{gw}(t)}{l(t)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=\frac{Y_{s}A}{l(t)}\frac{v_{r}(t)-v_{gw}(t)}{\left(1-\frac{|v_{r}(t)-v_{gw}(t)|}{l(t)\sigma'}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can make this a more general form by introducing a power 
+\begin_inset Formula $p$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{T}=\frac{Y_{s}A}{l(t)}\frac{v_{r}(t)-v_{gw}(t)}{\left(1-\left(\frac{|v_{r}(t)-v_{gw}(t)|}{l(t)\sigma'}\right)^{p}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
 Ground roll forces 
 \begin_inset CommandInset label
 LatexCommand label
@@ -3153,6 +3295,25 @@ kgm
 = 0.1
 \end_layout
 
+\begin_layout Standard
+Grob Twin Astir, glider angle of attack at 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+ is 1.25 degrees from the chord, where
+\begin_inset Formula $C_{o}$
+\end_inset
+
+= 0.650.
+ The wing Re that is closest to this is 1.2x10
+\begin_inset Formula $^{6}.$
+\end_inset
+
+ The stall angle is 8.0 degrees above wing chord, or 6.75 degrees above normal
+ glider attitude.
+ 
+\end_layout
+
 \begin_layout Subsubsection
 Stabilizer and elevator moments
 \end_layout
@@ -3197,12 +3358,6 @@ Comparing to the xflyr5 model for Grob:
  body effects.
  This is much too small, because when used in simulations the tail doesn't
  get off the ground until rotation.
- Instead, from the fact that the tail comes off the ground in a typical
- winch launch at about 40knts = 20m/s, we use a
-\series bold
- factor that is 4x larger
-\series default
-: 5m/rad.
  
 \end_layout
 
@@ -3294,6 +3449,17 @@ stabilator
 \end_inset
 
 .
+ 
+\end_layout
+
+\begin_layout Standard
+Adjusting the pitch parameters.
+ With no rope torque, the tail should come up at about 30 knts or 15 m/s.
+ This sets the 
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+ factor to 8 m/rad.
  
 \end_layout
 
