@@ -208,16 +208,16 @@ class glider:
         self.vb = 32              #   speed of glider at best glide angle
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
-        self.Q = 20             #   L/D
-        self.alphas = 6*3.14/180         #   stall angle vs glider zero
-        self.Co = 0.75             #   Lift coefficient {} at zero glider AoA
+        self.Q = 30             #   L/D
+        self.alphas = rad(6.8)         #  stall angle vs glider zero
+        self.Co = 0.65             #   Lift coefficient {} at zero glider AoA
         self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
 #        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
         self.palpha = 4      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
 #        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
-        self.pelev = 2.0     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
+        self.pelev = 2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
         self.maxElev = rad(30)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
 #        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
@@ -437,7 +437,7 @@ class operator:
         elif self.throttleType == 'preset':
             ### Ramp up, hold, then decrease to steady value
             tSlackEnd = self.tSlackEnd             
-            steadyThr = 0.7        
+            steadyThr = 0.75        
             tRampUp = self.tRampUp
             thrSlack = 0.1
             vSlackEnd = 1  #m/s
@@ -489,13 +489,14 @@ class pilot:
             if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
                 pp =  0; pd =   0; pint =  0
             elif gl.state == 'onGnd':
-                pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
+                pp = 0; pd = 0; pint = 0 
             elif gl.state == 'rotate': 
-                pp = 0; pd = 0; pint = 0 #when speed is too high, pitch up
+                pp = 16; pd = 0; pint = 0   #when speed is too high, pitch up
             elif gl.state == 'climb': 
-                pp = 16; pd = 16; pint = 0 #when speed is too high, pitch up
+                pp = 16; pd = 16; pint = 0  
             elif gl.state == 'steady': 
-                pp = 48; pd = 0; pint = 40 #when speed is too high, pitch up
+#                 pp = 48; pd = 0; pint = 40  
+                pp = 48; pd = 0; pint = 16 #These values when swithing from thetaD control
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -506,6 +507,15 @@ class pilot:
             c = array([pp,pd,pint])* gl.I/gl.vb
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
+        def thetaDContr(t,time,setpoint,ti,Nint):
+            if gl.state in ['rotate','climb','flat'] and gl.data[ti.i]['v'] > 25: #m/s:             
+                pp = 2.0; pd = 8; pint = 2
+            else:
+                pp = 0; pd = 0; pint = 0
+            c = array([pp,pd,pint])* gl.I/gl.vb
+            varr = gl.data['v']
+            return pid(varr,time,setpoint,c,ti.i,Nint)
+            
         def limiter(x,xmax):
             if x > xmax:
                 x = xmax
@@ -514,8 +524,6 @@ class pilot:
             return x
 #        def nonlin(self.Me,Mdelev):
 #            '''Make the control nonlinear, with it more sensitive near zero'''
-            
-        
         tint = 4.0 #sec
         Nint = ceil(tint/ti.dt)   
         time = ti.data['t']
@@ -528,7 +536,7 @@ class pilot:
             self.Me = 0
             self.elev = 0
         else:
-            if self.currCntrl == 0 and gamma > crossAngle:  #switch to 2nd control
+            if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.thetaD<rad(10))):  #switch to 2nd control
                 self.currCntrl = 1 #switches only once
                 self.tSwitch = t          
                 print 'Turned on second control at {:3.1f} sec'.format(t)
@@ -540,7 +548,10 @@ class pilot:
             elif ctype == 'v': #target v with setpoint'
                 self.MeTarget = vControl(t,time,setpoint,ti,Nint)
             elif ctype == 'alpha': # control AoA  
-                self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)    
+                self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
+            elif ctype == 'thetaD': #control pitch rate
+                self.MeTarget =  thetaDContr(t,time,rad(setpoint),ti,Nint)  
+            thetaDContr
             # implement
             if self.type =='elevControl': 
                 self.elevTarget = limiter(self.MeTarget/Mdelev,gl.maxElev) # determine the elevator setting 
@@ -695,15 +706,15 @@ path = 'D:\\Winch launch physics\\results\\test2'
 if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
-#setpoint = [3 ,3 , 20]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['alpha','vDdamp']
+#setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['thetaD','v']  # Use '' for none
+setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
-#setpoint = [2,33, 20]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['v','v']
-setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+#setpoint = [4,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['v','v']
+#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-#print 'Controls', control
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 # pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -856,6 +867,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     gammaMax = max(gamma)
     
     # Comments to user
+    print 'Controls', control    
     print 'Throttle ramp up time (after slack is out)', tRampUp
     print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
     print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(vmax,deg(thetaDmax))

@@ -693,7 +693,16 @@ glider as a whole
 \begin_inset Formula $\alpha=0$
 \end_inset
 
-.
+ ( greater than when the wing angle of attack is zero, i.e trimmed glider
+ flight at 
+\begin_inset Formula $v_{b}.$
+\end_inset
+
+ (For the Grob Twin Astir, this angle is 1.25 degrees from the chord, where
+\begin_inset Formula $C_{o}$
+\end_inset
+
+= 0.650).
  So 
 \begin_inset Formula $L(0)=\frac{1}{2}\rho SC_{o}v_{b}^{2}=W$
 \end_inset
@@ -3284,6 +3293,25 @@ kgm
 \end_inset
 
 = 0.1
+\end_layout
+
+\begin_layout Standard
+Grob Twin Astir, glider angle of attack at 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+ is 1.25 degrees from the chord, where
+\begin_inset Formula $C_{o}$
+\end_inset
+
+= 0.650.
+ The wing Re that is closest to this is 1.2x10
+\begin_inset Formula $^{6}.$
+\end_inset
+
+ The stall angle is 8.0 degrees above wing chord, or 6.75 degrees above normal
+ glider attitude.
+ 
 \end_layout
 
 \begin_layout Subsubsection
