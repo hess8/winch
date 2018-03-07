@@ -298,8 +298,8 @@ class rope:
         self.hystRate = 100     # hysteresis rate (1/sec) for dynamic stiffness. To turn this effect off, make this rate large, not small
         self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
         self.b = 0.3            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
-        self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-#        self.lo = 1000 
+#        self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
+        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
         self.mu = 0.015          # rope linear mass density (kg/meter)
 
@@ -366,7 +366,7 @@ class engine:
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
-        self.hp = 270            # engine  horsepower
+        self.hp = 300            # engine  horsepower
         self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
         self.torqMax = 550/0.74*self.Pmax/(0.95*750*390)  #ft lbs converted to Nm.        
         self.rpmPeak = 4500
@@ -399,9 +399,9 @@ class engine:
         return torqAvail * (ve/self.vpeakP*self.omegaPeak)
                 
 class operator:
-    def __init__(self,throttleType,targetTmax,thrmax,tRampUp,tHold,ntime):
+    def __init__(self,throttleType,targetT,thrmax,tRampUp,tHold,ntime):
         self.throttleType = throttleType        
-        self.targetTmax = targetTmax
+        self.targetT = targetT
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
         self.Sth = 0
@@ -420,18 +420,19 @@ class operator:
             tauOp = 1.0 #sec response time
             tint = tauOp 
             Nint = min(ti.i,ceil(tint/ti.dt)) 
-            pp = -16; pd = -2; pint = -8
+#            pp = -16; pd = -3; pint = -8
+            pp = -2; pd = -0; pint = -0
             c = array([pp,pd,pint]) 
             time = ti.data['t']
             tRampUp = self.tRampUp
             thrSlack = 0.1
             if t <= tRampUp:
-                targetT =  self.targetTmax/float(tRampUp) * t
+                targetT =  self.targetT/float(tRampUp) * t
             else:
                 if gl.state == 'steady':
-                    targetT = 1.0* self.targetTmax
+                    targetT = 1.0* self.targetT
                 else: 
-                    targetT = self.targetTmax
+                    targetT = self.targetT
             Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
             self.Sth = Tcontrol   
         elif self.throttleType == 'preset':
@@ -507,6 +508,7 @@ class pilot:
             c = array([pp,pd,pint])* gl.I/gl.vb
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
+            
         def thetaDContr(t,time,setpoint,ti,Nint):
             if gl.state in ['rotate','climb','flat'] and gl.data[ti.i]['v'] > 25: #m/s:             
                 pp = 2.0; pd = 8; pint = 2
@@ -689,17 +691,18 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
 ##########################################################################
 #                         Main script
 ##########################################################################                        
+#tRampUpList = linspace(3,10,10)
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.5
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 15 # end time for simulation
 dt = 0.05 # nominal time step, sec
-targetTmax = 1.0
+targetT = 1.0
 thrmax =  1.0
 smoothed = True
 #smoothed = True
-#throttleType = 'constT'
-throttleType = 'preset'
+throttleType = 'constT'
+#throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 path = 'D:\\Winch launch physics\\results\\test2'
@@ -707,14 +710,14 @@ if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
 #setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['thetaD','v']  # Use '' for none
-setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['thetaD','v']  # Use '' for none
+#setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
 #setpoint = [4,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 # pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -726,7 +729,7 @@ tcUsed = True   # uses the torque controller
 ntime = ((tEnd - tStart)/dt + 1 )   # number of time steps to allow for data points saved
 negvyTrigger = -0.1  #when to release
 # Loop over parameters for study, optimization
-# tRampUpList = linspace(1,8,50)
+
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
@@ -740,7 +743,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
-    op = operator(throttleType,targetTmax,thrmax,tRampUp,tHold,ntime)
+    op = operator(throttleType,targetT,thrmax,tRampUp,tHold,ntime)
     pl = pilot(pilotType,ntime,control,setpoint)
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
@@ -779,7 +782,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
 
     if smoothed:
     #define smoothed data arrays before plotting
-        print 'Smoothing data'
+        print '\nSmoothing data'
         xD = smooth(gData['xD'],tData,1)
         yD = smooth(gData['yD'],tData,1)
         v = smooth(gData['v'],tData,1)
