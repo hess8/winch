@@ -98,8 +98,8 @@ We simulate the motion for a glider launched by a winch with a springy rope.
 \end_layout
 
 \begin_layout Abstract
-Christoph Santel did the first multi-physics dynamic simulations of glider
- winch launches in his 
+Christoph Santel did the first multi-physics simulations of glider winch
+ launches in his 
 \begin_inset CommandInset href
 LatexCommand href
 name "2008 and 2010 theses"
@@ -111,7 +111,7 @@ target "https://drive.google.com/drive/folders/1ezpgiiXROlwbQ4Ri_NeoynYucjhUop9k
  Unfortunately, Santel's models and parameters cannot be shared with the
  community, as they are restricted by commercial intellectual property rights;
  in addition they require commercial software to run.
- George Moore has in recent years presented 
+ For more than a decade George Moore has presented 
 \begin_inset CommandInset href
 LatexCommand href
 name "papers"
@@ -122,9 +122,9 @@ target "https://drive.google.com/drive/folders/1PK-VRpJ2TQq1fCiqRG9oNmrPFuZu0dGR
  at the SSA conventions and has done the most extensive studies to date
  on the dynamics and energetics of winch launching and their effects on
  the final height.
- He has also studied glider recovery during rope break, and some effects
- of the rope elasticity on the dynamics.
- John Gibson explored launching forces and practices in 
+ He has also studied glider recovery during rope break, and effects of the
+ rope elasticity on the dynamics.
+ John Gibson explored launching forces and practices for the BGA in 
 \begin_inset CommandInset href
 LatexCommand href
 name "\"Mechanics of the Winch Launch\""
@@ -142,13 +142,12 @@ target "https://drive.google.com/file/d/1JSwBb9zJYgUvVam7A9zAVovj1DrfeNon/view?u
 
 \end_inset
 
- that established that the final height is optimized by keeping the rope
- tension high as possible over essentially the entire flight path.
- 
+ which established that the final height is optimized by keeping the rope
+ tension as high as possible over the entire flight path.
 \end_layout
 
 \begin_layout Abstract
-Our dynamic simulation is implemented in python and is publically available.
+Our simulation is implemented in python and is publically available at .
  We will be studying 1) the effects of pilot controls on the launch performance
  and safety; 2) throttle controls and the possibility of closed loop constant-te
 nsion control of the engine; 3) the effects of rope elasticity on the above;
@@ -157,16 +156,28 @@ nsion control of the engine; 3) the effects of rope elasticity on the above;
 
 \begin_layout Abstract
 What this model does not include (yet) that may be important for safety:
- stall conditions for the stabilizer (see Santel's 2010 thesis).
- 
+ 1) stall conditions for the horizontal stabilizer (see Santel's 2010 thesis);
+ 2) ground effect (but that should help safety)
 \end_layout
 
 \begin_layout Abstract
 The parameters are currently those for a Grob Twin Astir two-seat glider,
- the Utah Soaring Association winch and 454 (7.4 liters) engine, and GM350
- transmission.
- But the glider features are probably quite generic, and other winch/engine
- parameters can used.
+ but the glider features are probably quite generic.
+ We usde the Utah Soaring Association winch radius and moment of inertia,
+ and a 454 (7.4 liters) engine power/torque curve, and GM350 transmission
+ in second gear.
+ 
+\end_layout
+
+\begin_layout Abstract
+Only the model is presented here.
+ For results see (website coming soon)
+\end_layout
+
+\begin_layout Abstract
+This project is part of an ongoing collaboration with George Moore and Don
+ Haselwood, who are developing a tension-controlled electric winch.
+ I thank them for many valuable discussion.
  
 \end_layout
 
@@ -739,7 +750,7 @@ The winch is a distance
 
 \end_inset
 
-above the horizon (this assumption is removed in Appendix 
+above the horizon (the straight-rope assumption is removed in Appendix 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Rope-sag-drag"
@@ -811,8 +822,8 @@ The total pitching moment
 \begin_inset Formula $M(\alpha,t)$
 \end_inset
 
- of the air on the glider about the center of gravity (CG) is adjustable
- by the glider angle of attack (
+ of the air on the glider about the center of gravity (CG) is adjusted by
+ the glider angle of attack (
 \begin_inset Formula $\alpha)$
 \end_inset
 
@@ -837,7 +848,7 @@ The total pitching moment
  is not zero is:
 \begin_inset Formula 
 \[
-M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha v^{2}=-l_{s}\frac{1}{2}\rho SC_{Ls,\alpha}\alpha v^{2}=-l_{s}L\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\alpha=-Lp_{\alpha}\alpha
+M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha v^{2}=-l_{s}\frac{1}{2}\rho S_{s}C_{Ls,\alpha}\alpha v^{2}=-l_{s}L\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\alpha=-Lp_{\alpha}\alpha
 \]
 
 \end_inset
@@ -855,12 +866,20 @@ M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha v^{2}=-l_{s}\frac{1}{2}\
 \begin_inset Formula $\frac{S_{w}}{S_{w}}$
 \end_inset
 
- is the ratio between the stabilizer area and the wing area.
- Then the function, which depends we will use is 
-\begin_inset Formula $p_{\alpha}=l_{s}\frac{S_{s}}{S_{w}}C_{Ls,\alpha}$
+ is the ratio between the stabilizer area and the wing area, and 
+\begin_inset Formula $p_{\alpha}=l_{s}\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}$
 \end_inset
 
- in
+ (note that the wing lift coefficient 
+\begin_inset Formula $C_{Lw}$
+\end_inset
+
+ is a function of 
+\begin_inset Formula $\alpha$
+\end_inset
+
+) .
+ So 
 \end_layout
 
 \begin_layout Standard
@@ -871,16 +890,7 @@ M=-\frac{L}{C_{Lw}}p_{\alpha}\alpha+M_{e}(t)
 
 \end_inset
 
-Note that the wing lift coefficient 
-\begin_inset Formula $C_{Lw}$
-\end_inset
 
- is also a function of 
-\begin_inset Formula $\alpha$
-\end_inset
-
-.
- 
 \end_layout
 
 \begin_layout Standard
@@ -983,17 +993,27 @@ The rope is attached a distance
 \end_inset
 
  in front of it.
- The moment arm is 
-\begin_inset Formula $b-a\,tan(\theta+\theta_{r}).$
+ The attachment point is at an angle from the CG 
+\begin_inset Formula $\phi=tan^{-1}(b/a)$
 \end_inset
 
- So the torque is 
+ below the glider longitudinal axis.
+ When the rope pulls at an angle 
+\begin_inset Formula $\eta$
+\end_inset
+
+ below the longitudinal axis, the torque about the CG is tension times 
+\begin_inset Formula $\sqrt{a^{2}+b^{2}}sin(\phi-\eta)$
+\end_inset
+
+.
+ So
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\tau_{rope,glider}=T(b-a\,tan(\theta+\theta_{r}))
+\tau_{rope,glider}=T\sqrt{a^{2}+b^{2}}sin(tan^{-1}(b/a)-\theta-\theta_{r})
 \]
 
 \end_inset
@@ -1737,11 +1757,11 @@ The final TC  function we need is the capacity
 \begin_inset Formula $K$
 \end_inset
 
-, that gives the impeller torque in terms of the relative speed .
+, that gives the impeller torque in terms of the speeds .
  
 \begin_inset Formula 
 \begin{equation}
-\tau_{out,eng}=\left(\frac{\omega_{eng}}{K}\right)^{2}\label{eq:torque and capacity}
+\tau_{out,eng}=\left(\frac{\omega_{eng-}\omega_{w}}{K}\right)^{2}\label{eq:torque and capacity}
 \end{equation}
 
 \end_inset
@@ -3032,7 +3052,7 @@ Comparing to the xflyr5 model for Grob:
 
  is the mean chord.
  So 
-\begin_inset Formula $p_{\alpha}=\frac{1}{L}\frac{\partial M}{\partial\alpha}=\frac{\frac{1}{2}\rho Sv^{2}}{\frac{1}{2}\rho Sv^{2}}\frac{c}{C_{Lw}}\frac{\partial C_{m}}{\partial\alpha}=c\frac{C_{m,\alpha}}{C_{Lw}}=$
+\begin_inset Formula $p_{\alpha}=c\frac{C_{m,\alpha}}{C_{Lw}}=$
 \end_inset
 
  (0.6m)(1.9/rad)/
@@ -3056,7 +3076,73 @@ Comparing to the xflyr5 model for Grob:
  body effects.
  This is much too small, because when used in simulations the tail doesn't
  get off the ground until rotation.
+\end_layout
+
+\begin_layout Standard
+Comparing to NACA report 278 the lift slope of the 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ (stabilizer including elevator) vs alpha is 
+\begin_inset Formula $\frac{\partial C_{Ls}}{\partial\alpha}=C_{Ls,\alpha}=$
+\end_inset
+
+0.05/deg=3/rad.
+ (This is half what is expected for a long wing).
+ Then 
+\begin_inset Formula $p_{e}(\alpha)=l_{s}\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\approx$
+\end_inset
+
+4m*1/10*3/rad/
+\begin_inset Formula $($
+\end_inset
+
+
+\begin_inset Formula $C_{o}+2\pi\alpha)$
+\end_inset
+
  
+\begin_inset Formula $\approx$
+\end_inset
+
+ 1.2m/rad/
+\begin_inset Formula $($
+\end_inset
+
+
+\begin_inset Formula $C_{o}+2\pi\alpha)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The moment due to elevator deflection is 
+\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}\frac{S_{s}}{S_{w}}\delta_{e}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Adjusting the pitch parameters.
+ With no rope torque, the tail should come up at about 30 knts or 15 m/s.
+ This sets the 
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+ factor to 8 m/rad.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Elevator drag
 \end_layout
 
 \begin_layout Standard
@@ -3102,76 +3188,18 @@ stabilator
  
 \end_layout
 
-\begin_layout Standard
-The moment due to elevator deflection is 
-\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}\frac{S_{s}}{S_{w}}\delta_{e}$
-\end_inset
-
-.
- Moment slope: From NACA report 278 the lift slope of the 
-\begin_inset Quotes eld
-\end_inset
-
-stabilator
-\begin_inset Quotes erd
-\end_inset
-
- (stabilizer including elevator) vs alpha is 
-\begin_inset Formula $\frac{\partial C_{Ls}}{\partial\alpha}=C_{Ls,\alpha}=$
-\end_inset
-
-0.05/deg=3/rad.
- (This is half what is expected for a long wing).
- Then 
-\begin_inset Formula $p_{e}(\alpha)=l_{s}\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\approx$
-\end_inset
-
-4m*1/10*3/rad/
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+2\pi\alpha)$
-\end_inset
-
- 
-\begin_inset Formula $\approx$
-\end_inset
-
- 1.2m/rad/
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+2\pi\alpha)$
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-Adjusting the pitch parameters.
- With no rope torque, the tail should come up at about 30 knts or 15 m/s.
- This sets the 
-\begin_inset Formula $p_{\alpha}$
-\end_inset
-
- factor to 8 m/rad.
- 
-\end_layout
-
 \begin_layout Subsubsection
 Torque capacity factor: 
 \end_layout
 
 \begin_layout Paragraph
-GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 142 rpm/sqrt(ft.lb) * 2pi/60
+GM 350 transmission, K = 140 rpm/sqrt(ft.lb) = 140 rpm/sqrt(ft.lb) * 2pi/60
  rad/s/rpm * sqrt(0.74 ftlb/Nm) = 13 rad/s/(Nm)
 \begin_inset Formula $^{\frac{1}{2}}$
 \end_inset
 
-
+.
+ In 
 \end_layout
 
 \begin_layout Subsubsection
@@ -3200,7 +3228,7 @@ Winch equivalent mass
 \end_inset
 
 = 220 kg.
- Ratio vs grob: 220/600 = 0.4
+ Ratio vs Grob mass: 220/600 = 0.4
 \end_layout
 
 \begin_layout Subsubsection
@@ -3222,21 +3250,6 @@ USA 2nd gear: 1:1.52 transmission.
 .
  So when engine turns 4500 rpm (max power) the winch turns at 820 rpm, x
  1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
- We should use gear 3: 
-\begin_inset Formula $v_{peak}$
-\end_inset
-
- = 49 m/s...now get 80 vs 50% out of engine at max power.
- If we had no differential, then in 3rd gear the winch (locking the TC),
- It would have to have a rope speed of 180 m/s to get the most power out
- of the engine.
- When we add the differential, then the rope speed would need to be 49 m/s
- to match.
- We have to have some slipping, so this would be the right ratio for the
- most power.
- If we use gear 2, then the peak speed becomes 33m/s, and again we have
- to have some slippage so you can't get full power out of the engine in
- gear 2.
  
 \end_layout
 
