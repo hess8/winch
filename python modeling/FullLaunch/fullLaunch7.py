@@ -425,8 +425,13 @@ class operator:
 #            pp = -16; pd = -3; pint = -8
 #            pp = -8; pd = -2; pint = -8
 #            pp = -2; pd = -4; pint = -8
-            pp = -8; pd = -8; pint = -32  
-#            pp = -2; pd = -0; pint = -0 
+#            pp = -8; pd = -8; pint = -32 
+            if rp.data[ti.i]['theta'] < 0.8*rp.thetaMax:
+                pp = -8; pd = -8; pint = -32 
+            else:
+                print 't',t
+                pp = -.0; pd = -0; pint = -0 
+#            pp = -8; pd = -8; pint = -32 
             c0 = array([pp,pd,pint]) 
             #make these vary with tension, because the system is too loose at the beginning
             p = 1.0          
@@ -649,7 +654,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
 #             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetarope: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(thetarope),gl.state)
+            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} gndTorq: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gndTorq,gl.state)
+            print 'M,theta,alpha,Sth';print M,deg(gl.theta),deg(alpha),op.Sth
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,state,y',t,gl.state,gl.y
@@ -976,9 +982,8 @@ plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gDa
 plts.xy([tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
 #Specialty plot for presentation
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,wiv,y/0.305,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
-        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)','Relative forces'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Present glider')
-
+plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
+        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)','Relative forces'],['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Present glider')
 
 if len(tRampUpList) > 1:
     # plot loop results
