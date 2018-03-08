@@ -218,7 +218,6 @@ class glider:
         self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
         self.maxElev = rad(20)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
-#        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
         #logic
@@ -233,8 +232,8 @@ class glider:
         self.theta = 0  #pitch vs horizontal
         self.thetaD = 0
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
-#         self.deltar = 0.02  #ground contact force distance of action (m)
-        self.deltar = 0.05  #ground contact force distance of action (m)
+        self.deltar = 0.02  #ground contact force distance of action (m)
+#        self.deltar = 0.05  #ground contact force distance of action (m)
         self.d_m = 0.25  # distance main wheel to CG (m) 
         self.d_t = 3.3  # distance tail wheel to CG (m) 
         self.theta0 = rad(theta0) 
