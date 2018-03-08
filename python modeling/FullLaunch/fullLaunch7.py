@@ -91,7 +91,7 @@ def smooth(data,time,N):
     '''Smooths data with a running average over tsmooth. data and time are arrays
     points are not evenly spaced in time. Smoothing is centered on t.
     Use a triangular weighting'''
-    tsmooth = float(1.0) #sec (float is a precaution: it must not be an integer time)  
+    tsmooth = float(1.5) #sec (float is a precaution: it must not be an integer time)  
 #    dt = 0.1 #sec
     smoothed = data
     tfinal = time[-1]
@@ -286,9 +286,9 @@ class glider:
         return [Fmain, Ftail,Ffric]
    
 class rope:
-    def __init__(self,tau):
+    def __init__(self,thetaMax):
         # Rope parameters  
-        self.tau = tau #sec.  Artificial damping of oscillations.          
+        self.thetaMax =rad(thetaMax) # release angle of rope         
         self.d  = 0.005     #  rope diameter (m)
         self.A = pi*self.d**2/4      #  rope area (m2)
         self.Ys = 30e9             #  2400*9.8/(pi*(0.005/2)^2)/0.035  
@@ -302,8 +302,6 @@ class rope:
         self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
         self.mu = 0.015          # rope linear mass density (kg/meter)
-
-#        self.lo = 1000         #  initial rope length (m)
         # state variables 
         self.T = 0
         # data
@@ -427,7 +425,8 @@ class operator:
 #            pp = -16; pd = -3; pint = -8
 #            pp = -8; pd = -2; pint = -8
 #            pp = -2; pd = -4; pint = -8
-            pp = -8; pd = -8; pint = -32           
+            pp = -8; pd = -8; pint = -32  
+#            pp = -2; pd = -0; pint = -0 
             c0 = array([pp,pd,pint]) 
             #make these vary with tension, because the system is too loose at the beginning
             p = 1.0          
@@ -581,9 +580,9 @@ class pilot:
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
-def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
+def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''  
-    if t > 15 and gl.yD < negvyTrigger: #glider has released, but the integrator must finish   
+    if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
         return zeros(len(S))
     else: 
         gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
@@ -648,6 +647,14 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         # by close to a nominal time step    
         if t - ti.oldt > 1.0*ti.dt: 
             ti.i += 1 
+    #         if t > 15 and gl.yD<0:
+#             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetarope: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(thetarope),gl.state)
+    #             print 'pause'
+    #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
+#            print 't,state,y',t,gl.state,gl.y
+    #         if rp.T > 10:
+    #             print 'pause'
             # store data from this time step for use /in controls or plotting.  
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
@@ -668,11 +675,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
                 gl.data[ti.i]['L/D']  = gl.Q
             gl.data[ti.i]['gndTorq']  = gndTorq
             gl.data[ti.i]['Malpha']  = alphatorq
-            gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here
-    #        gl.data[ti.i]['Pdeliv'] = rp.T * vgw 
+            gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here 
             gl.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG + gl.theta) 
             gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
-            rp.data[ti.i]['Pdeliv'] = rp.T * wi.v #+ 0.5*lenrope/rp.Y/rp.A * rp.T * dotT
+            rp.data[ti.i]['Pdeliv'] = rp.T * wi.v 
             rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             rp.data[ti.i]['T'] = rp.T
             rp.data[ti.i]['torq'] = ropetorq
@@ -700,10 +706,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
+ropeThetaMax = 70 #degrees
 smoothed = True
 #smoothed = True
 throttleType = 'constT'
@@ -732,7 +739,6 @@ tcUsed = True   # uses the torque controller
 # control =/ 'v'  # Use '' for none
 # setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 ntime = ((tEnd - tStart)/dt + 1 )   # number of time steps to allow for data points saved
-negvyTrigger = -0.1  #when to release
 # Loop over parameters for study, optimization
 
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
@@ -744,7 +750,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
-    rp = rope(ropetau) 
+    rp = rope(ropeThetaMax) 
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
@@ -760,22 +766,34 @@ for iloop,tRampUp in enumerate(tRampUpList):
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,negvyTrigger))
+    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
-    #If yD dropped below zero, the release occured.  Remove the time steps after that. 
-    if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger/2 :
-        negyD =where(gl.yD < negvyTrigger/2)[0] #glider losing altitude
-        itr = negyD[0]-1 #ode solver index for release time
-    #    itr = argmin(gl.yD)
-        t = t[:itr] #shorten
-        if min(gl.data['yD']) < negvyTrigger/2 :
-            negyD =where(gl.data['yD'] < negvyTrigger/2 )[0]
-            ti.i = negyD[0]-1  #data index for release time  
-        else:
-            ti.i = argmax(ti.data['t'])
+    #Find where release occurred in data.  Remove the time steps after that. 
+    if max(rp.data['theta'])  > rad(ropeThetaMax):
+        ti.i = where(rp.data['theta'] > rad(ropeThetaMax))[0][0]
+        tfinal = ti.data[ti.i]['t']
+        itr = where(t >= tfinal)[0][0]
     else:
+        ti.i = argmax(ti.data['t'])
         itr = len(t)
+    #Find where release occurred in state data
+    
+    t = t[:itr] #shorten
+    
+# where(gl.yD < negvyTrigger/2)[0]    
+#     if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger/2 :
+#         negyD =where(gl.yD < negvyTrigger/2)[0] #glider losing altitude
+#         itr = negyD[0]-1 #ode solver index for release time
+#     #    itr = argmin(gl.yD)
+#         t = t[:itr] #shorten
+#         if min(gl.data['yD']) < negvyTrigger/2 :
+#             negyD =where(gl.data['yD'] < negvyTrigger/2 )[0]
+#             ti.i = negyD[0]-1  #data index for release time  
+#         else:
+#             ti.i = argmax(ti.data['t'])
+#     else:
+        
     #Shortened labels and arrays for results
     tData = ti.data[:ti.i]['t']
     gData = gl.data[:ti.i]
@@ -788,28 +806,28 @@ for iloop,tRampUp in enumerate(tRampUpList):
     if smoothed:
     #define smoothed data arrays before plotting
         print '\nSmoothing data'
-        xD = smooth(gData['xD'],tData,1)
-        yD = smooth(gData['yD'],tData,1)
+        x = smooth(gl.x[:itr],t,1)
+        y = smooth(gl.y[:itr],t,1)
+        xD = smooth(gl.xD[:itr],t,1)
+        yD = smooth(gl.yD[:itr],t,1)
         v = smooth(gData['v'],tData,1)
         vD = smooth(gData['vD'],tData,1) 
-        x = smooth(gData['x'],tData,1)
-        y = smooth(gData['y'],tData,1)
         alpha = smooth(gData['alpha'],tData,3)
         theta = smooth(gl.theta[:itr],t,2)
         gamma = smooth(gData['gamma'],tData,1)
         elev = smooth(pData['elev'],tData,1)
         thetaD= smooth(gl.thetaD[:itr],t,3)
-        wiv = smooth(wi.v[:itr],t,1)
-        env = smooth(en.v[:itr],t,1)
+        wiv = smooth(wi.v[:itr],t,3)
+        env = smooth(en.v[:itr],t,3)
         L = smooth(gData['L'],tData,3)
         D = smooth(gData['D'],tData,2)
-        T = smooth(rp.T[:itr],t,1)
+        T = smooth(rp.T[:itr],t,3)
         vgw = smooth(gData['vgw'],tData,1)
         Malpha = smooth(gData['Malpha'],tData,1)
         Me = smooth(pData['Me'],tData,1)
         engP = smooth(eData['Pdeliv'],tData,1)
         engTorq = smooth(eData['torq'],tData,1)
-        Sth = smooth(oData['Sth'],tData,1)
+        Sth = smooth(oData['Sth'],tData,3)
         winP = smooth(wData['Pdeliv'],tData,1)
         ropP = smooth(rData['Pdeliv'],tData,1)
         gliP = smooth(gData['Pdeliv'],tData,1)
@@ -818,12 +836,12 @@ for iloop,tRampUp in enumerate(tRampUpList):
         ropeTorq = smooth(rData['torq'],tData,1)
     else:
         #Shorten labels before plotting
-        xD = gData['xD']
-        yD = gData['yD']
+        x = gl.x[:itr]
+        y = gl.y[:itr]
+        xD = gl.xD[:itr]
+        yD = gl.yD[:itr]
         v = gData['v']
         vD = gData['vD'] 
-        x = gData['x']
-        y = gData['y']
         alpha = gData['alpha']
         theta = gl.theta[:itr]
         gamma = gData['gamma']
@@ -932,16 +950,16 @@ torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero spe
 plts.xy([rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
 
 #glider position vs time
-plts.xy([t],[gl.x[:itr],gl.y[:itr]],'time (sec)','position (m)',['x','y'],'Glider position vs time')
-plts.xy([gl.x[:itr]],[gl.y[:itr]],'x (m)','y (m)',['x','y'],'Glider y vs x')
+plts.xy([t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+plts.xy([x],[y],'x (m)','y (m)',['x','y'],'Glider y vs x')
 #glider speed and angles
 #plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[xD,yD,v,deg(alpha,deg(theta,deg(gamma,deg(pl.elev[:itr],deg(theta,gData['L/D']],\
 #        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
-plts.xy([tData,tData,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
+plts.xy([t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,tData,t,tData,tData,tData,t],[v,wiv,y/rp.lo,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
+plts.xyy([tData,t,t,t,tData,tData,tData,t],[v,wiv,y/rp.lo,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
         [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
 #lift,drag,forces
 plts.xy([tData,tData,t,t],[L/gl.W,D/gl.W,T/gl.W,Few/gl.W],\
@@ -956,6 +974,12 @@ plts.xy([t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,e
 #Energy,Power
 plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
 plts.xy([tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
+#Specialty plot for presentation
+plts.i = 0 #restart color cycle
+plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,wiv,y/0.305,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
+        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)','Relative forces'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Present glider')
+
+
 if len(tRampUpList) > 1:
     # plot loop results
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
