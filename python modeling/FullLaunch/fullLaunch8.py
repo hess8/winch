@@ -500,7 +500,7 @@ class pilot:
             elif gl.state == 'onGnd' and gl.theta < gl.theta0 - rad(1):
                 pp = -1; pd = -16; pint = -0
             else:
-                pp = -200; pd = -6; pint = -64.0
+                pp = -20; pd = -20; pint = -0
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -528,15 +528,17 @@ class pilot:
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
             
-        def thetaDContr(t,time,setpoint,ti,Nint):
-            if gl.state in ['rotate','initClimb','mainClimb'] and gl.data[ti.i]['v'] > 25: #m/s:                         
-#                 pp = 3.0; pd = 8; pint = 2
-                pp = 3.0; pd = 8; pint = 0
-            else:
-                pp = 0; pd = 0; pint = 0
-            c = array([pp,pd,pint])* gl.I/gl.vb
-            varr = gl.data['thetaD']
-            return pid(varr,time,setpoint,c,ti.i,Nint)
+#        def thetaDContr(t,time,setpoint,ti,Nint):
+#            '''Not a good control idea'''            
+#            if gl.state in ['rotate','initClimb','mainClimb'] and gl.data[ti.i]['v'] > 25: #m/s:                         
+##                 pp = 3.0; pd = 8; pint = 2
+#                pp = -100; pd = 100; pint = 0
+#            else:
+#                pp = 0; pd = 0; pint = 0
+#            c = array([pp,pd,pint])* gl.I/gl.vb
+#            varr = gl.data['thetaD']
+#            print 'thetaDcontr,elev',t,pid(varr,time,setpoint,c,ti.i,Nint),deg(self.elev)
+#            return pid(varr,time,setpoint,c,ti.i,Nint)
             
         def limiter(x,xmax):
             if x > xmax:
@@ -560,7 +562,7 @@ class pilot:
             if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.thetaD<rad(10))):  #switch to 2nd control
                 self.currCntrl = 1 #switches only once
                 self.tSwitch = t          
-                print 'Turned on second control at {:3.1f} sec'.format(t)
+                print 'Turned on {} control at {:3.1f} sec'.format(self.ctrltype[1],t)
             ctype = self.ctrltype[self.currCntrl]
             setpoint = self.setpoint[self.currCntrl]
             # determine the moment demanded by the control            
@@ -572,7 +574,6 @@ class pilot:
                 self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
             elif ctype == 'thetaD': #control pitch rate
                 self.MeTarget =  thetaDContr(t,time,rad(setpoint),ti,Nint)  
-            thetaDContr
             # implement
             if self.type =='elevControl': 
                 self.elevTarget = limiter(self.MeTarget/Mdelev,gl.maxElev) # determine the elevator setting 
@@ -650,7 +651,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
 #             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} gndTorq: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gndTorq,gl.state)
+#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,state,y',t,gl.state,gl.y
@@ -708,13 +709,13 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
 ropeThetaMax = 75 #degrees
+#smoothed = False
 smoothed = True
-#smoothed = True
 throttleType = 'constT'
 #throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
@@ -724,17 +725,17 @@ if not os.path.exists(path): os.mkdir(path)
 #path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
 #setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['thetaD','v']  # Use '' for none
-setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['thetaD','v']  # Use '' for none
+#setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
-#setpoint = [4,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['v','v']
-#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+#setpoint = [2,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['v','v']
+# setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-# pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
