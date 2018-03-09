@@ -433,7 +433,7 @@ class operator:
                 if gl.state == 'prepRelease':
                     pp = -.0; pd = -0; pint = -0 
                 else:
-                    pp = -16; pd = -2; pint = -8
+                    pp = -8; pd = -8; pint = -32
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 if t <= tRampUp:
@@ -738,11 +738,11 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 #tRampUpList = linspace(3,10,10)
-tRampUpList = [3] #If you only want to run one value
+tRampUpList = [2] #If you only want to run one value
 tHold = 1.0
 tStart = 0
-tEnd = 5 # end time for simulation
-dt = 0.05/float(64) # nominal time step, sec
+tEnd = 40 # end time for simulation
+dt = 0.05/float(4) # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
 ropeThetaMax = 75 #degrees
