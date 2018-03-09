@@ -84,7 +84,6 @@ def pid(var,time,setpoint,c,j,Nint):
         interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
     else:
         interr = 0 
-    print 'err,derr,interr';print err,derr,interr
     return c[0]*err + c[1]*derr + c[2]*interr    
     
 def smooth(data,time,N):
@@ -447,17 +446,14 @@ class operator:
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
                      
                 #limit the throttle change to 40%/second
-#                 maxrate = 0.4 #40%/sec
                 maxrate = 1000 #40%/sec
-                rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-                print;print 't',t    
+                rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])    
                 if en.v > en.vLimit:
                     self.Sth = 0.9 * self.Sth
                 elif rate > 0:
                     self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
                 else:
-                    self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
-        print 'control', Tcontrol,self.Sth,rp.T           
+                    self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])         
         if self.throttleType == 'constTdip':
             '''Dips to a lower tension during the initial climb'''
             if gl.xD < self.vSlackEnd: #take out slack
@@ -672,9 +668,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             dotelev = 1/pl.humanT * (pl.elevTarget-pl.elev)
         else:
             dotelev = 0 
-       # dotT = rp.chgT(wi.v,vgw,lenrope)       
-        dotT = rp.Ys*rp.A*(wi.v - vgw)/float(lenrope) #- (rp.T-rp.avgT(ti))/rp.tau
-                        
+        dotT = rp.chgT(wi.v,vgw,lenrope)                       
         if en.tcUsed:
             dotvw =  1/float(wi.me) * (Few - rp.T)
             dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Fee)
@@ -688,7 +682,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
 #             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} Few: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,Few,gl.state)
+#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,state,y',t,gl.state,gl.y
