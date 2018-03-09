@@ -345,7 +345,7 @@ class winch:
         #state variables
         self.v = 0            # Rope uptake speed
         #data
-        self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to winch by TC
+        self.data = zeros(ntime,dtype = [('v',float),('Pdeliv',float),('Edeliv',float)])  #energy delivered to winch by TC
 
 class torqconv:
      def __init__(self):
@@ -420,33 +420,57 @@ class operator:
         #data
         self.data = zeros(ntime,dtype = [('Sth', float)])
 
-    def control(self,t,ti,gl,rp,en):
-        tRampUp = self.tRampUp        
+    def control(self,t,ti,gl,rp,wi,en):
+        tRampUp = self.tRampUp
+        tint = 1.0  
+        Nint = min(ti.i,ceil(tint/ti.dt))        
         if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
             self.tSlackEnd = t
         if self.throttleType == 'constT':
             if gl.xD < self.vSlackEnd: #take out slack
                 self.Sth = self.thrSlack
             else:
-                tauOp = 1.0 #sec response time
-                tint = tauOp 
-                Nint = min(ti.i,ceil(tint/ti.dt)) 
-    #            pp = -16; pd = -3; pint = -8
-    #            pp = -8; pd = -2; pint = -8
-    #            pp = -2; pd = -4; pint = -8
-    #            pp = -8; pd = -8; pint = -32 
-                if gl.state != 'prepRelease':
-                    pp = -8; pd = -8; pint = -32 
-                else:
+                if gl.state == 'prepRelease':
                     pp = -.0; pd = -0; pint = -0 
+                else:
+                    pp = -16; pd = -8; pint = -16 
     #            pp = -8; pd = -8; pint = -32 
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 if t <= tRampUp:
-                    targetT =  self.targetT/float(tRampUp) * (t - self.tSlackEnd)
+                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp) 
                 else:
                     if gl.state == 'mainClimb':
                         targetT = 1.0* self.targetT
+                    else: 
+                        targetT = self.targetT
+                Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
+                #limit the throttle change to 40%/second
+                maxrate = 0.4 #40%/sec
+                rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
+                if en.v > en.vLimit:
+                    self.Sth = 0.9 * self.Sth
+                elif rate > 0:
+                    self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+                else:
+                    self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+        if self.throttleType == 'constTdip':
+            '''Dips to a lower tension during the initial climb'''
+            if gl.xD < self.vSlackEnd: #take out slack
+                self.Sth = self.thrSlack
+            else:
+                if gl.state == 'prepRelease':
+                    pp = -.0; pd = -0; pint = -0 
+                else:
+                    pp = -8; pd = -8; pint = -32 
+    #            pp = -8; pd = -8; pint = -32 
+                c = array([pp,pd,pint]) 
+                time = ti.data['t']
+                if t <= tRampUp:
+                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp) 
+                else:
+                    if gl.state == 'mainClimb':
+                        targetT = 0.5* self.targetT
                     else: 
                         targetT = self.targetT
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
@@ -478,8 +502,7 @@ class operator:
                 elif tDown <= t < tSlowDown:
                     self.Sth = self.thrmax - (self.thrmax -steadyThr) * (t - tDown)/float(tRampDown1)
                 else:
-                    self.Sth = max(0, steadyThr*(1-(t - tSlowDown)/float(tRampDown2))  )
-                print 'test', t,self.Sth
+                    self.Sth = max(0, steadyThr*(1-(t - tSlowDown)/float(tRampDown2)))
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
@@ -520,7 +543,7 @@ class pilot:
                 else:
                     pp = 0; pd = 0; pint = 0
             elif gl.state =='initClimb':
-                pp = 16; pd = 0; pint = 0  
+                pp = 16; pd = 8; pint = 0  
             elif gl.state == 'mainClimb': 
                 pp = 16; pd = 0; pint = 0
             elif gl.state == 'prepRelease':
@@ -694,6 +717,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             rp.data[ti.i]['T'] = rp.T
             rp.data[ti.i]['torq'] = ropetorq
             rp.data[ti.i]['theta'] = thetarope
+            wi.data[ti.i]['v'] = wi.v
             wi.data[ti.i]['Pdeliv'] = Few * wi.v
             wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             en.data[ti.i]['v'] = en.v  
@@ -706,7 +730,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             gl.findState(t,ti,rp)
             # Update controls
             pl.control(t,ti,gl)
-            op.control(t,ti,gl,rp,en) 
+            op.control(t,ti,gl,rp,wi,en) 
             op.SthOld = op.Sth
         return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
@@ -715,17 +739,18 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################                        
 #tRampUpList = linspace(3,10,10)
 tRampUpList = [3] #If you only want to run one value
-tHold = 1.5
+tHold = 1.0
 tStart = 0
-tEnd = 30 # end time for simulation
+tEnd = 15 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
 ropeThetaMax = 75 #degrees
 smoothed = False
 #smoothed = True
-#throttleType = 'constT'
-throttleType = 'preset'
+throttleType = 'constT'
+#throttleType = 'constTdip'
+#throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
 path = 'D:\\Winch launch physics\\results\\test2'
@@ -737,12 +762,12 @@ if not os.path.exists(path): os.mkdir(path)
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
 #setpoint = [2,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['v','v']
-setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+#control = ['v','v']
+#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+# pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
+pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
