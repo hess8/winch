@@ -476,9 +476,10 @@ class operator:
                 elif tFull < t  < tDown:
                     self.Sth =  self.thrmax
                 elif tDown <= t < tSlowDown:
-                    self.Sth = self.thrmax - (self.thrmax -steadyThr) * (t - tSlowDown)/float(tRampDown1)
+                    self.Sth = self.thrmax - (self.thrmax -steadyThr) * (t - tDown)/float(tRampDown1)
                 else:
-                    self.Sth = steadyThr*(1-(t - tSlowDown))/float(tRampDown2)
+                    self.Sth = max(0, steadyThr*(1-(t - tSlowDown)/float(tRampDown2))  )
+                print 'test', t,self.Sth
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
