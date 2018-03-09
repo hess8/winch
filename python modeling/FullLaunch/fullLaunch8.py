@@ -242,7 +242,7 @@ class glider:
                                     ('gamma', float),('alpha', float),('vD', float),('vgw', float),('L', float),('D', float),('L/D',float),\
                                     ('gndTorq',float),('Fmain',float),('Ftail',float),('Malpha',float),\
                                     ('Pdeliv',float),('Edeliv',float),('Emech',float)])
-    def findState(self,t,ti,rp):
+    def findState(self,t,ti,rp,gl):
         '''Determine where in the launch the glider is'''
         gd = self.data[ti.i]
         #One-time switches:
@@ -255,7 +255,7 @@ class glider:
             self.state = 'rotate'
         elif not self.vypeaked and self.theta >= rad(10):
             self.state ='initClimb' 
-        elif self.vypeaked and self.theta  < rad(40) and rp.data[ti.i]['theta'] < rp.thetaCutThr:
+        elif self.vypeaked and gl.thetaD < 0 and t > 7.5: #rad(30) < self.theta  < rad(40) and rp.data[ti.i]['theta'] < rp.thetaCutThr:
             self.state = 'mainClimb'  
         elif rp.data[ti.i]['theta'] >= rp.thetaCutThr :
             self.state = 'prepRelease'
@@ -365,6 +365,7 @@ class engine:
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
         self.gear = 1.5    # 2nd gear ratio
+#        self.gear = 1.0    # 3rd gear ratio
         self.diff = 3.7 
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 300            # engine  horsepower
@@ -400,9 +401,10 @@ class engine:
         return torqAvail * (ve/self.vpeakP*self.omegaPeak)
                 
 class operator:
-    def __init__(self,throttleType,targetT,thrmax,tRampUp,tHold,ntime):
+    def __init__(self,throttleType,targetT,dipT,thrmax,tRampUp,tHold,ntime):
         self.throttleType = throttleType        
         self.targetT = targetT
+        self.dipT = dipT
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
         self.Sth = 0
@@ -423,7 +425,8 @@ class operator:
     def control(self,t,ti,gl,rp,wi,en):
         tRampUp = self.tRampUp
         tint = 1.0  
-        Nint = min(ti.i,ceil(tint/ti.dt))        
+        Nint = min(ti.i,ceil(tint/ti.dt)) 
+        maxrate = 1000 #basically no limit. 
         if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
             self.tSlackEnd = t
         if self.throttleType == 'constT':
@@ -433,7 +436,7 @@ class operator:
                 if gl.state == 'prepRelease':
                     pp = -.0; pd = -0; pint = -0 
                 else:
-                    pp = -8; pd = -8; pint = -32
+                    pp = -16; pd = -16; pint = -32
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 if t <= tRampUp:
@@ -445,8 +448,8 @@ class operator:
                         targetT = self.targetT
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
                      
-                #limit the throttle change to 40%/second
-                maxrate = 1000 #40%/sec
+                #limit the throttle change to xxxx %/sec
+                
                 rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])    
                 if en.v > en.vLimit:
                     self.Sth = 0.9 * self.Sth
@@ -462,20 +465,19 @@ class operator:
                 if gl.state == 'prepRelease':
                     pp = -.0; pd = -0; pint = -0 
                 else:
-                    pp = -8; pd = -8; pint = -32 
+                    pp = -16; pd = -16; pint = -32 
     #            pp = -8; pd = -8; pint = -32 
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 if t <= tRampUp:
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp) 
                 else:
-                    if gl.state == 'mainClimb':
-                        targetT = 0.5* self.targetT
+                    if gl.state == 'initClimb':
+                        targetT = self.dipT
                     else: 
                         targetT = self.targetT
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
                 #limit the throttle change to 40%/second
-                maxrate = 0.4 #40%/sec
                 rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
                 if en.v > en.vLimit:
                     self.Sth = 0.9 * self.Sth
@@ -514,7 +516,7 @@ class pilot:
         self.currCntrl = 0
         self.tSwitch = None
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
-        self.humanT = 0.5 #sec 
+        self.humanT = 1.0 #sec 
         #algebraic function
         self.elevTarget = 0   
         #state variable
@@ -539,13 +541,13 @@ class pilot:
                 pp = 0; pd = 0; pint = 0 
             elif gl.state == 'rotate':
                 if gl.thetaD>setpoint:
-                    pp = 16; pd = 0; pint = 0
+                    pp = 8; pd = 0; pint = 0
                 else:
                     pp = 0; pd = 0; pint = 0
             elif gl.state =='initClimb':
-                pp = 16; pd = 8; pint = 0  
+                pp = 32; pd = 0; pint = 0  
             elif gl.state == 'mainClimb': 
-                pp = 16; pd = 0; pint = 0
+                pp = 32; pd = 16; pint = 32
             elif gl.state == 'prepRelease':
                 pp =  0; pd =   0; pint =  0
             
@@ -727,7 +729,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             op.data[ti.i]['Sth'] = op.Sth
             ti.oldt = t
         #---update things that we don't need done ODEint enters stateDer
-            gl.findState(t,ti,rp)
+            gl.findState(t,ti,rp,gl)
             # Update controls
             pl.control(t,ti,gl)
             op.control(t,ti,gl,rp,wi,en) 
@@ -741,15 +743,17 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tRampUpList = [2] #If you only want to run one value
 tHold = 1.0
 tStart = 0
-tEnd = 40 # end time for simulation
-dt = 0.05/float(4) # nominal time step, sec
+tEnd = 20 # end time for simulation
+tfactor = 64; print 'Time step reduction by factor', tfactor
+dt = 0.05/float(tfactor) # nominal time step, sec
 targetT = 1.0
+dipT = 0.7
 thrmax =  1.0
 ropeThetaMax = 75 #degrees
-smoothed = False
+smoothed = True
 #smoothed = True
-throttleType = 'constT'
-#throttleType = 'constTdip'
+#throttleType = 'constT'
+throttleType = 'constTdip'
 #throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
@@ -762,12 +766,12 @@ if not os.path.exists(path): os.mkdir(path)
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
 #setpoint = [2,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['v','v']
-#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+control = ['v','v']
+setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['','']
+#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+#pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
+pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
@@ -789,7 +793,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
-    op = operator(throttleType,targetT,thrmax,tRampUp,tHold,ntime)
+    op = operator(throttleType,targetT,dipT,thrmax,tRampUp,tHold,ntime)
     pl = pilot(pilotType,ntime,control,setpoint)
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
