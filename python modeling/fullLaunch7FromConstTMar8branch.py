@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar 08 21:19:27 2018
+
+@author: owner
+"""
+
 # from IPython import get_ipython  
 # get_ipython().magic('reset -sf') #comment out this line if not running in Ipython; resets all variables to zero
 
@@ -84,7 +91,8 @@ def pid(var,time,setpoint,c,j,Nint):
         interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
     else:
         interr = 0        
-    return c[0]*err + c[1]*derr + c[2]*interr    
+    return c[0]*err + c[1]*derr + c[2]*interr
+    
     
 def smooth(data,time,N):
     '''Smooths data with a running average over tsmooth. data and time are arrays
@@ -210,14 +218,16 @@ class glider:
         self.Q = 30             #   L/D
         self.alphas = rad(6.8)         #  stall angle vs glider zero
         self.Co = 0.65             #   Lift coefficient {} at zero glider AoA
-        self.CLalpha = 5.9        
-        self.Lalpha = self.CLalpha*self.W/self.Co #from xflr.  A little less than 2 pi because part of the lift if from the elevator.  
+        self.Lalpha = 2*pi*self.W/self.Co
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
-        self.palpha = 1.9     #   This is from xflr model: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
-        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
-        self.maxElev = rad(20)   # (rad) maximum elevator deflection
+#        self.palpha = 1.2     #   This is from estimation and xflr: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
+        self.palpha = 4      #  increased   !!!!  to reflect no-stall conditions observed in rotation  (m/rad) coefficient for air-glider pitch moment from angle of attack
+#        self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
+        self.pelev = 2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection #increased to get 45 degree climb. 
+        self.maxElev = rad(30)   # (rad) maximum elevator deflection
         self.dv = 3.0            #   drag constant ()for speed varying away from vb
+#        self.dalpha = 40        #   drag constant (/rad) for glider angle of attack away from zero. 
         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
         #logic
@@ -232,17 +242,17 @@ class glider:
         self.theta = 0  #pitch vs horizontal
         self.thetaD = 0
         self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
-        self.deltar = 0.02  #ground contact force distance of action (m)
-#        self.deltar = 0.05  #ground contact force distance of action (m)
-        self.d_m = 0.25  # distance main wheel to CG (m) 
-        self.d_t = 3.3  # distance tail wheel to CG (m) 
+#         self.deltar = 0.02  #ground contact force distance of action (m)
+        self.deltar = 0.05  #ground contact force distance of action (m)
+        self.d_m = 0.2  # distance main wheel to CG (m) 
+        self.d_t = 3.4  # distance tail wheel to CG (m) 
         self.theta0 = rad(theta0) 
         #data
-        self.data = zeros(ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),('v', float),('theta', float),('thetaD', float),\
+        self.data = zeros(ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),('v', float),('theta', float),\
                                     ('gamma', float),('alpha', float),('vD', float),('vgw', float),('L', float),('D', float),('L/D',float),\
                                     ('gndTorq',float),('Fmain',float),('Ftail',float),('Malpha',float),\
                                     ('Pdeliv',float),('Edeliv',float),('Emech',float)])
-    def findState(self,t,ti,rp):
+    def findState(self,t,ti):
         '''Determine where in the launch the glider is'''
         gd = self.data[ti.i]
         #One-time switches:
@@ -254,11 +264,9 @@ class glider:
         elif not self.vypeaked and self.theta < rad(10):
             self.state = 'rotate'
         elif not self.vypeaked and self.theta >= rad(10):
-            self.state ='initClimb' 
-        elif self.vypeaked and self.theta  < rad(40) and rp.data[ti.i]['theta'] < rp.thetaCutThr:
-            self.state = 'mainClimb'  
-        elif rp.data[ti.i]['theta'] >= rp.thetaCutThr :
-            self.state = 'prepRelease'
+            self.state = 'climb' 
+        elif self.vypeaked and self.theta  < rad(40):
+            self.state = 'steady'  
         self.lastvy = gl.yD 
     
     def gndForces(self,ti,gl,rp):
@@ -288,7 +296,6 @@ class rope:
     def __init__(self,thetaMax):
         # Rope parameters  
         self.thetaMax =rad(thetaMax) # release angle of rope         
-        self.thetaCutThr =  0.8*self.thetaMax
         self.d  = 0.005     #  rope diameter (m)
         self.A = pi*self.d**2/4      #  rope area (m2)
         self.Ys = 30e9             #  2400*9.8/(pi*(0.005/2)^2)/0.035  
@@ -298,8 +305,8 @@ class rope:
         self.hystRate = 100     # hysteresis rate (1/sec) for dynamic stiffness. To turn this effect off, make this rate large, not small
         self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
         self.b = 0.3            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
-        self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-#        self.lo = 1000 
+#        self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
+        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
         self.mu = 0.015          # rope linear mass density (kg/meter)
         # state variables 
@@ -345,7 +352,7 @@ class winch:
         #state variables
         self.v = 0            # Rope uptake speed
         #data
-        self.data = zeros(ntime,dtype = [('v',float),('Pdeliv',float),('Edeliv',float)])  #energy delivered to winch by TC
+        self.data = zeros(ntime,dtype = [('Pdeliv',float),('Edeliv',float)])  #energy delivered to winch by TC
 
 class torqconv:
      def __init__(self):
@@ -360,8 +367,7 @@ class torqconv:
          return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
 class engine:
-    '''This version models the torque curve with parameters rather than the power curve, and allows setting the peak torque and peak power 
-    rpms independently'''
+    '''This version models the torque curve with parameters rather than the power curve'''
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
         self.gear = 1.5    # 2nd gear ratio
@@ -415,94 +421,72 @@ class operator:
         self.tSwitch = 0
         self.tSlackEnd = None
         self.tHold = tHold
-        self.thrSlack = 0.1
-        self.vSlackEnd = 1  #m/s
         #data
         self.data = zeros(ntime,dtype = [('Sth', float)])
 
-    def control(self,t,ti,gl,rp,wi,en):
-        tRampUp = self.tRampUp
-        tint = 1.0  
-        Nint = min(ti.i,ceil(tint/ti.dt))        
-        if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
-            self.tSlackEnd = t
+    def control(self,t,ti,gl,rp,en):
         if self.throttleType == 'constT':
-            if gl.xD < self.vSlackEnd: #take out slack
-                self.Sth = self.thrSlack
+            tauOp = 1.0 #sec response time
+            tint = tauOp 
+            Nint = min(ti.i,ceil(tint/ti.dt)) 
+#            pp = -16; pd = -3; pint = -8
+#            pp = -8; pd = -2; pint = -8
+#            pp = -2; pd = -4; pint = -8
+#            pp = -8; pd = -8; pint = -32 
+            if rp.data[ti.i]['theta'] < 0.8*rp.thetaMax:
+                pp = -8; pd = -8; pint = -32 
             else:
-                if gl.state == 'prepRelease':
-                    pp = -.0; pd = -0; pint = -0 
-                else:
-                    pp = -16; pd = -8; pint = -16 
-    #            pp = -8; pd = -8; pint = -32 
-                c = array([pp,pd,pint]) 
-                time = ti.data['t']
-                if t <= tRampUp:
-                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp) 
-                else:
-                    if gl.state == 'mainClimb':
-                        targetT = 1.0* self.targetT
-                    else: 
-                        targetT = self.targetT
-                Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
-                #limit the throttle change to 40%/second
-                maxrate = 0.4 #40%/sec
-                rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-                if en.v > en.vLimit:
-                    self.Sth = 0.9 * self.Sth
-                elif rate > 0:
-                    self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
-                else:
-                    self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
-        if self.throttleType == 'constTdip':
-            '''Dips to a lower tension during the initial climb'''
-            if gl.xD < self.vSlackEnd: #take out slack
-                self.Sth = self.thrSlack
+                print 't',t
+                pp = -.0; pd = -0; pint = -0 
+#            pp = -8; pd = -8; pint = -32 
+            c0 = array([pp,pd,pint]) 
+            #make these vary with tension, because the system is too loose at the beginning
+            p = 1.0          
+            c = c0 #* (rp.T/gl.W + 0.1)**p 
+            time = ti.data['t']
+            tRampUp = self.tRampUp
+            thrSlack = 0.1
+            if t <= tRampUp:
+                targetT =  self.targetT/float(tRampUp) * t
             else:
-                if gl.state == 'prepRelease':
-                    pp = -.0; pd = -0; pint = -0 
-                else:
-                    pp = -8; pd = -8; pint = -32 
-    #            pp = -8; pd = -8; pint = -32 
-                c = array([pp,pd,pint]) 
-                time = ti.data['t']
-                if t <= tRampUp:
-                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp) 
-                else:
-                    if gl.state == 'mainClimb':
-                        targetT = 0.5* self.targetT
-                    else: 
-                        targetT = self.targetT
-                Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
-                #limit the throttle change to 40%/second
-                maxrate = 0.4 #40%/sec
-                rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-                if en.v > en.vLimit:
-                    self.Sth = 0.9 * self.Sth
-                elif rate > 0:
-                    self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
-                else:
-                    self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+                if gl.state == 'steady':
+                    targetT = 1.0* self.targetT
+                else: 
+                    targetT = self.targetT
+            Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
+            #limit the throttle change to 40%/second
+            maxrate = 0.4 #40%/sec
+            rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
+            if en.v > en.vLimit:
+                self.Sth = 0.9 * self.Sth
+            elif rate > 0:
+                self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+            else:
+                self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+
+               
         elif self.throttleType == 'preset':
             ### Ramp up, hold, then decrease to steady value
             tSlackEnd = self.tSlackEnd             
-            steadyThr = 0.75            
+            steadyThr = 0.75        
+            tRampUp = self.tRampUp
+            thrSlack = 0.1
+            vSlackEnd = 1  #m/s
+            tDown = tRampUp + self.tHold
+    #        tRampDown = ti.tEnd - tRampUp - self.tHold
             tRampDown1 = 1 #sec...transition to steady
             tRampDown2 = 120 #longer ramp down
-            if tSlackEnd is None:
-                self.Sth = self.thrSlack
-            else:
-                tFull = tSlackEnd + tRampUp #when accomplished
-                tDown = tFull + self.tHold
-                tSlowDown = tDown + tRampDown1
-                if  tSlackEnd  <= t <  tFull:
-                    self.Sth = self.thrSlack + (self.thrmax - self.thrSlack) * (t - tSlackEnd)/float(tRampUp)
-                elif tFull < t  < tDown:
-                    self.Sth =  self.thrmax
-                elif tDown <= t < tSlowDown:
-                    self.Sth = self.thrmax - (self.thrmax -steadyThr) * (t - tDown)/float(tRampDown1)
-                else:
-                    self.Sth = max(0, steadyThr*(1-(t - tSlowDown)/float(tRampDown2)))
+            if tSlackEnd is None and gl.xD > vSlackEnd:  #one-time event
+                tSlackEnd = t
+                self.tSlackEnd = t
+            if gl.xD < vSlackEnd:
+                self.Sth = thrSlack
+            elif  tSlackEnd  <= t <  tSlackEnd + tRampUp:
+                self.Sth = thrSlack + (self.thrmax - thrSlack) * (t - tSlackEnd)/float(tRampUp)
+            elif tRampUp < t  < tDown + tSlackEnd:
+                self.Sth =  self.thrmax
+            elif t + tSlackEnd >= tDown:
+                self.Sth = max(steadyThr*(1-((t + tSlackEnd)-tDown)/float(tRampDown2)),self.thrmax * (1-((t + tSlackEnd)-tDown)/float(tRampDown1)))
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
@@ -528,7 +512,7 @@ class pilot:
             elif gl.state == 'onGnd' and gl.theta < gl.theta0 - rad(1):
                 pp = -1; pd = -16; pint = -0
             else:
-                pp = -20; pd = -20; pint = -0
+                pp = -200; pd = -6; pint = -64.0
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -537,18 +521,13 @@ class pilot:
                 pp =  0; pd =   0; pint =  0
             elif gl.state == 'onGnd':
                 pp = 0; pd = 0; pint = 0 
-            elif gl.state == 'rotate':
-                if gl.thetaD>setpoint:
-                    pp = 16; pd = 0; pint = 0
-                else:
-                    pp = 0; pd = 0; pint = 0
-            elif gl.state =='initClimb':
-                pp = 16; pd = 8; pint = 0  
-            elif gl.state == 'mainClimb': 
-                pp = 16; pd = 0; pint = 0
-            elif gl.state == 'prepRelease':
-                pp =  0; pd =   0; pint =  0
-            
+            elif gl.state == 'rotate': 
+                pp = 16; pd = 0; pint = 0   #when speed is too high, pitch up
+            elif gl.state == 'climb': 
+                pp = 16; pd = 16; pint = 0  
+            elif gl.state == 'steady': 
+#                 pp = 48; pd = 0; pint = 40  
+                pp = 48; pd = 0; pint = 16 #These values when swithing from thetaD control
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -560,17 +539,14 @@ class pilot:
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
             
-#        def thetaDContr(t,time,setpoint,ti,Nint):
-#            '''Not a good control idea'''            
-#            if gl.state in ['rotate','initClimb','mainClimb'] and gl.data[ti.i]['v'] > 25: #m/s:                         
-##                 pp = 3.0; pd = 8; pint = 2
-#                pp = -100; pd = 100; pint = 0
-#            else:
-#                pp = 0; pd = 0; pint = 0
-#            c = array([pp,pd,pint])* gl.I/gl.vb
-#            varr = gl.data['thetaD']
-#            print 'thetaDcontr,elev',t,pid(varr,time,setpoint,c,ti.i,Nint),deg(self.elev)
-#            return pid(varr,time,setpoint,c,ti.i,Nint)
+        def thetaDContr(t,time,setpoint,ti,Nint):
+            if gl.state in ['rotate','climb','flat'] and gl.data[ti.i]['v'] > 25: #m/s:             
+                pp = 2.0; pd = 8; pint = 2
+            else:
+                pp = 0; pd = 0; pint = 0
+            c = array([pp,pd,pint])* gl.I/gl.vb
+            varr = gl.data['v']
+            return pid(varr,time,setpoint,c,ti.i,Nint)
             
         def limiter(x,xmax):
             if x > xmax:
@@ -585,16 +561,15 @@ class pilot:
         alpha = gl.data[ti.i]['alpha']
         gamma = gl.data[ti.i]['gamma']
         crossAngle = rad(self.setpoint[2])  #climb angle to switch from one control to another
-        Mdelev =  max(0.001,L * gl.pelev/(gl.Co + gl.CLalpha*alpha)) #ratio between moment and elevator deflection.  Avoid zero velocity case with the 0.1.  
-        maxMe = gl.maxElev * Mdelev
+        Mdelev =  max(0.1,L * gl.pelev/(gl.Co + 2*pi*alpha)) #ratio between moment and elevator deflection 
         if '' in control:
             self.Me = 0
             self.elev = 0
         else:
-            if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.thetaD < rad(10))):  #switch to 2nd control
+            if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.thetaD<rad(10))):  #switch to 2nd control
                 self.currCntrl = 1 #switches only once
                 self.tSwitch = t          
-                print 'Turned on {} control at {:3.1f} sec'.format(self.ctrltype[1],t)
+                print 'Turned on second control at {:3.1f} sec'.format(t)
             ctype = self.ctrltype[self.currCntrl]
             setpoint = self.setpoint[self.currCntrl]
             # determine the moment demanded by the control            
@@ -604,15 +579,16 @@ class pilot:
                 self.MeTarget = vControl(t,time,setpoint,ti,Nint)
             elif ctype == 'alpha': # control AoA  
                 self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
-#            elif ctype == 'thetaD': #control pitch rate
-#                self.MeTarget =  thetaDContr(t,time,rad(setpoint),ti,Nint)  
+            elif ctype == 'thetaD': #control pitch rate
+                self.MeTarget =  thetaDContr(t,time,rad(setpoint),ti,Nint)  
+            thetaDContr
             # implement
             if self.type =='elevControl': 
                 self.elevTarget = limiter(self.MeTarget/Mdelev,gl.maxElev) # determine the elevator setting 
                 self.Me = Mdelev * self.elev #update the moment from the elevator
             elif self.type =='momentControl': # bypass pilot's control of elevator and simply set the moment required, and the elevator to the corresponding angle.
-                self.Me = limiter(self.MeTarget,maxMe)
-                self.elev = self.Me/Mdelev
+                self.Me = self.MeTarget
+                self.elev = limiter(self.Me/Mdelev,gl.maxElev)             
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
@@ -627,6 +603,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             gl.xD = 1e-6 #to handle v = 0 initial
         if en.v < 1e-6:
             en.v = 1e-6 #to handle v = 0 initial
+    
         #----algebraic functions----#
         #rope
         thetarope = arctan(gl.y/float(rp.lo-gl.x));
@@ -648,11 +625,13 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         if alpha > gl.alphas: #stall mimic
             L = 0.75*L
             D = 4*L/float(gl.Q)
-        alphatorq = -L * gl.palpha * alpha/(gl.Co + gl.CLalpha*alpha)
+        alphatorq = -L * gl.palpha * alpha/(gl.Co + 2*pi*alpha)
         [Fmain, Ftail, Ffric] = gl.gndForces(ti,gl,rp)
         gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
         M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
-        ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
+    #     ropetorq = Tg*(rp.b - rp.a * tan(gl.theta + thetaRG)) #torque of rope on glider
+    #     ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
+        ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.data[ti.i-1]['theta']-thetaRG) #torque of rope on glider
         #winch-engine
         vrel = wi.v/en.v
         Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
@@ -682,7 +661,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
 #             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
+            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} gndTorq: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gndTorq,gl.state)
+            print 'M,theta,alpha,Sth';print M,deg(gl.theta),deg(alpha),op.Sth
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,state,y',t,gl.state,gl.y
@@ -696,7 +676,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['yD'] = gl.yD
             gl.data[ti.i]['v']  = v
             gl.data[ti.i]['theta']  = gl.theta
-            gl.data[ti.i]['thetaD']  = gl.thetaD
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['vD']  = sqrt(dotxD**2 + dotyD**2)
@@ -717,7 +696,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             rp.data[ti.i]['T'] = rp.T
             rp.data[ti.i]['torq'] = ropetorq
             rp.data[ti.i]['theta'] = thetarope
-            wi.data[ti.i]['v'] = wi.v
             wi.data[ti.i]['Pdeliv'] = Few * wi.v
             wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             en.data[ti.i]['v'] = en.v  
@@ -727,10 +705,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             op.data[ti.i]['Sth'] = op.Sth
             ti.oldt = t
         #---update things that we don't need done ODEint enters stateDer
-            gl.findState(t,ti,rp)
+            gl.findState(t,ti)
             # Update controls
             pl.control(t,ti,gl)
-            op.control(t,ti,gl,rp,wi,en) 
+            op.control(t,ti,gl,rp,en) 
             op.SthOld = op.Sth
         return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
 
@@ -739,17 +717,16 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################                        
 #tRampUpList = linspace(3,10,10)
 tRampUpList = [3] #If you only want to run one value
-tHold = 1.0
+tHold = 1.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 65 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
-ropeThetaMax = 75 #degrees
+ropeThetaMax = 70 #degrees
 smoothed = False
 #smoothed = True
 throttleType = 'constT'
-#throttleType = 'constTdip'
 #throttleType = 'preset'
 #path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
 #path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
@@ -761,13 +738,14 @@ if not os.path.exists(path): os.mkdir(path)
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
-#setpoint = [2,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
+#setpoint = [4,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['','']
 setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+# pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 
@@ -1011,9 +989,8 @@ plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gDa
 plts.xy([tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
 #Specialty plot for presentation
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
-        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
+plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
+        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)','Relative forces'],['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Present glider')
 
 if len(tRampUpList) > 1:
     # plot loop results
