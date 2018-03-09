@@ -276,13 +276,13 @@ class glider:
             Ftail =  self.W * self.d_m/(self.d_m + self.d_t) * (1-  (del_ytail)/self.deltar) - damp*gl.yD
         else:
             Ftail = 0
-#        if gl.state == 'onGnd' :
-#            if gl.xD < 0.001 and rp.T < muS*gl.W: #not moving             
-#                Ffric = rp.T
-#            else: #static broken
-#                Ffric =  muK*gl.W
-#        else:
-        Ffric = 0
+        if gl.state == 'onGnd' :
+            if gl.xD < 0.001 and rp.T < muS*gl.W: #not moving             
+                Ffric = rp.T
+            else: #static broken
+                Ffric =  muK*gl.W
+        else:
+            Ffric = 0
         return [Fmain, Ftail,Ffric]
    
 class rope:
@@ -688,7 +688,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
 #             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
+            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} Few: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,Few,gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,state,y',t,gl.state,gl.y
@@ -747,8 +747,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.0
 tStart = 0
-tEnd = 2 # end time for simulation
-dt = 0.05 # nominal time step, sec
+tEnd = 5 # end time for simulation
+dt = 0.05/float(64) # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
 ropeThetaMax = 75 #degrees
