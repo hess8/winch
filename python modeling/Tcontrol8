@@ -1,0 +1,26 @@
+1.13401266622 control 0 1677.3841422
+1.1877445111 control 0 1686.68828177
+1.23946033869 control 0 1680.79902691
+1.29130659729 control 0 1657.18495159
+1.34383682411 control 0 1612.21699216
+1.39915663714 control 0 1539.25886244
+1.45052774599 control 0 1446.85763834
+1.50554246261 control 0 1322.37940476
+1.55910280602 control 1.0 1177.84769337
+1.61078532301 control 1.0 1020.11971368
+1.66792383501 control 1.0 832.919170828
+1.72480399336 control 1.0 645.807563919
+1.78335714626 control 1.0 468.598189126
+1.83778710691 control 1.0 331.756514922
+1.89212886757 control 1.0 232.020572912
+1.94551716115 control 1.0 175.670777456
+1.99928277125 control 1.0 163.064873717
+Controls ['', '']
+Throttle ramp up time (after slack is out) 3
+Final height reached:     0 m,     0 ft.  Fraction of rope length:  0.0%
+Maximum speed:   2 m/s, maximum rotation rate: 0.1 deg/s
+Maximum Tension factor: 0.3
+Average Tension factor: 0.2
+Maximum angle of attack: 6.1 deg
+Ground roll:     0 m,   0.0 sec (includes about 1 sec of slack removal)
+Final vy:   0.0 m/s

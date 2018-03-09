@@ -9,14 +9,14 @@ State varables:
 x, horizontal glider CG position
 xD, horizontal glider CG velocity
 y, vertical glider CG position
-#yD, vertical glider CG velocity
+yD, vertical glider CG velocity
 theta, glider pitch angle above horizon
 thetaD, glider pitch rotation rate
 T, rope tension
 v, rope uptake speed (m/s)
 ve, effective engine speed (m/s)
 Sth, throttle setting
-Me, pilot controlled moment (torque) from elevator
+elev, pilot controlled elevator deflection
 '''
 import os
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,where,\
@@ -445,6 +445,7 @@ class operator:
                     else: 
                         targetT = self.targetT
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
+                print t, 'control', Tcontrol,rp.T               
                 #limit the throttle change to 40%/second
                 maxrate = 0.4 #40%/sec
                 rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
@@ -741,7 +742,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tRampUpList = [3] #If you only want to run one value
 tHold = 1.0
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 2 # end time for simulation
 dt = 0.05 # nominal time step, sec
 targetT = 1.0
 thrmax =  1.0
@@ -909,6 +910,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     else:
         xRoll = 0  #didn't get off ground
         tRoll = 0
+        iEndRollData = 1
     #misc results 
     vrel =wiv/(env + 1e-6)
     Few = (2-vrel)*tc.invK(vrel) * env**2 / float(wi.rdrum)**3
