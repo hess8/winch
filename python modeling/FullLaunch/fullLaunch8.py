@@ -83,7 +83,8 @@ def pid(var,time,setpoint,c,j,Nint):
     if j >= Nint:            
         interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
     else:
-        interr = 0        
+        interr = 0 
+    print 'err,derr,interr';print err,derr,interr
     return c[0]*err + c[1]*derr + c[2]*interr    
     
 def smooth(data,time,N):
@@ -275,13 +276,13 @@ class glider:
             Ftail =  self.W * self.d_m/(self.d_m + self.d_t) * (1-  (del_ytail)/self.deltar) - damp*gl.yD
         else:
             Ftail = 0
-        if gl.state == 'onGnd' :
-            if gl.xD < 0.001 and rp.T < muS*gl.W: #not moving             
-                Ffric = rp.T
-            else: #static broken
-                Ffric =  muK*gl.W
-        else:
-            Ffric = 0
+#        if gl.state == 'onGnd' :
+#            if gl.xD < 0.001 and rp.T < muS*gl.W: #not moving             
+#                Ffric = rp.T
+#            else: #static broken
+#                Ffric =  muK*gl.W
+#        else:
+        Ffric = 0
         return [Fmain, Ftail,Ffric]
    
 class rope:
@@ -416,7 +417,7 @@ class operator:
         self.tSlackEnd = None
         self.tHold = tHold
         self.thrSlack = 0.1
-        self.vSlackEnd = 1  #m/s
+        self.vSlackEnd = 0  #m/s
         #data
         self.data = zeros(ntime,dtype = [('Sth', float)])
 
@@ -433,8 +434,7 @@ class operator:
                 if gl.state == 'prepRelease':
                     pp = -.0; pd = -0; pint = -0 
                 else:
-                    pp = -16; pd = -8; pint = -16 
-    #            pp = -8; pd = -8; pint = -32 
+                    pp = -16; pd = -2; pint = -8
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 if t <= tRampUp:
@@ -445,16 +445,19 @@ class operator:
                     else: 
                         targetT = self.targetT
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
-                print t, 'control', Tcontrol,rp.T               
+                     
                 #limit the throttle change to 40%/second
-                maxrate = 0.4 #40%/sec
+#                 maxrate = 0.4 #40%/sec
+                maxrate = 1000 #40%/sec
                 rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
+                print;print 't',t    
                 if en.v > en.vLimit:
                     self.Sth = 0.9 * self.Sth
                 elif rate > 0:
                     self.Sth = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
                 else:
                     self.Sth = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+        print 'control', Tcontrol,self.Sth,rp.T           
         if self.throttleType == 'constTdip':
             '''Dips to a lower tension during the initial climb'''
             if gl.xD < self.vSlackEnd: #take out slack
@@ -669,7 +672,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             dotelev = 1/pl.humanT * (pl.elevTarget-pl.elev)
         else:
             dotelev = 0 
-        dotT = rp.chgT(wi.v,vgw,lenrope)                       
+       # dotT = rp.chgT(wi.v,vgw,lenrope)       
+        dotT = rp.Ys*rp.A*(wi.v - vgw)/float(lenrope) #- (rp.T-rp.avgT(ti))/rp.tau
+                        
         if en.tcUsed:
             dotvw =  1/float(wi.me) * (Few - rp.T)
             dotve =  1/float(en.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - Fee)
@@ -774,7 +779,7 @@ tcUsed = True   # uses the torque controller
 
 # control =/ 'v'  # Use '' for none
 # setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
-ntime = ((tEnd - tStart)/dt + 1 )   # number of time steps to allow for data points saved
+ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
 # Loop over parameters for study, optimization
 
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
