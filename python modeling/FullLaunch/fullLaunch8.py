@@ -268,13 +268,13 @@ class glider:
         #One-time switches:
         minHeightRotate = 2
         if self.state != 'onGnd' and self.y > minHeightRotate and not self.vypeaked and self.thetaD < 0:
-            print 'vy first peaked at t',t            
+#            print 'vy first peaked at t {:6.2f}'.format(t)            
             self.vypeaked = True 
         #state
         if self.y < minHeightRotate and gd['L'] < self.W:
             self.state = 'onGnd'
         elif not self.vypeaked and self.theta < rad(10):
-            self.state = 'rotate'
+            self.state = 'preClimb'
         elif not self.vypeaked and self.theta >= rad(10):
             self.state ='initClimb' 
         elif self.vypeaked and self.thetaD < 0 :#and t > 7.5: #rad(30) < self.theta  < rad(40) and rp.data[ti.i]['theta'] < rp.thetaCutThr:
@@ -283,7 +283,7 @@ class glider:
             self.state = 'prepRelease'
 #        self.lastvy = gl.yD 
         if self.state != self.oldState:
-            print 'Glider state : {} at time {:6.2f}'.format(self.state,t)
+            print 'Glider state : {} at time {:3.2f}'.format(self.state,t)
             self.oldState = self.state
     
     def gndForces(self,ti,gl,rp):
@@ -451,7 +451,7 @@ class operator:
         tRampUp = self.tRampUp
         tint = 1.0  
         Nint = min(ti.i,ceil(tint/ti.dt)) 
-        maxrate = 1000 #basically no limit. 
+#        maxrate = 1000 #basically no limit. 
         if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
             self.tSlackEnd = t
         if self.throttleType == 'constT':
@@ -480,7 +480,7 @@ class operator:
                 if t <= tRampUp:
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
                     pp = -16; pd = -16; pint = -32              
-                elif gl.state in ['rotate','initClimb'] and gl.data[ti.i]['v']>20:
+                elif gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
                     targetT = self.dipT
                     pp = -16; pd = -16; pint = -32
                 elif gl.state == 'prepRelease':
@@ -549,7 +549,7 @@ class pilot:
             elif gl.state == 'onGnd' and gl.theta < gl.theta0 - rad(1):
                 pp = -1; pd = -16; pint = -0
             else:
-                pp = -20; pd = -20; pint = -0
+                pp = -800; pd = -800; pint = -100
             c = array([pp,pd,pint]) * gl.I
             al = gl.data['alpha']
             return pid(al,time,setpoint,c,ti.i,Nint)   
@@ -558,7 +558,7 @@ class pilot:
                 pp =  0; pd =   0; pint =  0
             elif gl.state == 'onGnd':
                 pp = 0; pd = 0; pint = 0 
-            elif gl.state == 'rotate':
+            elif gl.state == 'preClimb':
                 if gl.thetaD>setpoint:
                     pp = 8; pd = 0; pint = 0
                 else:
@@ -566,10 +566,9 @@ class pilot:
             elif gl.state =='initClimb':
                 pp = 64; pd = 0; pint = 0  
             elif gl.state == 'mainClimb': 
-                pp = 32; pd = 16; pint = 32
+                pp = 0; pd = 16; pint = 32
             elif gl.state == 'prepRelease':
-                pp =  0; pd =   0; pint =  0
-            
+                pp =  0; pd =   0; pint =  0   
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -583,7 +582,7 @@ class pilot:
             
 #        def thetaDContr(t,time,setpoint,ti,Nint):
 #            '''Not a good control idea'''            
-#            if gl.state in ['rotate','initClimb','mainClimb'] and gl.data[ti.i]['v'] > 25: #m/s:                         
+#            if gl.state in ['preClimb','initClimb','mainClimb'] and gl.data[ti.i]['v'] > 25: #m/s:                         
 ##                 pp = 3.0; pd = 8; pint = 2
 #                pp = -100; pd = 100; pint = 0
 #            else:
@@ -612,10 +611,10 @@ class pilot:
             self.Me = 0
             self.elev = 0
         else:
-            if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.thetaD < rad(10))):  #switch to 2nd control
+            if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.yD<0)):  #switch to 2nd control # or gl.thetaD < rad(10)
                 self.currCntrl = 1 #switches only once
                 self.tSwitch = t          
-                print 'Turned on {} control at {:3.1f} sec'.format(self.ctrltype[1],t)
+                print 'Second control ({},{:3.1f}) turned on  at {:3.1f} sec'.format(self.ctrltype[1],float(self.setpoint[1]),t)
             ctype = self.ctrltype[self.currCntrl]
             setpoint = self.setpoint[self.currCntrl]
             # determine the moment demanded by the control            
@@ -763,7 +762,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 tRampUpList = [3] #If you only want to run one value
 tHold = 0.5
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 15 # end time for simulation
 tfactor = 16; print 'Time step reduction by factor', tfactor
 dt = 0.05/float(tfactor) # nominal time step, sec
 targetT = 1.0
@@ -784,10 +783,10 @@ if not os.path.exists(path): os.mkdir(path)
 #setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['alpha','v']
-#setpoint = [2,30, 20]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['v','v']
-setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','v']
+setpoint = [5,30, 30]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['v','v']
+#setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 #pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
@@ -798,6 +797,7 @@ tcUsed = True   # uses the torque controller
 # control =/ 'v'  # Use '' for none
 # setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
 ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
+print 'Initial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])
 # Loop over parameters for study, optimization
 
 data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
@@ -953,7 +953,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     gammaMax = max(gamma)
     
     # Comments to user
-    print 'Controls', control    
+#    print 'Controls', control    
     print 'Throttle ramp up time (after slack is out)', tRampUp
     print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
     print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(vmax,deg(thetaDmax))
