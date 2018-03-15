@@ -80,7 +80,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -313,7 +312,7 @@ Time-varying quantities derived from state variables
 \end_inset
 
  throttle setting (included as a state variable so state integrator can
- handle PID integrator)
+ handle proportional-integral-derivative (PID) integrator)
 \end_layout
 
 \begin_layout Standard

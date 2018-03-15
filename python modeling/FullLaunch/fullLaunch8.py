@@ -90,7 +90,7 @@ def smooth(data,time,N):
     '''Smooths data with a running average over tsmooth. data and time are arrays
     points are not evenly spaced in time. Smoothing is centered on t.
     Use a triangular weighting'''
-    tsmooth = float(1.5) #sec (float is a precaution: it must not be an integer time)  
+    tsmooth = float(1.0) #sec (float is a precaution: it must not be an integer time)  
 #    dt = 0.1 #sec
     smoothed = data
     tfinal = time[-1]
@@ -482,7 +482,7 @@ class operator:
                     pp = -16; pd = -16; pint = -32              
                 elif gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
                     targetT = self.dipT
-                    pp = -16; pd = -16; pint = -32
+                    pp = -4; pd = -4; pint = -8
                 elif gl.state == 'prepRelease':
                     targetT = 0
                     pp = -.0; pd = -0; pint = -0                     
@@ -566,7 +566,7 @@ class pilot:
             elif gl.state =='initClimb':
                 pp = 64; pd = 0; pint = 0  
             elif gl.state == 'mainClimb': 
-                pp = 0; pd = 16; pint = 32
+                pp = 16; pd = 16; pint = 32
             elif gl.state == 'prepRelease':
                 pp =  0; pd =   0; pint =  0   
             c = array([pp,pd,pint])* gl.I/gl.vb
@@ -759,18 +759,18 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 #                         Main script
 ##########################################################################                        
 #tRampUpList = linspace(3,10,10)
-tRampUpList = [3] #If you only want to run one value
+tRampUpList = [2] #If you only want to run one value
 tHold = 0.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 65 # end time for simulation
 tfactor = 16; print 'Time step reduction by factor', tfactor
 dt = 0.05/float(tfactor) # nominal time step, sec
 targetT = 1.0
 dipT = 0.7
 thrmax =  1.0
 ropeThetaMax = 75 #degrees
-smoothed = False
-#smoothed = True
+#smoothed = False
+smoothed = True
 #throttleType = 'constT'
 throttleType = 'constTdip'
 #throttleType = 'preset'
@@ -923,7 +923,6 @@ for iloop,tRampUp in enumerate(tRampUpList):
         gndTorq = gData['gndTorq']
         ropeTheta = rData['theta']
         ropeTorq = rData['torq']
-    
     #ground roll
     if max(gl.y) >gl.deltar:
         iEndRoll = where(gl.y > gl.deltar)[0][0]

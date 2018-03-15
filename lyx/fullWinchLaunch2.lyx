@@ -80,6 +80,7 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
+
 bret_hess@byu.edu
 \end_layout
 
@@ -1927,7 +1928,7 @@ We will compare each of these to understand the losses.
 \end_layout
 
 \begin_layout Section
-Pilot
+Pilot and elevator
 \end_layout
 
 \begin_layout Standard
@@ -1967,7 +1968,8 @@ stabilator
 \begin_inset Quotes erd
 \end_inset
 
- whose lift changes with the angle of the elevator.
+ whose lift changes with the angle of the elevator and the local angle of
+ attack.
  Because we have already trimmed the glider, we are interested only in the
  change with elevator deflection 
 \begin_inset Formula $\delta_{e}$
@@ -1979,7 +1981,7 @@ stabilator
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}\delta_{e}=l_{s}L\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}=Lp_{e}\delta_{e}
+M_{e}=l_{s}\frac{\partial L_{s}(\alpha_{h})}{\partial\delta_{e}}\delta_{e}=l_{s}L\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{L_{w}}(\alpha)}\delta_{e}=Lp_{e}\delta_{e}
 \]
 
 \end_inset
@@ -2001,6 +2003,11 @@ where
 \end_inset
 
  .
+ Experiments show that the slope 
+\begin_inset Formula $\,C_{Ls,\delta_{e}}$
+\end_inset
+
+does not depend on angle of attack.
  
 \end_layout
 
@@ -2010,8 +2017,7 @@ Adding the elevator deflection as a state variable allows us to include
 \begin_inset Formula $t_{h}$
 \end_inset
 
- as a realistic delay, as well as gives us a way to use the limit of maximum
- elevator deflection.
+ as a realistic delay.
  So
 \end_layout
 
@@ -3029,19 +3035,29 @@ Grob Twin Astir, glider angle of attack at
 
  The stall angle is 8.0 degrees above wing chord, or 6.75 degrees above normal
  glider attitude.
+ Using these parameters, the stall speed fully loaded agrees with the pilot
+ operating handbook for the Twin Astir.
+ 
+\end_layout
+
+\begin_layout Standard
+The center of gravity in the simulation is 0.32m aft of the wing leading
+ edge, which is 31% of the mean aerodynamic chord.
  
 \end_layout
 
 \begin_layout Subsubsection
-Stabilizer and elevator moments
+Wing, stabilizer and elevator moments
 \end_layout
 
 \begin_layout Standard
-Comparing to the xflyr5 model for Grob: 
+From the xflyr5 model for Grob: 
 \begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
 \end_inset
 
 0.04/deg = 1.9/rad.
+ This is the same as the experimental result for the SGS-1-36, as used in
+ Santel 2010.
  The moment is 
 \begin_inset Formula $M=\frac{1}{2}\rho S_{w}v^{2}cC_{m}=p_{\text{\alpha}}\alpha$
 \end_inset
@@ -3072,8 +3088,7 @@ Comparing to the xflyr5 model for Grob:
 \end_inset
 
 .
- This is much too small, because when used in simulations the tail doesn't
- get off the ground until rotation.
+ 
 \end_layout
 
 \begin_layout Standard
