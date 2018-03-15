@@ -201,16 +201,16 @@ class plots:
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
         show(block = False)   
-#         show()  
+#         show()          
 
 class logger:
     def __init__(self,path):
         self.terminal = sys.stdout
-        self.log = open('{}{}log.dat'.format(path,os.sep), 'w')
+        self.log = open("{}//log.dat".format(path), "w")
 
     def write(self, message):
         self.terminal.write(message)
-        self.log.write(message)          
+        self.log.write(message) 
     
 class timeinfo:
     def __init__(self,tStart,tEnd,N):
@@ -339,7 +339,7 @@ class rope:
         # state variables 
         self.T = 0
         # data
-        self.data = zeros(ntime,dtype = [('T', float),('Tglider', float),('torq', float),('theta',float),('Pdeliv',float),('Edeliv',float)]) 
+        self.data = zeros(ntime,dtype = [('T', float),('torq', float),('theta',float),('Pdeliv',float),('Edeliv',float)]) 
         
         
     def avgT(self,ti):          
@@ -351,9 +351,9 @@ class rope:
         else:
             return 0
             
-    def Tglider(self,thetarope,lenrope):
-        g = 9.8 
-        return self.T + self.mu * g * lenrope * sin(thetarope)
+    def Tglider(self,thetarope):
+        g = 9.8  
+        return self.T + self.mu * g * sin(thetarope)
         
     def thetaRopeGlider(self,ti,thetarope,vtrans,lenrope):
         rho = 1.22          # air density (kg/m^3)
@@ -399,12 +399,12 @@ class engine:
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
         self.gear = 1.5    # 2nd gear ratio
-#        self.gear = 1.0    # 3rd gear ratio
+#         self.gear = 1.0    # 3rd gear ratio
         self.diff = 3.7 
         self.tcUsed = tcUsed  #model TC, or bypass it (poor description of torque and energy loss)
         self.hp = 300            # engine  horsepower
         self.Pmax = 0.95*750*self.hp        # engine watts.  0.95 is for other transmission losses besides TC
-        self.torqMax = 550/0.74*self.Pmax/(0.95*750*390)  # Scaled torque from 390 HP graphs; ft lbs converted to Nm.        
+        self.torqMax = 550/0.74*self.Pmax/(0.95*750*390)  #ft lbs converted to Nm.        
         self.rpmPeak = 4500
         self.omegaPeak = self.rpmPeak*2*pi/60 #peak power ening speed
         self.vLimit = 5000*2*pi/60*wi.rdrum/self.gear/self.diff  #engine speed limiter
@@ -424,7 +424,7 @@ class engine:
         # state variables 
         self.v = 0            #engine effective speed (m/s)
         self.Few = 0          # effective force between engine and winch (could go in either engine or winch or in its own class)
-         #data
+        #data
         self.data = zeros(ntime,dtype = [('v',float),('Pdeliv',float),('torq',float),('Edeliv',float)]) #energy delivered to engine rotating mass by pistons
      
     def Pavail(self,ve):            # power curve
@@ -464,11 +464,10 @@ class operator:
         if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
             self.tSlackEnd = t
         if self.throttleType == 'constT':
-            tEndRamp = tSlackEnd + tRampUp
             if gl.xD < self.vSlackEnd: #take out slack
                 self.Sth = self.thrSlack
             else:
-                if  tSlackEnd  <= t <  tEndRamp:
+                if t <= tRampUp:
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
                     pp = -16; pd = -16; pint = -32              
                 elif gl.state == 'prepRelease':
@@ -487,8 +486,7 @@ class operator:
             if gl.xD < self.vSlackEnd: #take out slack
                 self.Sth = self.thrSlack
             else:
-                tEndRamp = tSlackEnd + tRampUp
-                if  tSlackEnd  <= t <  tEndRamp:
+                if t <= tRampUp:
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
                     pp = -16; pd = -16; pint = -32              
                 elif gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
@@ -535,15 +533,6 @@ class operator:
                     self.Sth = self.thrmax - (self.thrmax -steadyThr) * (t - tDown)/float(tRampDown1)
                 else:
                     self.Sth = max(0, steadyThr*(1-(t - tSlowDown)/float(tRampDown2)))
-        elif self.throttleType == 'constThr':
-            tSlackEnd = self.tSlackEnd                        
-            if tSlackEnd is None:
-                self.Sth = self.thrSlack
-            else:
-                if tSlackEnd  <= t:
-                    self.Sth = self.thrSlack + (self.thrmax - self.thrSlack) * (t - tSlackEnd)/float(tRampUp)
-                else:
-                    self.Sth =  self.thrmax
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint):
         self.Me = 0
@@ -586,7 +575,7 @@ class pilot:
             elif gl.state =='initClimb':
                 pp = 64; pd = 0; pint = 0  
             elif gl.state == 'mainClimb': 
-                pp = 32; pd = 16; pint = 32
+                pp = 16; pd = 16; pint = 32
             elif gl.state == 'prepRelease':
                 pp =  0; pd =   0; pint =  0   
             c = array([pp,pd,pint])* gl.I/gl.vb
@@ -599,7 +588,19 @@ class pilot:
             c = array([pp,pd,pint])* gl.I/gl.vb
             v = gl.data['v']
             return pid(v,time,setpoint,c,ti.i,Nint)
-                   
+            
+#        def thetaDContr(t,time,setpoint,ti,Nint):
+#            '''Not a good control idea'''            
+#            if gl.state in ['preClimb','initClimb','mainClimb'] and gl.data[ti.i]['v'] > 25: #m/s:                         
+##                 pp = 3.0; pd = 8; pint = 2
+#                pp = -100; pd = 100; pint = 0
+#            else:
+#                pp = 0; pd = 0; pint = 0
+#            c = array([pp,pd,pint])* gl.I/gl.vb
+#            varr = gl.data['thetaD']
+#            print 'thetaDcontr,elev',t,pid(varr,time,setpoint,c,ti.i,Nint),deg(self.elev)
+#            return pid(varr,time,setpoint,c,ti.i,Nint)
+            
         def limiter(x,xmax):
             if x > xmax:
                 x = xmax
@@ -665,7 +666,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
         vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
         thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
-        Tg = rp.Tglider(thetarope,lenrope) #tension at glider corrected for rope weight
+        Tg = rp.Tglider(thetarope) #tension at glider corrected for rope weight
         if gl.xD > 1: #avoid initial zeros problem
             gamma = arctan(gl.yD/gl.xD)  # climb angle.  
         else:
@@ -744,7 +745,6 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             rp.data[ti.i]['Pdeliv'] = rp.T * wi.v 
             rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             rp.data[ti.i]['T'] = rp.T
-            rp.data[ti.i]['Tglider'] = Tg            
             rp.data[ti.i]['torq'] = ropetorq
             rp.data[ti.i]['theta'] = thetarope
             wi.data[ti.i]['v'] = wi.v
@@ -767,30 +767,27 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################
 #                         Main script
 ##########################################################################                        
-path = 'D:\\Winch launch physics\\results\\testSpy'
-if not os.path.exists(path): os.mkdir(path)
-sys.stdout = logger(path) #log screen output to file log.dat
 #tRampUpList = linspace(3,10,10)
 tRampUpList = [2] #If you only want to run one value
 tHold = 0.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 65 # end time for simulation
 tfactor = 16; print 'Time step reduction by factor', tfactor
 dt = 0.05/float(tfactor) # nominal time step, sec
-targetT = 1.0
+targetT = 1.3
 dipT = 0.7
-thrmax =  0.5
+thrmax =  1.0
 ropeThetaMax = 75 #degrees
 #smoothed = False
 smoothed = True
 #throttleType = 'constT'
-#throttleType = 'constTdip'
-throttleType = 'constThr'
-if throttleType == 'constThr': print 'Constant throttle',thrmax
-elif 'constT' in throttleType: print 'targetT',targetT
-elif 'dip' in throttleType: print 'dipT',dipT
-#throttleType = 'preset'
-
+throttleType = 'constTdip'
+# throttleType = 'preset'
+#path = 'D:\\Winch launch physics\\results\\Mar5 2018 preset controlled v'  #for saving plots
+#path = 'D:\\Winch launch physics\\results\\test'  #for saving plots
+path = 'D:\\Winch launch physics\\results\\testEcl'
+if not os.path.exists(path): os.mkdir(path)
+#path = 'D:\\Winch launch physics\\results\\aoa control Grob USA winch'  #for saving plots
 #control = ['alpha','alpha']  # Use '' for none
 #setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
@@ -893,7 +890,6 @@ for iloop,tRampUp in enumerate(tRampUpList):
         L = smooth(gData['L'],tData,3)
         D = smooth(gData['D'],tData,2)
         T = smooth(rp.T[:itr],t,3)
-        Tg = smooth(rData['Tglider'],tData,3)
         vgw = smooth(gData['vgw'],tData,1)
         Malpha = smooth(gData['Malpha'],tData,1)
         Me = smooth(pData['Me'],tData,1)
@@ -924,7 +920,6 @@ for iloop,tRampUp in enumerate(tRampUpList):
         L = gData['L']
         D = gData['D']
         T = rp.T[:itr]
-        Tg = rData['Tglider']
         vgw = gData['vgw']
         Malpha = gData['Malpha']
         Me = pData['Me']
@@ -1032,11 +1027,11 @@ plts.xy([t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gam
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,t,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
-        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
-#Forces
-plts.xy([tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
-        'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
+plts.xyy([tData,t,t,t,tData,tData,tData,t],[v,wiv,y/rp.lo,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
+        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
+#lift,drag,forces
+plts.xy([tData,tData,t,t],[L/gl.W,D/gl.W,T/gl.W,Few/gl.W],\
+        'time (sec)','Forces/Weight',['lift','drag','tension','TC-winch'],'Forces')
 #torques
 plts.xy([tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
 #Engine, rope and winch
@@ -1052,7 +1047,7 @@ plts.i = 0 #restart color cycle
 #plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
 #        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
 #        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
-plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+plts.xyy([tData,t,t,t,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','stall angle','climb angle','elev deflection','throttle','rpm/100'],'Glider and engine')
 if len(tRampUpList) > 1:
