@@ -245,9 +245,9 @@ class glider:
         self.palpha = 1.9     #   This is from xflr model: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
         self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
         self.maxElev = rad(20)   # (rad) maximum elevator deflection
-        self.dv = 3.0            #   drag constant ()for speed varying away from vb
-        self.de = 0.025          #   drag constant (/m) for elevator moment
+#         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
+        self.Agear = 0.02        # drag area (m^2) of main gear
         #logic
 #        self.lastvy = 0
         self.vypeaked = False
@@ -325,6 +325,7 @@ class rope:
         self.thetaCutThr =  0.8*self.thetaMax
         self.d  = 0.005     #  rope diameter (m)
         self.A = pi*self.d**2/4      #  rope area (m2)
+        self.Apara = 0.02        # drag area (m^2) of parachute along rope
         self.Ys = 30e9             #  2400*9.8/(pi*(0.005/2)^2)/0.035  
                                  #  effective static Young's modulus 30 GPa for rope from Dyneema
                                  #                 datasheet 3.5% average elongation at break,  
@@ -676,7 +677,8 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
             gamma = 0
         alpha = gl.theta - gamma # angle of attack
         L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
-        D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)# + gl.de*pl.Me #drag  
+        D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)\
+           + 0.5 * 1.22 * (gl.Agear * v**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
         if alpha > gl.alphaStall: #stall mimic
             L = 0.75*L
             D = 4*L/float(gl.Q)
