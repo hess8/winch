@@ -158,15 +158,15 @@ nsion control of the engine; 3) the effects of rope elasticity on the above;
 
 \begin_layout Abstract
 What this model does not include (yet) that may be important for safety:
- 1) stall conditions for the horizontal stabilizer (see Santel's 2010 thesis);
- 2) ground effect (but that should help safety)
+ 1) stall conditions for the horizontal stabilizer under extreme stick movements
+ (see Santel's 2010 thesis);
 \end_layout
 
 \begin_layout Abstract
 The parameters are currently those for a Grob Twin Astir two-seat glider,
  but the glider features are probably quite generic.
- We usde the Utah Soaring Association winch radius and moment of inertia,
- and a 454 (7.4 liters) engine power/torque curve, and GM350 transmission
+ We use the Utah Soaring Association winch radius and moment of inertia,
+ a GM 454 (7.4 liters) engine power/torque curve, and GM350 transmission
  in second gear.
  
 \end_layout
@@ -444,14 +444,14 @@ Glider
 \begin_inset Formula $\alpha_{s}$
 \end_inset
 
-= stall angle of attack 
+, stall angle of attack 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula $L_{\alpha}$
 \end_inset
 
-, lift slope of glider as a whole
+, lift slope parameter of glider as a whole
 \end_layout
 
 \begin_layout Standard
@@ -476,10 +476,17 @@ Glider
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $d_{v}$
+\begin_inset Formula $p_{e},$
 \end_inset
 
-, drag constant for speed varying away from 
+ change in air-glider pitch moment with elevator deflection 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $d_{2},d_{3},d_{4},d_{5}$
+\end_inset
+
+, drag constants for polynomial expansion of drag about 
 \begin_inset Formula $v_{b}$
 \end_inset
 
@@ -487,16 +494,83 @@ Glider
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $d_{\alpha},$
+\begin_inset Formula $A_{gear}$
 \end_inset
 
- drag constant for glider angle of attack away from zero
+, drag area that accounts for the main gear being down.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $l_{s}$
+\end_inset
+
+, distance between CG and stabilizer center of lift
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $C_{o}$
+\end_inset
+
+, lift coefficient for trimmed flight at 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $C_{L,\alpha}$
+\end_inset
+
+, slope of lift coefficient
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $S_{w},\,S_{s}$
+\end_inset
+
+, wing and horizontal stabilizer areas
 \end_layout
 
 \begin_layout Standard
 
 \bar under
 Rope
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $A,$
+\end_inset
+
+ rope cross sectional area
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $A_{para},$
+\end_inset
+
+ the drag area of the unopened parachute as it moves toward the winch
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $a$
+\end_inset
+
+, horizontal distance of rope attachment in front of CG
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $b,$
+\end_inset
+
+ vertical distance of rope attachment below CG
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $l_{o},$
+\end_inset
+
+ starting rope length
 \end_layout
 
 \begin_layout Standard
@@ -519,31 +593,24 @@ Rope
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $A,$
+\begin_inset Formula $\theta_{r,max}$
 \end_inset
 
- rope cross sectional area
+ angle for glider release from rope
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $a$
+\begin_inset Formula $C_{dr},$
 \end_inset
 
-, horizontal distance of rope attachment in front of CG
+rope drag coefficient
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $b,$
+\begin_inset Formula $\mu$
 \end_inset
 
- vertical distance of rope attachment below CG
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $l_{o},$
-\end_inset
-
- starting rope length
+, mass per length 
 \end_layout
 
 \begin_layout Standard
@@ -620,18 +687,32 @@ Engine
 \begin_inset Formula $P_{max,}$
 \end_inset
 
-maximum power of engine, occurring at the peak of the power curve
+maximum piston power, occurring at the peak of the power curve
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $v_{e,peak},$
+\begin_inset Formula $\tau_{max,}$
 \end_inset
 
- engine speed for maximum power
+maximum piston torque, occurring at the peak of the torque curve
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $p_{e1},\,p_{e2},\,p_{e3}$
+\begin_inset Formula $v_{e,peakP},$
+\end_inset
+
+ engine speed for maximum piston power
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v_{e,peak\tau},$
+\end_inset
+
+ engine speed for maximum piston torque
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $c_{0},\,c_{1},\,c_{2},\,c_{3}$
 \end_inset
 
 , engine power curve parameters for 
@@ -646,6 +727,20 @@ maximum power of engine, occurring at the peak of the power curve
 \end_inset
 
 , time delay of engine power response to change in engine speed
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $R_{gear},$
+\end_inset
+
+ fixed gear ratio in transmission
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $R_{diff},$
+\end_inset
+
+ differential gear ratio
 \end_layout
 
 \begin_layout Section
@@ -685,7 +780,7 @@ We use a ground-referenced coordinate system with
 
  as vertical.
  The speed is 
-\begin_inset Formula $v=\sqrt{\dot{x}+\dot{y}}$
+\begin_inset Formula $v=\sqrt{\dot{x}^{2}+\dot{y^{2}}}$
 \end_inset
 
 .
@@ -699,7 +794,47 @@ We use a ground-referenced coordinate system with
 \end_inset
 
 .
- 
+ The glider speed toward the winch at any part of the flight is 
+\begin_inset Formula 
+\[
+v_{gw}=\frac{\dot{x}(l_{o}-x)-\dot{y}y}{l(t)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $l(t)$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ is the length of the rope in the air.
 \end_layout
 
 \begin_layout Standard
@@ -929,7 +1064,7 @@ The drag ratio
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{C_{D}}{C_{L}}\approx\frac{1}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{4}\alpha^{5}\right)
+\frac{C_{D}}{C_{L}}\approx\frac{1}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{5}\alpha^{5}\right)
 \]
 
 \end_inset
@@ -939,19 +1074,37 @@ The drag ratio
 \end_inset
 
  in radians.
- Then we use the drag constant 
-\begin_inset Formula $d_{\alpha}\approx40$
-\end_inset
-
- and also include a small drag coefficient for the elevator moment::
+ 
 \begin_inset Formula 
 \[
-D=\frac{L}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{4}\alpha^{5}\right)+d_{e}M_{e}
+D=\frac{L}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{5}\alpha^{5}\right)+D_{gear}+D_{para}
 \]
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $D_{gear}=\frac{1}{2}\rho v^{2}A_{gear}$
+\end_inset
+
+, where 
+\begin_inset Formula $A_{gear}$
+\end_inset
+
+ is a small area that accounts for the main gear being down.
+ 
+\begin_inset Formula $D_{para}=\frac{1}{2}\rho v_{gw}^{2}A_{para}$
+\end_inset
+
+, where 
+\begin_inset Formula $A_{parar}$
+\end_inset
+
+ is the small drag area of the unopened parachute as it moves toward the
+ winch.
+ We neglect the friction of the unopened parachute in the tranverse direction.
 \end_layout
 
 \begin_layout Standard
@@ -1193,39 +1346,7 @@ The stretch of the rope between the winch and glider is
 \end_layout
 
 \begin_layout Standard
-where 
-\family roman
-\series medium
-\shape up
-\size normal
-\emph off
-\bar no
-\strikeout off
-\uuline off
-\uwave off
-\noun off
-\color none
-
-\begin_inset Formula $l(t)$
-\end_inset
-
-
-\family default
-\series default
-\shape default
-\size default
-\emph default
-\bar default
-\strikeout default
-\uuline default
-\uwave default
-\noun default
-\color inherit
- is the length of the rope in the air, 
-\begin_inset Formula $Y$
-\end_inset
-
- is the effective Young's modulus of the rope, and 
+where is the effective Young's modulus of the rope, and 
 \begin_inset Formula $A$
 \end_inset
 
@@ -1325,17 +1446,6 @@ where
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-v_{gw}=\frac{\dot{x}(l_{o}-x)-\dot{y}y}{l(t)}\label{eq:radial speed}
-\end{equation}
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -1474,7 +1584,7 @@ S_{th}P_{a}(\omega_{eng})=\omega_{eng}\tau_{pistons}
 \end_layout
 
 \begin_layout Standard
-The pistons deliver peak power at 
+The pistons deliver the most power at 
 \begin_inset Formula $\omega_{peak}$
 \end_inset
 
@@ -2327,7 +2437,7 @@ where
 \begin_inset Formula $C_{dr}\approx1$
 \end_inset
 
-.0 is the drag coefficient for the rope .
+.0 is the drag coefficient for the rope.
  So we look for a function that will give the shape of the rope 
 \begin_inset Formula $\theta(s)$
 \end_inset
