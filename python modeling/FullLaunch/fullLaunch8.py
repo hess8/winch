@@ -792,7 +792,7 @@ throttleType = 'constTdip'
 #throttleType = 'constThr'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
-elif 'dip' in throttleType: print 'dipT',dipT
+if 'dip' in throttleType: print 'dipT',dipT
 #throttleType = 'preset'
 
 #control = ['alpha','alpha']  # Use '' for none

@@ -451,7 +451,7 @@ Glider
 \begin_inset Formula $L_{\alpha}$
 \end_inset
 
-, lift slope parameter of glider as a whole
+, lift slope of glider as a whole
 \end_layout
 
 \begin_layout Standard
@@ -918,10 +918,10 @@ glider as a whole
 
  ( greater than when the wing angle of attack is zero, i.e trimmed glider
  flight at 
-\begin_inset Formula $v_{b}.$
+\begin_inset Formula $v_{b};$
 \end_inset
 
- (For the Grob Twin Astir, this angle is 1.25 degrees from the chord, where
+ for the Grob Twin Astir, this angle is 1.25 degrees from the chord, where
 \begin_inset Formula $C_{o}$
 \end_inset
 
@@ -1016,7 +1016,12 @@ M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha v^{2}=-l_{s}\frac{1}{2}\
 \end_inset
 
 ) .
- So 
+ In general 
+\begin_inset Formula $p_{\alpha}$
+\end_inset
+
+ includes fuselage effects and the downwash angle at the stabilizer.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1027,12 +1032,37 @@ M=-\frac{L}{C_{Lw}}p_{\alpha}\alpha+M_{e}(t)
 
 \end_inset
 
+where
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\begin_inset Formula $M_{e}(t)$
+\end_inset
 
+ is the moment produced by the elevator deflection (discussed in section
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Pilot-and-elevator"
+
+\end_inset
+
+).
+ 
 \end_layout
 
 \begin_layout Standard
-The drag includes both induced and viscous, and is described by a total
- drag constant vs 
+The glider drag includes both induced and viscous, and is described by a
+ total drag constant vs 
 \begin_inset Formula $\alpha$
 \end_inset
 
@@ -2040,6 +2070,13 @@ We will compare each of these to understand the losses.
 
 \begin_layout Section
 Pilot and elevator
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Pilot-and-elevator"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
