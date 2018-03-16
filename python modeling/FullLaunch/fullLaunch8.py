@@ -235,7 +235,7 @@ class glider:
         self.vb = 32              #   speed of glider at best glide angle
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
-        self.Q = 30             #   L/D
+        self.Q = 36             #   L/D
         self.alphaStall = rad(6.8)         #  stall angle vs glider zero
         self.Co = 0.65             #   Lift coefficient {} at zero glider AoA
         self.CLalpha = 5.9        
@@ -649,7 +649,7 @@ class pilot:
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
-def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
+def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
     '''First derivative of the state vector'''  
     if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
         return zeros(len(S))
@@ -667,18 +667,21 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
         #glider
         v = sqrt(gl.xD**2 + gl.yD**2) # speed
+        vair = sqrt((gl.xD+vhead)**2 + gl.yD**2) # speed
         vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
         vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
         thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
         Tg = rp.Tglider(thetarope,lenrope) #tension at glider corrected for rope weight
         if gl.xD > 1: #avoid initial zeros problem
             gamma = arctan(gl.yD/gl.xD)  # climb angle.  
+            gammaAir = arctan(gl.yD/(gl.xD+vhead))  # climb angle vs air
         else:
             gamma = 0
-        alpha = gl.theta - gamma # angle of attack
-        L = (gl.W + gl.Lalpha*alpha) * (v/gl.vb)**2 #lift       
+            gammaAir = 0
+        alpha = gl.theta - gammaAir # angle of attack
+        L = (gl.W + gl.Lalpha*alpha) * (vair/gl.vb)**2 #lift       
         D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)\
-           + 0.5 * 1.22 * (gl.Agear * v**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
+           + 0.5 * 1.22 * (gl.Agear * vair**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
         if alpha > gl.alphaStall: #stall mimic
             L = 0.75*L
             D = 4*L/float(gl.Q)
@@ -773,30 +776,49 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
 ##########################################################################
 #                         Main script
 ##########################################################################                        
+#--- plotting
+smoothed = True
 path = 'D:\\Winch launch physics\\results\\testSpy'
 if not os.path.exists(path): os.mkdir(path)
+
+#--- logging
 sys.stdout = logger(path) #log screen output to file log.dat
+
+#--- integration
+tfactor = 16; print 'Time step reduction by factor', tfactor
+dt = 0.05/float(tfactor) # nominal time step, sec
+
+#--- simulation times
+tStart = 0
+tEnd = 65 # end time for simulation
+ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
+
+#--- headwind
+vhead = 10; print 'Headwind', vhead   # m/s
+
+dt = 0.05/float(tfactor) # nominal time step, sec
+
+#--- throttle and engine
 #tRampUpList = linspace(3,10,10)
 tRampUpList = [2] #If you only want to run one value
 tHold = 0.5
-tStart = 0
-tEnd = 65 # end time for simulation
-tfactor = 16; print 'Time step reduction by factor', tfactor
-dt = 0.05/float(tfactor) # nominal time step, sec
 targetT = 1.0
 dipT = 0.7
 thrmax =  1.0
-ropeThetaMax = 75 #degrees
-#smoothed = False
-smoothed = True
+tcUsed = True   # uses the torque controller
+# tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 #throttleType = 'constT'
 throttleType = 'constTdip'
 #throttleType = 'constThr'
+#throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
 if 'dip' in throttleType: print 'dipT',dipT
-#throttleType = 'preset'
 
+#--- release angle
+ropeThetaMax = 75 #degrees
+
+#--- pilot controls
 #control = ['alpha','alpha']  # Use '' for none
 #setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
@@ -809,12 +831,6 @@ setpoint = [3,30, 30]  # deg,speed, deg last one is climb angle to transition to
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 #pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
-tcUsed = True   # uses the torque controller
-# tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-
-# control =/ 'v'  # Use '' for none
-# setpoint = 1.0                    # for velocity, setpoint is in terms of vbest: vb
-ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
 print 'Initial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])
 # Loop over parameters for study, optimization
 
@@ -843,7 +859,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl))
+    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,vhead))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #Find where release occurred in data.  Remove the time steps after that. 
