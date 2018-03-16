@@ -464,6 +464,7 @@ class operator:
         if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
             self.tSlackEnd = t
         if self.throttleType == 'constT':
+            tSlackEnd = self.tSlackEnd              
             tEndRamp = tSlackEnd + tRampUp
             if gl.xD < self.vSlackEnd: #take out slack
                 self.Sth = self.thrSlack
@@ -487,6 +488,7 @@ class operator:
             if gl.xD < self.vSlackEnd: #take out slack
                 self.Sth = self.thrSlack
             else:
+                tSlackEnd = self.tSlackEnd                  
                 tEndRamp = tSlackEnd + tRampUp
                 if  tSlackEnd  <= t <  tEndRamp:
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
@@ -540,7 +542,9 @@ class operator:
             if tSlackEnd is None:
                 self.Sth = self.thrSlack
             else:
-                if tSlackEnd  <= t:
+                tSlackEnd = self.tSlackEnd                  
+                tEndRamp = tSlackEnd + tRampUp
+                if  tSlackEnd  <= t <  tEndRamp:
                     self.Sth = self.thrSlack + (self.thrmax - self.thrSlack) * (t - tSlackEnd)/float(tRampUp)
                 else:
                     self.Sth =  self.thrmax
@@ -774,18 +778,18 @@ sys.stdout = logger(path) #log screen output to file log.dat
 tRampUpList = [2] #If you only want to run one value
 tHold = 0.5
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 65 # end time for simulation
 tfactor = 16; print 'Time step reduction by factor', tfactor
 dt = 0.05/float(tfactor) # nominal time step, sec
 targetT = 1.0
 dipT = 0.7
-thrmax =  0.5
+thrmax =  1.0
 ropeThetaMax = 75 #degrees
 #smoothed = False
 smoothed = True
 #throttleType = 'constT'
-#throttleType = 'constTdip'
-throttleType = 'constThr'
+throttleType = 'constTdip'
+#throttleType = 'constThr'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
 elif 'dip' in throttleType: print 'dipT',dipT
@@ -897,8 +901,8 @@ for iloop,tRampUp in enumerate(tRampUpList):
         vgw = smooth(gData['vgw'],tData,1)
         Malpha = smooth(gData['Malpha'],tData,1)
         Me = smooth(pData['Me'],tData,1)
-        engP = smooth(eData['Pdeliv'],tData,1)
-        engTorq = smooth(eData['torq'],tData,1)
+        engP = smooth(eData['Pdeliv'],tData,3)
+        engTorq = smooth(eData['torq'],tData,3)
         Sth = smooth(oData['Sth'],tData,3)
         winP = smooth(wData['Pdeliv'],tData,1)
         ropP = smooth(rData['Pdeliv'],tData,1)
