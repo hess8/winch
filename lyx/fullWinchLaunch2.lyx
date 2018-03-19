@@ -3150,6 +3150,324 @@ and each is zero when the wheel has risen more than
 \end_layout
 
 \begin_layout Subsection
+Wing loading during winch launches vs free-flight manuevers.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Free-flight pullup
+\end_layout
+
+\begin_layout Standard
+In a free-flight maneuver, we generate extra g's by turning.
+ The case with most stress on the glider is at the bottom of a pullup.
+ For an upward turn of radius 
+\begin_inset Formula $R:$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+L-mg=ma=\frac{mv^{2}}{R}
+\]
+
+\end_inset
+
+= 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L=mg+ma=ng
+\]
+
+\end_inset
+
+If we write 
+\begin_inset Formula $n_{a}=a/mg$
+\end_inset
+
+, then 
+\begin_inset Formula $L=ng=(1+n_{a})g$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We separate the wing's mass from the rest of the glider+pilot mass.
+ 
+\begin_inset Formula $m=m_{w}+m_{rest}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In 
+\bar under
+level flight
+\bar default
+ the bending moments on the wing about the center of the wing are:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{tot}=M_{L}-M_{m_{w}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $M_{L}$
+\end_inset
+
+ is the upward bending moment due to lift generation and 
+\begin_inset Formula $-M_{m_{w}}$
+\end_inset
+
+ is the downward bending moment due to the weight of the wings seen when
+ the glider at rest on the ground.
+ 
+\end_layout
+
+\begin_layout Standard
+In a pull-up maneuver, the wings act as though their wings were 
+\begin_inset Formula $n$
+\end_inset
+
+ times heavier
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+M_{tot}=M_{L}-nM_{m_{w}}\label{eq:wing bending pull-up}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Winch launch just before release
+\end_layout
+
+\begin_layout Standard
+In a winch launch with the glider approximately above the winch in equilibrium,
+ the lift has to counter both the weight and the rope tension.
+ For the case of the glider above the winch just before release:
+\begin_inset Formula 
+\[
+L=mg+T
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If we write 
+\begin_inset Formula $n_{T}=T/mg$
+\end_inset
+
+, then 
+\begin_inset Formula $L=ng=(1+n_{T})g$
+\end_inset
+
+..
+\end_layout
+
+\begin_layout Standard
+The moments on the wing that cause it to bend are:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+M_{tot}=M_{L}-M_{m_{w}}\label{eq: wing bending pre-release}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "eq:Free flight bending-1"
+
+\end_inset
+
+
+\series bold
+Comparison
+\end_layout
+
+\begin_layout Standard
+We compare cases where 
+\begin_inset Formula $n_{T}=n_{a}$
+\end_inset
+
+.
+ Then the lifts required are identical, and the only difference in bending
+ moments on the wing is (subtracting eqn : 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\Delta M=\left(n-1\right)M_{m_{w}}=n_{T}M_{m_{w}}
+\]
+
+\end_inset
+
+, which is a positive (upward) bending moment change
+\end_layout
+
+\begin_layout Standard
+So if 
+\begin_inset Formula $T=mg$
+\end_inset
+
+, 
+\begin_inset Formula $n=2,$
+\end_inset
+
+ 
+\begin_inset Formula $n_{t}=1$
+\end_inset
+
+, and the wings bend upward slightly compared to a 2g maneuver, by the same
+ amount they bend downward when sitting on the ground due to their own weight.
+ If 
+\begin_inset Formula $T=1g$
+\end_inset
+
+, then they bend upward by twice that amount.
+ 
+\end_layout
+
+\begin_layout Standard
+Then the extra bending load on the wing root spars compared to a pull-up
+ maneuver is 
+\begin_inset Formula 
+\[
+n'\approx n\left(1+n_{T}\frac{m_{w}}{m}\right)=n\left(1+\frac{T}{W}\frac{m_{w}}{m}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+.
+ Suppose 
+\begin_inset Formula $\frac{T}{W}=1.0$
+\end_inset
+
+, and 
+\begin_inset Formula $\frac{m_{w}}{m}=\frac{1}{3}$
+\end_inset
+
+.
+ Then 
+\begin_inset Formula $n=2.0$
+\end_inset
+
+ and the bending load is 
+\begin_inset Formula $n'\approx2.7$
+\end_inset
+
+.
+ Suppose 
+\begin_inset Formula $\frac{T}{W}=1.3$
+\end_inset
+
+, and 
+\begin_inset Formula $\frac{m_{w}}{m}=\frac{1}{3}$
+\end_inset
+
+.
+ Then 
+\begin_inset Formula $n=2.3$
+\end_inset
+
+ and the bending load is 
+\begin_inset Formula $n'\approx3.3$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In general the any weak link will break at a max 
+\begin_inset Formula $\frac{T}{W}=2.0$
+\end_inset
+
+, 
+\begin_inset Formula $n=3.0$
+\end_inset
+
+, and if 
+\begin_inset Formula $\frac{m_{w}}{m}=\frac{1}{3}$
+\end_inset
+
+, the worst case is 
+\begin_inset Formula $n'\approx5.0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection*
+Winch launch in general
+\end_layout
+
+\begin_layout Standard
+Here the rope is at an angle 
+\begin_inset Formula $\theta_{r}$
+\end_inset
+
+vs the horizon, and the glider is has a climb angle of 
+\begin_inset Formula $\gamma$
+\end_inset
+
+.
+ We neglect drag:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Tcos\theta_{r}-Lsin\gamma=m\ddot{x}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Lcos\gamma-Tsin\theta_{r}-W=m\ddot{y}
+\]
+
+\end_inset
+
+ =
+\end_layout
+
+\begin_layout Subsection
 Parameters 
 \end_layout
 

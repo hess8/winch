@@ -292,7 +292,7 @@ class glider:
             self.state = 'prepRelease'
 #        self.lastvy = gl.yD 
         if self.state != self.oldState:
-            print 'Glider state : {} at time {:3.2f}'.format(self.state,t)
+            print 'Glider state : {} at {:3.2f}s'.format(self.state,t)
             self.oldState = self.state
     
     def gndForces(self,ti,gl,rp):
@@ -319,9 +319,12 @@ class glider:
         return [Fmain, Ftail,Ffric]
    
 class rope:
-    def __init__(self,thetaMax):
+    def __init__(self,thetaMax,breakAngle):
         # Rope parameters  
-        self.thetaMax =rad(thetaMax) # release angle of rope         
+        self.thetaMax =rad(thetaMax) # release angle of rope  
+        if not breakAngle is None:
+            self.breakAngle =rad(breakAngle) # break angle of rope...set to None in main script
+        self.broken = False
         self.thetaCutThr =  0.8*self.thetaMax
         self.d  = 0.005     #  rope diameter (m)
         self.A = pi*self.d**2/4      #  rope area (m2)
@@ -627,7 +630,7 @@ class pilot:
             if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.yD<0)):  #switch to 2nd control # or gl.thetaD < rad(10)
                 self.currCntrl = 1 #switches only once
                 self.tSwitch = t          
-                print 'Second control ({},{:3.1f}) turned on  at {:3.1f} sec'.format(self.ctrltype[1],float(self.setpoint[1]),t)
+                print 'Second control ({},{:3.1f}) turned on  at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
             ctype = self.ctrltype[self.currCntrl]
             setpoint = self.setpoint[self.currCntrl]
             # determine the moment demanded by the control            
@@ -650,8 +653,8 @@ class pilot:
         pl.data[ti.i]['elev'] = self.elev           
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
-    '''First derivative of the state vector'''  
-    if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
+    '''First derivative of the state vector'''          
+    if rp.data[ti.i]['theta'] > rp.thetaMax or rp.broken: # glider released but the integrator must finish   
         return zeros(len(S))
     else: 
         gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
@@ -664,6 +667,10 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
         #rope
         thetarope = arctan(gl.y/float(rp.lo-gl.x));
         if thetarope <-1e-6: thetarope += pi #to handle overflight of winch 
+        #check for rope break in simulation:
+        if not rp.broken:
+            if not rp.breakAngle is None and thetarope > rp.breakAngle:
+                rp.broken = True
         lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
         #glider
         v = sqrt(gl.xD**2 + gl.yD**2) # speed
@@ -777,7 +784,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
 #                         Main script
 ##########################################################################                        
 #--- plotting
-smoothed = True
+smoothed = False
 path = 'D:\\Winch launch physics\\results\\testSpy'
 if not os.path.exists(path): os.mkdir(path)
 
@@ -815,8 +822,10 @@ if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
 if 'dip' in throttleType: print 'dipT',dipT
 
-#--- release angle
-ropeThetaMax = 75 #degrees
+#--- rope
+ropeThetaMax = 75 #release angle degrees
+ropeBreakAngle = 70 #
+#ropeBreakAngle = None
 
 #--- pilot controls
 #control = ['alpha','alpha']  # Use '' for none
@@ -843,7 +852,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
-    rp = rope(ropeThetaMax) 
+    rp = rope(ropeThetaMax,ropeBreakAngle) 
     wi = winch()
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
