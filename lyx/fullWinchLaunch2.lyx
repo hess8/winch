@@ -1284,7 +1284,7 @@ The climb angle relative to the air is
 \begin_inset Formula $\gamma'=tan^{-1}\left(\frac{\dot{y}}{\dot{x}+v_{h}}\right)$
 \end_inset
 
- 
+, so
 \end_layout
 
 \begin_layout Standard
@@ -3173,7 +3173,7 @@ L-mg=ma=\frac{mv^{2}}{R}
 
 \end_inset
 
-= 
+
 \end_layout
 
 \begin_layout Standard
@@ -3193,16 +3193,6 @@ If we write
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Standard
-We separate the wing's mass from the rest of the glider+pilot mass.
- 
-\begin_inset Formula $m=m_{w}+m_{rest}$
-\end_inset
-
-.
- 
 \end_layout
 
 \begin_layout Standard
@@ -3233,8 +3223,8 @@ where
 \begin_inset Formula $-M_{m_{w}}$
 \end_inset
 
- is the downward bending moment due to the weight of the wings seen when
- the glider at rest on the ground.
+ is the downward bending moment due to the weight (mass) of the wings seen
+ when the glider at rest on the ground.
  
 \end_layout
 
@@ -3291,18 +3281,11 @@ If we write
 The moments on the wing that cause it to bend are:
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsection*
 \begin_inset Formula 
 \begin{equation}
 M_{tot}=M_{L}-M_{m_{w}}\label{eq: wing bending pre-release}
 \end{equation}
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "eq:Free flight bending-1"
 
 \end_inset
 
@@ -3318,7 +3301,21 @@ We compare cases where
 
 .
  Then the lifts required are identical, and the only difference in bending
- moments on the wing is (subtracting eqn : 
+ moments on the wing is (subtracting eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:wing bending pull-up"
+
+\end_inset
+
+ from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: wing bending pre-release"
+
+\end_inset
+
+) : 
 \end_layout
 
 \begin_layout Standard
@@ -3348,11 +3345,10 @@ So if
 , and the wings bend upward slightly compared to a 2g maneuver, by the same
  amount they bend downward when sitting on the ground due to their own weight.
  If 
-\begin_inset Formula $T=1g$
+\begin_inset Formula $T=2mg$
 \end_inset
 
-, then they bend upward by twice that amount.
- 
+, then they bend upward by twice that amount compared to a 3g maneuver 
 \end_layout
 
 \begin_layout Standard
@@ -3389,7 +3385,7 @@ n'\approx n\left(1+n_{T}\frac{m_{w}}{m}\right)=n\left(1+\frac{T}{W}\frac{m_{w}}{
 
 .
  Suppose 
-\begin_inset Formula $\frac{T}{W}=1.3$
+\begin_inset Formula $\frac{T}{W}=1.5$
 \end_inset
 
 , and 
@@ -3398,18 +3394,18 @@ n'\approx n\left(1+n_{T}\frac{m_{w}}{m}\right)=n\left(1+\frac{T}{W}\frac{m_{w}}{
 
 .
  Then 
-\begin_inset Formula $n=2.3$
+\begin_inset Formula $n=2.5$
 \end_inset
 
  and the bending load is 
-\begin_inset Formula $n'\approx3.3$
+\begin_inset Formula $n'\approx3.75$
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
-In general the any weak link will break at a max 
+In general all weak links will break at a max 
 \begin_inset Formula $\frac{T}{W}=2.0$
 \end_inset
 
@@ -3421,7 +3417,7 @@ In general the any weak link will break at a max
 \begin_inset Formula $\frac{m_{w}}{m}=\frac{1}{3}$
 \end_inset
 
-, the worst case is 
+, the worst case is a bending load of 
 \begin_inset Formula $n'\approx5.0$
 \end_inset
 
@@ -3464,7 +3460,19 @@ Lcos\gamma-Tsin\theta_{r}-W=m\ddot{y}
 
 \end_inset
 
- =
+
+\end_layout
+
+\begin_layout Standard
+Solving:
+\begin_inset Formula 
+\[
+L=\frac{m\ddot{y}+m\ddot{x}tan\theta_{r}+W}{cos\gamma-sin\gamma tan\theta_{r}}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection

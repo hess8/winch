@@ -227,6 +227,7 @@ class timeinfo:
         self.tEnd = tEnd
         #data
         self.data = zeros(ntime,dtype = [('t', float)])
+        self.tRelease = None
     
 
 class glider:
@@ -292,7 +293,7 @@ class glider:
             self.state = 'prepRelease'
 #        self.lastvy = gl.yD 
         if self.state != self.oldState:
-            print 'Glider state : {} at {:3.2f}s'.format(self.state,t)
+            print 'Glider state : {} at {:3.1f} s'.format(self.state,t)
             self.oldState = self.state
     
     def gndForces(self,ti,gl,rp):
@@ -481,7 +482,10 @@ class operator:
                     pp = -.0; pd = -0; pint = -0                     
                 else:
                     targetT = self.targetT
-                    pp = -16; pd = -16; pint = -32 
+                    if wi.v > 20:
+                        pp = -16; pd = -16; pint = -32
+                    else: #avoid throttle oscillations at lower rope speeds
+                        pp = -8; pd = -8; pint = -16
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
@@ -505,7 +509,10 @@ class operator:
                     pp = -.0; pd = -0; pint = -0                     
                 else:
                     targetT = self.targetT
-                    pp = -16; pd = -16; pint = -32 
+                    if wi.v > 20:
+                        pp = -16; pd = -16; pint = -32
+                    else: #avoid throttle oscillations at lower rope speeds
+                        pp = -8; pd = -8; pint = -16
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
@@ -654,7 +661,7 @@ class pilot:
 
 def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
     '''First derivative of the state vector'''          
-    if rp.data[ti.i]['theta'] > rp.thetaMax or rp.broken: # glider released but the integrator must finish   
+    if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
         return zeros(len(S))
     else: 
         gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
@@ -667,10 +674,13 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
         #rope
         thetarope = arctan(gl.y/float(rp.lo-gl.x));
         if thetarope <-1e-6: thetarope += pi #to handle overflight of winch 
-        #check for rope break in simulation:
-        if not rp.broken:
+        if not rp.broken: #break rope if chosen in simulation:
             if not rp.breakAngle is None and thetarope > rp.breakAngle:
                 rp.broken = True
+                rp.tRelease = t
+                print 'Rope broke at rope angle {:4.1f} deg, {:4.1} s.'.format(deg(thetarope),t)
+        else:
+            rp.T = 0.0
         lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
         #glider
         v = sqrt(gl.xD**2 + gl.yD**2) # speed
@@ -801,7 +811,8 @@ tEnd = 65 # end time for simulation
 ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
 
 #--- headwind
-vhead = 10; print 'Headwind', vhead   # m/s
+vhead = 0  
+if abs(vhead) > 0: print 'Headwind', vhead   # m/s
 
 dt = 0.05/float(tfactor) # nominal time step, sec
 
@@ -824,8 +835,10 @@ if 'dip' in throttleType: print 'dipT',dipT
 
 #--- rope
 ropeThetaMax = 75 #release angle degrees
-ropeBreakAngle = 70 #
+ropeBreakAngle = 70
 #ropeBreakAngle = None
+if not ropeBreakAngle is None: print 'Rope break simulation at angle {} deg'.format(ropeBreakAngle)  #
+
 
 #--- pilot controls
 #control = ['alpha','alpha']  # Use '' for none
@@ -833,7 +846,7 @@ ropeBreakAngle = 70 #
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','v']
-setpoint = [3,30, 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,47, 30]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
