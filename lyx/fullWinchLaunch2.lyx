@@ -321,10 +321,17 @@ Time-varying quantities derived from state variables
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $v_{h}$
+\begin_inset Formula $v_{wx}$
 \end_inset
 
-, headwind
+, headwind or horizontal component of wind
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $v_{wx}$
+\end_inset
+
+, updraft or vertical component of wind
 \end_layout
 
 \begin_layout Standard
@@ -1255,11 +1262,20 @@ I_{g}\ddot{\theta}=\tau_{rope,glider}+M\label{eq:theta diffeq}
 \end_layout
 
 \begin_layout Section
-headwind
+wind
 \end_layout
 
 \begin_layout Standard
-A headwind 
+We will defind a headwind to be a positive horizontal wind component 
+\begin_inset Formula $v_{wx}$
+\end_inset
+
+, and rising air to be a positive vertical component 
+\begin_inset Formula $v_{wy}$
+\end_inset
+
+.
+ The wind 
 \begin_inset Formula $v_{h}$
 \end_inset
 
@@ -1275,7 +1291,7 @@ A headwind
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{air}=\sqrt{\left(\dot{x}+v_{h}\right)^{2}+\dot{y^{2}}}
+v_{air}=\sqrt{\left(\dot{x}+v_{wx}\right)^{2}+\dot{\left(y-v_{wy}\right)^{2}}}
 \]
 
 \end_inset
@@ -1290,7 +1306,7 @@ The climb angle relative to the air is
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\alpha=\theta-tan^{-1}\left(\frac{\dot{y}}{\dot{x}+v_{h}}\right)
+\alpha=\theta-tan^{-1}\left(\frac{y-v_{wy}}{\dot{x}+v_{wx}}\right)
 \]
 
 \end_inset
@@ -3352,8 +3368,9 @@ So if
 \end_layout
 
 \begin_layout Standard
-Then the extra bending load on the wing root spars compared to a pull-up
- maneuver is 
+As long as the mass in the wing is distributed in a way similar to its distribut
+ion of lift, then the extra bending load on the wing root spars compared
+ to a pull-up maneuver is 
 \begin_inset Formula 
 \[
 n'\approx n\left(1+n_{T}\frac{m_{w}}{m}\right)=n\left(1+\frac{T}{W}\frac{m_{w}}{m}\right)

@@ -318,6 +318,14 @@ class glider:
         else:
             Ffric = 0
         return [Fmain, Ftail,Ffric]
+        
+
+class air:
+    def __init__(self,vhead,vupdr,hupdr):
+        # wind parameters 
+        self.vhead = vhead #headwind
+        self.vupdr = vupdr #updraft
+        self.hupdr = hupdr #height to turn on updraft
    
 class rope:
     def __init__(self,thetaMax,breakAngle):
@@ -659,7 +667,7 @@ class pilot:
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
-def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
+def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''          
     if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
         return zeros(len(S))
@@ -682,16 +690,22 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
         else:
             rp.T = 0.0
         lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
+        #wind
+        vwx = air.vhead
+        if gl.y > air.hupdr:
+            vwy = air.vupdr
+        else:
+            vwy = 0.0
         #glider
         v = sqrt(gl.xD**2 + gl.yD**2) # speed
-        vair = sqrt((gl.xD+vhead)**2 + gl.yD**2) # speed
+        vair = sqrt((gl.xD+vwx)**2 + (gl.yD-vwy)**2) # speed vs air
         vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
         vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
         thetaRG = rp.thetaRopeGlider(ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
         Tg = rp.Tglider(thetarope,lenrope) #tension at glider corrected for rope weight
         if gl.xD > 1: #avoid initial zeros problem
             gamma = arctan(gl.yD/gl.xD)  # climb angle.  
-            gammaAir = arctan(gl.yD/(gl.xD+vhead))  # climb angle vs air
+            gammaAir = arctan((gl.yD-vwy)/(gl.xD+vwx))  # climb angle vs air
         else:
             gamma = 0
             gammaAir = 0
@@ -700,7 +714,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,vhead):
         D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)\
            + 0.5 * 1.22 * (gl.Agear * vair**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
         if alpha > gl.alphaStall: #stall mimic
-            L = 0.75*L
+            L = 0.70*L #this is supported by calculations 
             D = 4*L/float(gl.Q)
         alphatorq = -L * gl.palpha * alpha/(gl.Co + gl.CLalpha*alpha)
         [Fmain, Ftail, Ffric] = gl.gndForces(ti,gl,rp)
@@ -810,9 +824,12 @@ tStart = 0
 tEnd = 65 # end time for simulation
 ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
 
-#--- headwind
-vhead = 0  
+#--- air
+vhead = 0   #headwind
 if abs(vhead) > 0: print 'Headwind', vhead   # m/s
+vupdr = 10  #updraft
+hupdr = 500 #m At what height to turn the updraft on for stress testing
+if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
 dt = 0.05/float(tfactor) # nominal time step, sec
 
@@ -865,6 +882,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
+    ai = air(vhead,vupdr,hupdr)
     rp = rope(ropeThetaMax,ropeBreakAngle) 
     wi = winch()
     tc = torqconv()
@@ -881,7 +899,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,args=(gl,rp,wi,tc,en,op,pl,vhead))
+    S = odeint(stateDer,S0,t,args=(gl,ai,rp,wi,tc,en,op,pl))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #Find where release occurred in data.  Remove the time steps after that. 
