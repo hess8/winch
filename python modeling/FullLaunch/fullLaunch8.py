@@ -520,7 +520,7 @@ class operator:
                     if wi.v > 20:
                         pp = -16; pd = -16; pint = -32
                     else: #avoid throttle oscillations at lower rope speeds
-                        pp = -8; pd = -8; pint = -16
+                        pp = -4; pd = -4; pint = -8
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
@@ -686,14 +686,14 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             if not rp.breakAngle is None and thetarope > rp.breakAngle:
                 rp.broken = True
                 rp.tRelease = t
-                print 'Rope broke at rope angle {:4.1f} deg, {:4.1} s.'.format(deg(thetarope),t)
+                print 'Rope broke at rope angle {:4.1f} deg, {:4.1f} s.'.format(deg(thetarope),t)
         else:
             rp.T = 0.0
         lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
         #wind
-        vwx = air.vhead
-        if gl.y > air.hupdr:
-            vwy = air.vupdr
+        vwx = ai.vhead
+        if gl.y > ai.hupdr:
+            vwy = ai.vupdr
         else:
             vwy = 0.0
         #glider
@@ -827,8 +827,8 @@ ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data poin
 #--- air
 vhead = 0   #headwind
 if abs(vhead) > 0: print 'Headwind', vhead   # m/s
-vupdr = 10  #updraft
-hupdr = 500 #m At what height to turn the updraft on for stress testing
+vupdr = 0  #updraft
+hupdr = 600 #m At what height to turn the updraft on for stress testing
 if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
 dt = 0.05/float(tfactor) # nominal time step, sec
@@ -863,7 +863,7 @@ if not ropeBreakAngle is None: print 'Rope break simulation at angle {} deg'.for
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','v']
-setpoint = [3,47, 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,35, 30]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
@@ -1114,9 +1114,9 @@ plts.i = 0 #restart color cycle
 #plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
 #        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
 #        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
-plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-        [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','stall angle','climb angle','elev deflection','throttle','rpm/100'],'Glider and engine')
+plts.xyy([tData,t,t,tData,tData,t,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,gl.vD/g,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+        [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack','stall angle','climb angle','elev deflection','throttle','rpm/100'],'Glider and engine')
 if len(tRampUpList) > 1:
     # plot loop results
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
