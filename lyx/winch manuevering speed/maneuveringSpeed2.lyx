@@ -112,7 +112,11 @@ Glider rated loads and maneuvering speed
 \end_layout
 
 \begin_layout Standard
-Glider wings are designed to withstand positive wing loads of at least 
+Glider wings are designed to withstand positive wing loads 
+\begin_inset Formula $L_{max}$
+\end_inset
+
+ of at least 
 \begin_inset Formula $n_{1}g$
 \end_inset
 
@@ -133,6 +137,14 @@ Glider wings are designed to withstand positive wing loads of at least
 \end_inset
 
  is first determined from the stall speed by 
+\begin_inset Formula 
+\[
+n_{1}g=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}=L_{max}
+\]
+
+\end_inset
+
+
 \begin_inset Formula 
 \[
 V_{A}=V_{S}\sqrt{n_{1}}
@@ -347,11 +359,8 @@ d (lift per length
  segment generates exactly the lift needed to turn that segment's mass in
  the circle.
  But because the mass is not distributed in the same manner as the lift,
- it will create a 
-\bar under
-small
-\bar default
- bending moment at the wing center which could be positive or negative:
+ it will create bending along the wing which could be positive or negative.
+ We focus on the bending of the wing spar at its root:
 \end_layout
 
 \begin_layout Standard
@@ -377,7 +386,7 @@ Let's define normalized functions
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{1}=\int_{0}^{b/2}\left(L_{1}f_{L}(y)-m_{w}af_{m}(y)\right)xdx
+M_{1}=\int_{0}^{b/2}\left(L_{1}f_{L}(y)-m_{w}af_{m}(y)\right)ydy
 \]
 
 \end_inset
@@ -392,7 +401,7 @@ But
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{1}=L_{1}\int_{0}^{b/2}\left(f_{L}(y)-f_{m}(x)\right)xdx
+M_{1}=L_{1}\int_{0}^{b/2}\left(f_{L}(y)-f_{m}(y)\right)ydy
 \]
 
 \end_inset
@@ -462,7 +471,7 @@ The total bending moment is .
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{tot}=M_{1}+M_{2}=L_{2}\left(\left[1+\frac{m_{w}}{m_{nl}}\right]y_{L}-y_{G}\right)
+M_{1}+M_{2}=L_{2}\left(\left[1+\frac{m_{w}}{m_{nl}}\right]y_{L}-\frac{m_{w}}{m_{nl}}y_{G}\right)
 \]
 
 \end_inset
@@ -471,11 +480,11 @@ M_{tot}=M_{1}+M_{2}=L_{2}\left(\left[1+\frac{m_{w}}{m_{nl}}\right]y_{L}-y_{G}\ri
 \end_layout
 
 \begin_layout Standard
-Let's go to the extreme case where 
+Let's go to the case where 
 \begin_inset Formula $L_{1}+L_{2}=n_{1}g$
 \end_inset
 
- , the maximum load allowed.
+ , the maximum safe load .
  
 \begin_inset Formula $L_{1}+L_{2}=L_{2}\left[1+\frac{m_{w}}{m_{nl}}\right]=n_{1}g$
 \end_inset
@@ -491,9 +500,13 @@ Let's go to the extreme case where
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{max}=n_{1}g\left(y_{L}+\frac{y_{G}}{1+\frac{m_{w}}{m_{nl}}}\right)
+M_{max}=n_{1}g\left(y_{L}-\frac{\frac{m_{w}}{m_{nl}}y_{G}}{1+\frac{m_{w}}{m_{nl}}}\right)=n_{1}g\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
 \]
 
+\end_inset
+
+, becuase the glider mass 
+\begin_inset Formula $m=m_{w}+m_{nl}$
 \end_inset
 
 
@@ -503,6 +516,20 @@ M_{max}=n_{1}g\left(y_{L}+\frac{y_{G}}{1+\frac{m_{w}}{m_{nl}}}\right)
 This result is independent of how the bending occurs, due to acceleration
  or glider weight, or a combination.
  
+\end_layout
+
+\begin_layout Standard
+This maximum bending moment is generated at maximum lift at the maneuvering
+ speed, so we can also write it in terms of that speed and the maximum coefficie
+nt of lift (at the stall angle): 
+\begin_inset Formula 
+\[
+M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -560,6 +587,10 @@ M_{2}=m_{nl}gy_{L}
 \end_inset
 
 The lift also must cancel the rope tension, so 
+\begin_inset Formula $L_{3}=T$
+\end_inset
+
+,
 \begin_inset Formula 
 \[
 M_{3}=Ty_{L}
@@ -567,10 +598,6 @@ M_{3}=Ty_{L}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 Finally, the mass of the wing creates a downward bending moment on the wing:
 \end_layout
 
@@ -586,18 +613,218 @@ M_{4}=-m_{w}gy_{G}
 \end_layout
 
 \begin_layout Standard
-So adding these together, we get 
+So adding these together, we get a bending moment under tension 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{tot}=\left[(m_{w}+m_{nl})g+T\right]y_{L}-m_{w}gy_{G}=\left(mg+T\right)y_{L}-m_{w}gy_{G}
+M_{T}=\left[(m_{w}+m_{nl})g+T\right]y_{L}-m_{w}gy_{G}
 \]
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{T}=\left(mg+T\right)y_{L}-m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{T}=L_{T}y_{L}-m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Winch maneuvering speed
+\end_layout
+
+\begin_layout Standard
+We now determine what maximum speed 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ the glider can fly with a rope tension 
+\begin_inset Formula $T$
+\end_inset
+
+ and keep the bending moment 
+\begin_inset Formula $M_{T}$
+\end_inset
+
+ less than the known safe 
+\begin_inset Formula $M_{max:}$
+\end_inset
+
+ The lift 
+\begin_inset Formula $L_{T.max}$
+\end_inset
+
+ will be less than the maximum the wing can produce, but the bending moment
+ will be at its maximum.
+ 
+\begin_inset Formula 
+\[
+M_{T.max}=L_{T.max}y_{L}-m_{w}gy_{G}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L_{T.max}y_{L}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L_{T.max}=\frac{L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+m_{w}gy_{G}}{y_{L}}=L_{max}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So we can find 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ from this maximum lift under tension:
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}=L_{T.max}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+THIS GOES THE RIGHT WAY.
+ THE MORE MASS IN THE WING, THE LESS THE TESTED GLIDER RESEMBLES A WINCH
+ GLIDER.
+\end_layout
+
+\begin_layout Standard
+We can simplify this if we neglect the last term which is small compared
+ to the others .
+ This will decrease 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ and increases the safety factor
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+XXX Good to here.
+ But basically I've found that there's only a correction to the maximum
+ lift, not a max speed to fly.
+ xxxxxxxxxxxxxxxx
+\end_layout
+
+\begin_layout Standard
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxx
+\end_layout
+
+\begin_layout Standard
+So there's no danger for steady state: just ensure 
+\begin_inset Formula $T+W+ma_{y}<L_{T.max}$
+\end_inset
+
+.
+ 
+\begin_inset Formula $W$
+\end_inset
+
+ is fixed and T is capped at 
+\begin_inset Formula $T_{WL}$
+\end_inset
+
+from the weak link.
+ So 
+\begin_inset Formula $ma_{y}<L_{T.max}-W-T_{WL}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+If I fly under 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+, there's nothing gusts or controls can do to create lift that will break
+ the wing (really crazy asymmetry excepted, which is what the safety facto
+ or 1.5 has to cover).
+ 
+\end_layout
+
+\begin_layout Standard
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 \end_layout
 
 \begin_layout Section
