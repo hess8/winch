@@ -3251,7 +3251,9 @@ where
 \end_layout
 
 \begin_layout Standard
-In a pull-up maneuver, the wings act as though their wings were 
+It's sad for a physics professor to say, but it's easiest to think of this
+ in terms of the ficticious inertial force: At the bottom of pull-up maneuver,
+ the wings act as though their wings were 
 \begin_inset Formula $n$
 \end_inset
 
@@ -3274,9 +3276,13 @@ Winch launch just before release
 \end_layout
 
 \begin_layout Standard
-In a winch launch with the glider approximately above the winch in equilibrium,
- the lift has to counter both the weight and the rope tension.
- For the case of the glider above the winch just before release:
+Just before release the rope angle is 70-90 deg, and this is when the tension
+ 
+\begin_inset Formula $T$
+\end_inset
+
+ is acting most directly against the lift.
+ We ignore the difference between 70 degrees and vertical: 
 \begin_inset Formula 
 \[
 L=mg+T
@@ -3289,14 +3295,22 @@ L=mg+T
 
 \begin_layout Standard
 If we write 
-\begin_inset Formula $n_{T}=T/mg$
+\begin_inset Formula 
+\[
+n_{T}=T/mg,
+\]
+
 \end_inset
 
-, then 
-\begin_inset Formula $L=ng=(1+n_{T})g$
+ then
+\begin_inset Formula 
+\[
+L=ng=(1+n_{T})g..
+\]
+
 \end_inset
 
-..
+
 \end_layout
 
 \begin_layout Standard
@@ -3458,6 +3472,139 @@ In general all weak links will break at a max
  
 \end_layout
 
+\begin_layout Standard
+So we can modify the flight envelope if we derate the 
+\begin_inset Quotes eld
+\end_inset
+
+limit loads
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset Formula $n_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $n$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Mass vs lift distribution in a wing
+\end_layout
+
+\begin_layout Standard
+We have access to only the first moment of mass distribution, the center
+ of gravity.
+ The center of gravity of sailplane wings lies from 26% to 36% of the wing
+ length from the center for five gliders measured that span from 15m to
+ 20 gliders.
+ On the other hand, the lift distribution in gliders is nearly elliptical
+ and from lifting line studies (xflr5) the center of lift lies around 43-47%
+ of the wing length.
+ We conclude that the mass distribution is more 
+\begin_inset Quotes eld
+\end_inset
+
+inboard
+\begin_inset Quotes erd
+\end_inset
+
+ than the lift distribution, and so the extra wing bending in winch flight
+ vs a free-flight maneuver is 
+\bar under
+less
+\bar default
+ than in our model above, which assumes equal mass and lift distributions.
+ So our load correction term of 
+\begin_inset Formula $\left(1+\frac{T}{W}\frac{m_{w}}{m}\right)$
+\end_inset
+
+ 
+\bar under
+exaggerates
+\bar default
+ the extra wing bending in winch launching vs reality, and using it 
+\bar under
+errs on the side of safety
+\bar default
+.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Winch launch 
+\begin_inset Quotes eld
+\end_inset
+
+maneuvering speed
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So now we can define a winch launch maneuvering speed that is independent
+ of the somewhat arbitrary winch launch maximum speed 
+\begin_inset Formula $V_{W}$
+\end_inset
+
+ given by the manufacturer.
+ The normal maneuvering speed is given by the design limit load 
+\begin_inset Formula $n_{1}:$
+\end_inset
+
+
+\backslash
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{A}=V_{S}\sqrt{n_{1}}
+\]
+
+\end_inset
+
+So as we derate the limit load, the maneuvering speed on the winch becomes
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{AW}=V_{S}\sqrt{\frac{n_{1}}{\left(1+\frac{T}{W}\frac{m_{w}}{m}\right)}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{AW}=\frac{V_{A}}{\sqrt{\left(1+\frac{T}{W}\frac{m_{w}}{m}\right)}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the PIK20E and D, 
+\begin_inset Formula $\frac{m_{w}}{m}\approx0.25$
+\end_inset
+
+, 
+\end_layout
+
 \begin_layout Subsection*
 JAR-22 winch launch loads
 \end_layout
@@ -3568,7 +3715,7 @@ For the Grob,
 \end_layout
 
 \begin_layout Standard
-The JAR-22 condition of finding a lift in equilibrium with T = 1.2
+The JAR-22 condition of creating equilibrium with T = 1.2
 \begin_inset Formula $Q_{nom}$
 \end_inset
 
@@ -3584,21 +3731,6 @@ can be satisfied at any speed Vw above 27.5 m/s in the Grob by adjusting
 \end_inset
 
  , and 2) avoiding overloads in vertical gusts.
- 
-\end_layout
-
-\begin_layout Subsection*
-Maneuvering speed 
-\end_layout
-
-\begin_layout Standard
-This is simply determined by the speed at which the stall margin is such
- that if you attempt a turning maneuver with loads of 
-\begin_inset Formula $n=n_{max}$
-\end_inset
-
-, the wing will stall.
- It has nothing to do with the strength of the controls.
  
 \end_layout
 
@@ -3673,8 +3805,8 @@ n=1+n_{gust}=1+\frac{L_{\alpha}tan^{-1}\left(\frac{v_{wy}}{v_{o}}\right)}{W}
 
 \begin_layout Standard
 The JAR-22 regulations specify ability to withstand vertiacl gusts of 15m/s,
- and they specify a default method that includes gust alleviation factor
- for the physical effects of a smooth entrance into the gust, and the small
+ and they give a default method that includes gust alleviation factor for
+ the physical effects of a smooth entrance into the gust, and the small
  angle approximation: 
 \end_layout
 
@@ -3716,7 +3848,7 @@ meter
 \end_layout
 
 \begin_layout Standard
-But we modify this to include the tension load an
+But we modify this to include the tension load and wing bending correction:
 \end_layout
 
 \begin_layout Standard
@@ -3728,10 +3860,6 @@ n'=\left(1+\frac{T}{W}+\frac{1}{2}\frac{\rho S_{w}v_{wy}v_{o}}{W}kC_{L,\alpha}\r
 \end_inset
 
 
-\end_layout
-
-\begin_layout Subsection
-Flight envelope
 \end_layout
 
 \begin_layout Subsection
@@ -3768,7 +3896,7 @@ under construction!
 \begin_inset Formula $L_{\alpha}=8.4$
 \end_inset
 
-
+W
 \end_layout
 
 \begin_layout Standard
@@ -4066,9 +4194,8 @@ USA 2nd gear: 1:1.52 transmission.
 \end_inset
 
 .
- So when engine turns 4500 rpm (max power) the winch turns at 820 rpm, x
- 1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
- 
+ So when the engine turns 4500 rpm (max power) the winch turns at 820 rpm,
+ x 1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
 \end_layout
 
 \end_body
