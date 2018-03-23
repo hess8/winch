@@ -1192,7 +1192,7 @@ The tension in the rope is
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\ddot{x}=Tcos\theta_{r}-Dcos\gamma-Lsin\gamma\label{eq:udot}
+m\ddot{x}=Tcos\theta_{r}-Dcos\gamma-Lsin\gamma\label{eq:udot}
 \end{equation}
 
 \end_inset
@@ -1203,7 +1203,7 @@ The tension in the rope is
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\ddot{y}=Lcos\gamma-Tsin\theta_{r}-Dsin\gamma-W\label{eq:wdot}
+m\ddot{y}=Lcos\gamma-Tsin\theta_{r}-Dsin\gamma-W\label{eq:wdot}
 \end{equation}
 
 \end_inset
@@ -1298,13 +1298,13 @@ We will defind a headwind to be a positive horizontal wind component
 \begin_layout Standard
 \begin_inset Formula 
 \[
-v_{air}=\sqrt{\left(\dot{x}+v_{wx}\right)^{2}+\dot{\left(y-v_{wy}\right)^{2}}}
+v_{air}=\sqrt{\left(\dot{x}+v_{wx}\right)^{2}+(\dot{y}-v_{wy})^{2}}
 \]
 
 \end_inset
 
 The climb angle relative to the air is 
-\begin_inset Formula $\gamma'=tan^{-1}\left(\frac{\dot{y}}{\dot{x}+v_{h}}\right)$
+\begin_inset Formula $\gamma'=tan^{-1}\left(\frac{\dot{y}-v_{wy}}{\dot{x}+v_{h}}\right)$
 \end_inset
 
 , so
@@ -1313,7 +1313,7 @@ The climb angle relative to the air is
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\alpha=\theta-tan^{-1}\left(\frac{y-v_{wy}}{\dot{x}+v_{wx}}\right)
+\alpha=\theta-tan^{-1}\left(\frac{\dot{y}-v_{wy}}{\dot{x}+v_{wx}}\right)
 \]
 
 \end_inset

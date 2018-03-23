@@ -318,11 +318,11 @@ Below we determining safe winch launch speeds which we term
 \end_layout
 
 \begin_layout Section
-Wing bending and lifting vs nonlifting mass
+Wing bending under static vs inertial loads
 \end_layout
 
 \begin_layout Standard
-For the wing lift, it's it doesn't matter if the load is static (like weight
+For the lift needed, it doesn't matter if the load is static (like weight
  or constant rope tension), or inertial (
 \begin_inset Formula $ma).$
 \end_inset
@@ -332,7 +332,13 @@ For the wing lift, it's it doesn't matter if the load is static (like weight
 bending
 \bar default
 , there is a difference.
- Ultimately, the glider load limit is a bending load limit
+ Ultimately, the glider test and design limit is a 
+\emph on
+bending
+\emph default
+ load limit.
+ If the glider wing fails it's because it bent too much.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -340,8 +346,9 @@ Wing bending under inertial loads
 \end_layout
 
 \begin_layout Standard
-For the moment we ignore gravity, the fuselage and the tail, and just consider
- a flying wing at speed v, turning in a circle of radius 
+For the moment we ignore gravity, the pilot, the fuselage and the tail,
+ and just consider a flying wing at speed v, turning in a circle of radius
+ 
 \begin_inset Formula $R$
 \end_inset
 
@@ -412,7 +419,7 @@ But
 \begin_inset Formula $L_{1}=m_{w}a$
 \end_inset
 
-,s o
+, so
 \end_layout
 
 \begin_layout Standard
@@ -423,7 +430,7 @@ M_{1}=L_{1}\int_{0}^{b/2}\left(f_{L}(y)-f_{m}(y)\right)ydy
 
 \end_inset
 
-These functions could be close to elliptical, trapezoidal, etc.
+These functions could be close to elliptical, linear, trapezoidal, etc.
  But the integrals above are simply the definitions of the center of lift
  
 \begin_inset Formula $y_{L}$
@@ -544,7 +551,7 @@ M_{iner}=n_{a}Wy_{L}-n_{a}m_{w}gy_{G}\label{eq: inertial load bending-1}
 
 \end_inset
 
-, becuase the glider mass 
+, because the glider mass 
 \begin_inset Formula $m=m_{w}+m_{nl}$
 \end_inset
 
@@ -552,7 +559,7 @@ M_{iner}=n_{a}Wy_{L}-n_{a}m_{w}gy_{G}\label{eq: inertial load bending-1}
 \end_layout
 
 \begin_layout Subsection
-Wing bending under static loads
+Wing bending under static loads at top of winch launch
 \end_layout
 
 \begin_layout Standard
@@ -581,17 +588,17 @@ L-mg-T=0
 Here there is no acceleration, so 
 \begin_inset Formula 
 \[
-L=F_{s}
+L=F_{st}
 \]
 
 \end_inset
 
 where 
-\begin_inset Formula $F_{s}$
+\begin_inset Formula $F_{st}$
 \end_inset
 
  is the sum of the static loads, which are 
-\begin_inset Formula $F_{s}=mg$
+\begin_inset Formula $F_{st}=mg$
 \end_inset
 
 + T.
@@ -602,7 +609,7 @@ where
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{T}=F_{s}gy_{L}-m_{w}gy_{G}
+M_{st}=F_{st}gy_{L}-m_{w}gy_{G}
 \]
 
 \end_inset
@@ -612,7 +619,7 @@ M_{T}=F_{s}gy_{L}-m_{w}gy_{G}
 
 \begin_layout Standard
 We write the static forces in terms of a g's number: 
-\begin_inset Formula $F_{s}=n_{s}mg$
+\begin_inset Formula $F_{st}=n_{st}mg$
 \end_inset
 
 
@@ -621,7 +628,7 @@ We write the static forces in terms of a g's number:
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-M_{T}=n_{s}Wy_{L}-m_{w}gy_{G}\label{eq:static load bending}
+M_{st}=n_{st}Wy_{L}-m_{w}gy_{G}\label{eq:static load bending}
 \end{equation}
 
 \end_inset
@@ -654,58 +661,271 @@ reference "eq: inertial load bending-1"
  This difference shows up because of the mass of the wing.
  In the inertial case, the lift bending is partially opposed by the opposite
  bending needed to accelerate the mass distributed along the wing.
- 
-\end_layout
-
-\begin_layout Subsection
-etc............
-\end_layout
-
-\begin_layout Standard
-This maximum bending moment is generated at maximum lift at the maneuvering
- speed, so we can also write it in terms of that speed and the maximum coefficie
-nt of lift (at the stall angle): 
-\begin_inset Formula 
-\[
-M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
-\]
-
+ Glider manufactures often specify the maximum non-lifting mass 
+\begin_inset Formula $n_{nl}$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-Where is the mass dependence of the glider?
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=ma_{stall}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-So as m increases, 
-\begin_inset Formula $a_{stall}$
-\end_inset
-
-decreases.
- But if we fly below 
-\begin_inset Formula $V_{A}$
-\end_inset
-
- we can't damage the glider.
- 
+ because of this difference.
 \end_layout
 
 \begin_layout Section
 Winch maneuvering speed to avoid glider damage
+\end_layout
+
+\begin_layout Standard
+We now go to the general case of the glider in any part of its winch launch.
+ The glider is oriented at an angle 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ vs the horizon.
+ Except when we need to calculate lift we can ignore the the relatively
+ small angle of attack.
+ The rope pulls with tension 
+\begin_inset Formula $T$
+\end_inset
+
+ at an angle 
+\begin_inset Formula $\theta_{r}$
+\end_inset
+
+ below the horizontal.
+ It's easier to use an inertial coordinate system with axes along the glider
+ axis and perpendicular to it.
+ Along the glider axis:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+ma_{\Vert}=m\dot{v}_{air}=Tcos(\gamma+\theta_{r})-Wsin\gamma\label{eq:udot-1-2}
+\end{equation}
+
+\end_inset
+
+This is the acceleration that changes the airspeed : 
+\begin_inset Formula $\dot{v}=a_{\Vert}$
+\end_inset
+
+ .
+ Perpendicular to the glider axis:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+ma_{\bot}=L-Wcos\gamma-Tsin(\gamma+\theta_{r})\label{eq:udot-1-1-1}
+\end{equation}
+
+\end_inset
+
+This is the acceleration that changes the glider direction : 
+\begin_inset Formula $\dot{\gamma}=\frac{a_{\bot}}{v}$
+\end_inset
+
+.
+ We can write the lift in terms of g's numbers: 
+\begin_inset Formula 
+\[
+L=ma_{\bot}+Wcos\gamma+Tsin(\gamma+\theta_{r})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L=W\left[n_{a}+cos\gamma+n_{T}sin(\gamma+\theta_{r})\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the wing bending moments, this is a mix of inertial and static loads,
+ so we add them with the relative weights from eqns 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: inertial load bending-1"
+
+\end_inset
+
+ and 
+\begin_inset Formula $\ref{eq:static load bending}$
+\end_inset
+
+ .
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M=n_{a}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+\left[cos\gamma+n_{T}sin(\gamma+\theta_{r})\right]y_{L}-cos\gamma\,m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
+old
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Wind.....
+\end_layout
+
+\begin_layout Standard
+The air moves at a velocity 
+\begin_inset Formula $(v_{wx},v_{wy})$
+\end_inset
+
+ with respect to the ground at an angle 
+\begin_inset Formula 
+\[
+\theta_{w}=tan^{-1}\frac{v_{wy}}{v_{yx}},
+\]
+
+\end_inset
+
+ with 
+\begin_inset Formula $+v_{wx}$
+\end_inset
+
+ representing a headwind.
+ The speed of the glider vs the air is 
+\begin_inset Formula $v=\sqrt{\dot{x}^{2}+\dot{y^{2}}}$
+\end_inset
+
+.
+ Lift L is perpendicular to the glider velocity, in the direction 
+\begin_inset Formula $\hat{z}\times\vec{v}=(-\dot{y}\hat{x}+\dot{x}\hat{y})/v$
+\end_inset
+
+ .
+ The angle of attack of the glider 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ depends on the glider pitch angle 
+\begin_inset Formula $\theta$
+\end_inset
+
+ (above the horizon) the climb angle relative to the air 
+\begin_inset Formula 
+\[
+\gamma=tan^{-1}\left(\frac{\dot{y}}{\dot{x}}\right)
+\]
+
+\end_inset
+
+, so the angle of attack 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\alpha=\theta-\gamma
+\]
+
+\end_inset
+
+.The rope pulls with tension 
+\begin_inset Formula $T$
+\end_inset
+
+ at an angle 
+\begin_inset Formula $\theta_{r}$
+\end_inset
+
+ below the horizontal.
+ Except when we need to calculate lift we can ignore the the relatively
+ small angle of attack, so the glider orientation angle vs the air is 
+\begin_inset Formula $\gamma'$
+\end_inset
+
+ .
+ 
+\end_layout
+
+\begin_layout Standard
+Then Newton's second law is (ignoring drag)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ma_{x}=Tcos\theta_{r}-Lsin\gamma
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ma_{y}=Lcos\gamma-Tsin\theta_{r}-W
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It will be easier if we write the equations in the directions along the
+ glider axis and perpendicular to it.
+ Along the glider axis:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+ma_{\Vert}=m\dot{v}_{air}=Tcos(\gamma+\theta_{r})-Wsin\gamma\label{eq:udot-1}
+\end{equation}
+
+\end_inset
+
+This is the acceleration that changes the airspeed : 
+\begin_inset Formula $a_{\Vert}=\dot{v}_{air}$
+\end_inset
+
+ .
+ Perpendicular to the glider axis:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+ma_{\bot}=L-Wcos\gamma-Tsing(\label{eq:udot-1-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Case I: manufacturer designed and tested for inertial loads
 \end_layout
 
 \begin_layout Standard
@@ -833,7 +1053,7 @@ So there's no danger to the glider for steady state if we stay below this
 \end_layout
 
 \begin_layout Section
-Wing bending and manuevering just before normal release
+Old Wing bending and manuevering just before normal release
 \end_layout
 
 \begin_layout Standard
@@ -1570,6 +1790,53 @@ limit loads
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+etc............
+\end_layout
+
+\begin_layout Standard
+This maximum bending moment is generated at maximum lift at the maneuvering
+ speed, so we can also write it in terms of that speed and the maximum coefficie
+nt of lift (at the stall angle): 
+\begin_inset Formula 
+\[
+M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Where is the mass dependence of the glider?
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=ma_{stall}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So as m increases, 
+\begin_inset Formula $a_{stall}$
+\end_inset
+
+decreases.
+ But if we fly below 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+ we can't damage the glider.
+ 
 \end_layout
 
 \end_body
