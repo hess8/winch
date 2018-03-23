@@ -309,8 +309,7 @@ ted up to
 \end_layout
 
 \begin_layout Standard
-Below we study two methods of determining safe winch launch speeds which
- we term 
+Below we determining safe winch launch speeds which we term 
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
@@ -320,6 +319,24 @@ Below we study two methods of determining safe winch launch speeds which
 
 \begin_layout Section
 Wing bending and lifting vs nonlifting mass
+\end_layout
+
+\begin_layout Standard
+For the wing lift, it's it doesn't matter if the load is static (like weight
+ or constant rope tension), or inertial (
+\begin_inset Formula $ma).$
+\end_inset
+
+ But for wing 
+\bar under
+bending
+\bar default
+, there is a difference.
+ Ultimately, the glider load limit is a bending load limit
+\end_layout
+
+\begin_layout Subsection
+Wing bending under inertial loads
 \end_layout
 
 \begin_layout Standard
@@ -480,18 +497,18 @@ M_{1}+M_{2}=L_{2}\left(\left[1+\frac{m_{w}}{m_{nl}}\right]y_{L}-\frac{m_{w}}{m_{
 \end_layout
 
 \begin_layout Standard
-Let's go to the case where 
-\begin_inset Formula $L_{1}+L_{2}=n_{1}g$
+Let's we write the total lift in terms of a g's number: 
+\begin_inset Formula $L_{1}+L_{2}=n_{a}mg$
 \end_inset
 
  , the maximum safe load .
  
-\begin_inset Formula $L_{1}+L_{2}=L_{2}\left[1+\frac{m_{w}}{m_{nl}}\right]=n_{1}g$
+\begin_inset Formula $L_{1}+L_{2}=L_{2}\left[1+\frac{m_{w}}{m_{nl}}\right]=n_{a}mg$
 \end_inset
 
 .
  Then 
-\begin_inset Formula $L_{2}=n_{1}g/\left(1+\frac{m_{w}}{m_{nl}}\right)$
+\begin_inset Formula $L_{2}=n_{a}mg/\left(1+\frac{m_{w}}{m_{nl}}\right)$
 \end_inset
 
 , so 
@@ -500,8 +517,30 @@ Let's go to the case where
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{max}=n_{1}g\left(y_{L}-\frac{\frac{m_{w}}{m_{nl}}y_{G}}{1+\frac{m_{w}}{m_{nl}}}\right)=n_{1}g\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+M_{iner}=n_{a}mg\left(y_{L}-\frac{\frac{m_{w}}{m_{nl}}y_{G}}{1+\frac{m_{w}}{m_{nl}}}\right)
 \]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{iner}=n_{a}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+M_{iner}=n_{a}Wy_{L}-n_{a}m_{w}gy_{G}\label{eq: inertial load bending-1}
+\end{equation}
 
 \end_inset
 
@@ -512,10 +551,114 @@ M_{max}=n_{1}g\left(y_{L}-\frac{\frac{m_{w}}{m_{nl}}y_{G}}{1+\frac{m_{w}}{m_{nl}
 
 \end_layout
 
+\begin_layout Subsection
+Wing bending under static loads
+\end_layout
+
 \begin_layout Standard
-This result is independent of how the bending occurs, due to acceleration
- or glider weight, or a combination.
+For now, we will consider the case just before release the glider is essentially
+ above the winch and the rope angle is greater than 70 deg above the horizon.
+ This is the part of the launch when the tension 
+\begin_inset Formula $T$
+\end_inset
+
+ is acting most directly against the lift and when the wings must generate
+ the most lift per unit of tension.
+ So the difference in the wing bending vs an inertial load will be the largest
+ here.
+ We ignore the difference between 70 degrees and vertical: 
+\begin_inset Formula 
+\[
+L-mg-T=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here there is no acceleration, so 
+\begin_inset Formula 
+\[
+L=F_{s}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $F_{s}$
+\end_inset
+
+ is the sum of the static loads, which are 
+\begin_inset Formula $F_{s}=mg$
+\end_inset
+
++ T.
+ So there is an upward bending of the wings due to lift generation, and
+ a downward bending due to the weight of the wings: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{T}=F_{s}gy_{L}-m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We write the static forces in terms of a g's number: 
+\begin_inset Formula $F_{s}=n_{s}mg$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+M_{T}=n_{s}Wy_{L}-m_{w}gy_{G}\label{eq:static load bending}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The difference in wing bending between the inertial load case equ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: inertial load bending-1"
+
+\end_inset
+
+ vs the static load case equ 
+\begin_inset Formula $\ref{eq:static load bending}$
+\end_inset
+
+ is that the load factor 
+\begin_inset Formula $n$
+\end_inset
+
+ is in both terms in the first, but only in the first term in the second.
+ So for equal loads, thestatic case bends the wing 
+\begin_inset Formula $more$
+\end_inset
+
+ than for inertial loads.
+ This difference shows up because of the mass of the wing.
+ In the inertial case, the lift bending is partially opposed by the opposite
+ bending needed to accelerate the mass distributed along the wing.
  
+\end_layout
+
+\begin_layout Subsection
+etc............
 \end_layout
 
 \begin_layout Standard
@@ -532,79 +675,14 @@ M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=\frac{1}{2}\rho SC_{L.max
 
 \end_layout
 
-\begin_layout Section
-Wing bending and winch launch just before normal release
-\end_layout
-
 \begin_layout Standard
-Just before release the glider is essentially above the winch and the rope
- angle is greater than 70 deg above the horizon.
- This is the part of the launch when the tension 
-\begin_inset Formula $T$
-\end_inset
-
- is acting most directly against the lift and when the wings must generate
- the most lift per unit of tension, so we design our winch speed with this
- case in mind.
- We ignore the difference between 70 degrees and vertical.
- Here the glider is in equilibrium, so the forces balance: 
-\begin_inset Formula 
-\[
-L=mg+T
-\]
-
-\end_inset
-
-Again we break this down into different parts.
- The lift needed for the wing weight alone is 
-\begin_inset Formula $L_{1}=m_{w}g$
-\end_inset
-
-, and the wing bending due to the weight of the wings alone is 
+Where is the mass dependence of the glider?
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{1}=m_{w}gy_{L}
-\]
-
-\end_inset
-
-The lift needed for the nonlifting mass alone is 
-\begin_inset Formula $L_{2}=m_{w}g$
-\end_inset
-
-, and the wing bending due to the weight of this nonlifting mass is 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-M_{2}=m_{nl}gy_{L}
-\]
-
-\end_inset
-
-The lift also must cancel the rope tension, so 
-\begin_inset Formula $L_{3}=T$
-\end_inset
-
-,
-\begin_inset Formula 
-\[
-M_{3}=Ty_{L}
-\]
-
-\end_inset
-
-Finally, the mass of the wing creates a downward bending moment on the wing:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-M_{4}=-m_{w}gy_{G}
+M_{max}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)=ma_{stall}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
 \]
 
 \end_inset
@@ -613,44 +691,21 @@ M_{4}=-m_{w}gy_{G}
 \end_layout
 
 \begin_layout Standard
-So adding these together, we get a bending moment under tension 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-M_{T}=\left[(m_{w}+m_{nl})g+T\right]y_{L}-m_{w}gy_{G}
-\]
-
+So as m increases, 
+\begin_inset Formula $a_{stall}$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-M_{T}=\left(mg+T\right)y_{L}-m_{w}gy_{G}
-\]
-
+decreases.
+ But if we fly below 
+\begin_inset Formula $V_{A}$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-M_{T}=L_{T}y_{L}-m_{w}gy_{G}
-\]
-
-\end_inset
-
-
+ we can't damage the glider.
+ 
 \end_layout
 
 \begin_layout Section
-Winch maneuvering speed
+Winch maneuvering speed to avoid glider damage
 \end_layout
 
 \begin_layout Standard
@@ -675,22 +730,10 @@ We now determine what maximum speed
 \end_inset
 
  will be less than the maximum the wing can produce, but the bending moment
- will be at its maximum.
- 
+ will be at its maximum safe value 
 \begin_inset Formula 
 \[
 M_{T.max}=L_{T.max}y_{L}-m_{w}gy_{G}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-L_{T.max}y_{L}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+m_{w}gy_{G}
 \]
 
 \end_inset
@@ -714,7 +757,7 @@ So we can find
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
- from this maximum lift under tension:
+ from this maximum bending moment:
 \begin_inset Formula 
 \[
 \frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}=L_{T.max}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
@@ -726,20 +769,9 @@ So we can find
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula 
-\[
-\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-THIS GOES THE RIGHT WAY.
+[THIS GOES THE RIGHT WAY.
  THE MORE MASS IN THE WING, THE LESS THE TESTED GLIDER RESEMBLES A WINCH
- GLIDER.
+ GLIDER.]
 \end_layout
 
 \begin_layout Standard
@@ -749,13 +781,13 @@ We can simplify this if we neglect the last term which is small compared
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
- and increases the safety factor
+ and increase the safety factor
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
+V_{Aw1}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
 \]
 
 \end_inset
@@ -764,39 +796,315 @@ V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
 \end_layout
 
 \begin_layout Standard
-XXX Good to here.
- But basically I've found that there's only a correction to the maximum
- lift, not a max speed to fly.
- xxxxxxxxxxxxxxxx
+Tension doesn't appear in this definition.
+ It's simply a recognition of how the bending loads differ with accelerated
+ (inertial) loads and static weight loads.
+ To illustrate this recall that when the glider is on the ground, the weight
+ of the wings bends the wings downward slightly.
+ 
 \end_layout
 
 \begin_layout Standard
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxx
+So there's no danger to the glider for steady state if we stay below this
+ speed 
+\begin_inset Formula $V_{Aw1}$
+\end_inset
+
+.
+ This is a relatively small correction.
+ For a typcial glider, 
+\begin_inset Formula $y_{G}\approx0.3\frac{b}{2}$
+\end_inset
+
+, 
+\begin_inset Formula $y_{L}\approx0.45\frac{b}{2},$
+\end_inset
+
+ and in the case of no water ballast 
+\begin_inset Formula $\frac{m_{w}}{m}\approx0.3$
+\end_inset
+
+.
+ In this example, 
+\begin_inset Formula $V_{Aw}=0.9V_{A}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Wing bending and manuevering just before normal release
 \end_layout
 
 \begin_layout Standard
-So there's no danger for steady state: just ensure 
-\begin_inset Formula $T+W+ma_{y}<L_{T.max}$
+Just before release the glider is essentially above the winch and the rope
+ angle is greater than 70 deg above the horizon.
+ This is the part of the launch when the tension 
+\begin_inset Formula $T$
+\end_inset
+
+ is acting most directly against the lift and when the wings must generate
+ the most lift per unit of tension, so we design our winch speed with this
+ case in mind.
+ We ignore the difference between 70 degrees and vertical.
+ Rather than assume equilibrium, we want to explore lifts associated with
+ maneuvering with acceleration 
+\begin_inset Formula $a$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+L-mg-T=ma
+\]
+
+\end_inset
+
+Again we break this down into different parts.
+ The lift needed is 
+\begin_inset Formula $L_{1}=m_{w}g$
+\end_inset
+
+, and the wing bending due to the weight of the wings alone is 
+\begin_inset Formula $M_{1}=m_{w}gy_{L}$
 \end_inset
 
 .
+ The lift needed for the nonlifting mass alone is 
+\begin_inset Formula $L_{2}=m_{w}g$
+\end_inset
+
+, and the wing bending due to the weight of this nonlifting mass is
+\begin_inset Formula $M_{2}=m_{nl}gy_{L}.$
+\end_inset
+
+ The lift also must cancel the rope tension and proved extra lift for any
+ acceleration so 
+\begin_inset Formula $L_{3}=T+ma$
+\end_inset
+
+, and creates addtional bending 
+\begin_inset Formula $M_{3}=Ty_{L}$
+\end_inset
+
+, Finally, the mass of the wing creates a downward bending moment on the
+ wing: 
+\begin_inset Formula $M_{4}=-m_{w}gy_{G}.$
+\end_inset
+
  
-\begin_inset Formula $W$
+\end_layout
+
+\begin_layout Standard
+So adding these together, we get a bending moment under tension 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{T}=\left[(m_{w}+m_{nl})g+T+ma\right]y_{L}-m_{w}gy_{G}
+\]
+
 \end_inset
 
- is fixed and T is capped at 
-\begin_inset Formula $T_{WL}$
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{T}=\left(W+ma+T\right)y_{L}-m_{w}gy_{G}
+\]
+
 \end_inset
 
-from the weak link.
- So 
-\begin_inset Formula $ma_{y}<L_{T.max}-W-T_{WL}$
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{T}=L_{T}y_{L}-m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We now compare the bending under tension to the maximum allowed bending:
+ 
+\begin_inset Formula 
+\[
+\frac{M_{T}}{M_{max}}=\frac{\left(mg+ma+T\right)y_{L}-m_{w}gy_{G}}{n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\frac{M_{T}}{M_{max}}=\frac{\left(1+n_{a}+n_{T}\right)y_{L}-\frac{m_{w}}{m}y_{G}}{n_{1}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)}\label{eq:Winch bending vs Max}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $n_{a}=$
+\end_inset
+
+a/g
+\end_layout
+
+\begin_layout Standard
+.
+ In five 15-20m gliders surveyed, the center of gravity of sailplane wings
+ lies from 26% to 36% of the wing length from the center.
+ On the other hand, the lift distribution in gliders is nearly elliptical
+ and from lifting line studies (xflr5) the center of lift is around 43-47%
+ of the wing length.
+ Since 
+\begin_inset Formula $y_{L}>y_{G}$
+\end_inset
+
+, we will slightly overestimate the 
+\begin_inset Formula $\frac{M_{T}}{M_{max}}$
+\end_inset
+
+ if we simplify by replacing 
+\begin_inset Formula $y_{G}$
+\end_inset
+
+by 
+\begin_inset Formula $y_{L}$
+\end_inset
+
+ .
+ (Because of the factor 
+\begin_inset Formula $n_{1}$
+\end_inset
+
+, the denominator dominates the dependence on 
+\begin_inset Formula $y_{G},$
+\end_inset
+
+ and substituting 
+\begin_inset Formula $y_{L}$
+\end_inset
+
+ which is slightly larger makes the denomijnator smaller and hence overestimates
+ 
+\begin_inset Formula $\frac{M_{T}}{M_{max}}$
+\end_inset
+
+ .
+ Then 
+\begin_inset Formula 
+\[
+\frac{M_{T}}{M_{max}}\approx\frac{1+n_{a}+n_{T}-\frac{m_{w}}{m}}{n_{1}\left(1-\frac{m_{w}}{m}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with the approxmation 
+\emph on
+made on the side of safety.
+
+\emph default
+ For gliders without water ballast, 
+\begin_inset Formula $\frac{m_{w}}{m}\approx0.3$
 \end_inset
 
 .
+ The greatest tension allowed in a weak link is 
+\begin_inset Formula $T/W=n_{T}=2.0$
+\end_inset
+
+, so the 
+\begin_inset Formula 
+\[
+\frac{M_{T}}{M_{max}}<\frac{\left(1+2.0\right)-0.3}{n_{1}\left(1-0.3\right)}
+\]
+
+\end_inset
+
+.Since 
+\begin_inset Formula $n_{1}\geq5.3$
+\end_inset
+
+, 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{M_{T}}{M_{max}}<1
+\]
+
+\end_inset
+
+ at all times 
+\end_layout
+
+\begin_layout Section
+Winch maneuvering speed to avoid glider damage
+\end_layout
+
+\begin_layout Section
+Winch maneuvering speed to avoid stalls
+\end_layout
+
+\begin_layout Standard
+The weak link keeps the tension at a maximum 
+\begin_inset Formula $T_{wl}$
+\end_inset
+
+ .
+ We can stall the glider at any speed 
+\begin_inset Formula $v$
+\end_inset
+
+ when the lift demanded in the maneauver is greater than 
+\begin_inset Formula $\frac{1}{2}\rho SC_{L.max}v^{2}.$
+\end_inset
+
+ For level free flight the stall speed obeys
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{S}^{2}=mg
+\]
+
+\end_inset
+
+Under maximum winch tension and during maneuvers that require acceleration
  
+\begin_inset Formula $a$
+\end_inset
+
+ the corrected stall speed is larger and obeys 
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{S.T}^{2}=T_{wl}+mg+ma
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -817,22 +1125,13 @@ If I fly under
 \end_inset
 
 , there's nothing gusts or controls can do to create lift that will break
- the wing (really crazy asymmetry excepted, which is what the safety facto
- or 1.5 has to cover).
+ the wing (really crazy asymmetry excepted, which is what the safety factor
+ of 1.5 has to cover).
  
 \end_layout
 
-\begin_layout Standard
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-\end_layout
-
 \begin_layout Section
-Winch maneuvering speed from mass of wings and tension
-\end_layout
-
-\begin_layout Subsection*
-Free-flight maneuvers
+Old:Winch maneuvering speed 
 \end_layout
 
 \begin_layout Standard
@@ -901,8 +1200,7 @@ It's sad for a physics professor to say, but it's easiest to think of this
 \end_layout
 
 \begin_layout Standard
-At the bottom of pull-up maneuver, the ben act as though their wings were
- 
+At the bottom of pull-up maneuver, the wings act as though they were 
 \begin_inset Formula $n$
 \end_inset
 
@@ -1119,7 +1417,7 @@ less
 
  
 \bar under
-exaggerates
+exagerates
 \bar default
  the extra wing bending in winch launching vs reality, and using it 
 \bar under
