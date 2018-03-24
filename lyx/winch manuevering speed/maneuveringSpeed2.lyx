@@ -41,8 +41,8 @@
 \use_package stackrel 1
 \use_package stmaryrd 1
 \use_package undertilde 1
-\cite_engine basic
-\cite_engine_type default
+\cite_engine natbib
+\cite_engine_type numerical
 \biblio_style plain
 \use_bibtopic false
 \use_indices false
@@ -72,7 +72,7 @@
 \begin_body
 
 \begin_layout Title
-Glider stresses during winch launches
+Safe flight speeds in winch launches
 \end_layout
 
 \begin_layout Author
@@ -92,7 +92,7 @@ The maximum winch launch speed
 \begin_inset Formula $V_{w}$
 \end_inset
 
- for gliders by the manufacturer, and its determination appears to mostly
+ for gliders by the manufacturer, and its determination appears to be mostly
  arbitrary.
  Because of this, pilots often state that some overspeed vs 
 \begin_inset Formula $V_{w}$
@@ -104,7 +104,118 @@ The maximum winch launch speed
 \end_inset
 
  for safe maneuvering under winch launch.
+ This is a safety issue, not a performance issue.
+ In general the final height (performance) decreases for greater speeds
+ because of drag.
+ If a pilot attempts to agressively control speed by rotating too soon or
+ too rapidly the danger of rope break or stall at low altitude greatly increases
+, and with it the risk of injury.
  
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+In Santel's 2010 study 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Santel2010Accidents"
+
+\end_inset
+
+ of 241 winch launch accidents sorted by launch phase, the rotation and
+ initial climb portion accounted for 44% of the accidents, and was by far
+ the most fatal (25 fatalities of 39 from all phases).
+ Browning
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+ did a similar study of the 391 British winch accidents from 1987 to 2004.
+ He reported that the accident rate in winch launching was 50% more frequent
+ than in aerotow, and the rate of fatal or serious injury more than 700%
+ higher.
+ With the help of calculations by Hills
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+, Browning offered guidelines
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+ for safer winch launching.
+ Of the 18 deaths, 15 were attributed to stall, and one more possibly to
+ stall.
+ Eight of these fatal stalls were during rotation and the rest are due 
+\begin_inset Quotes eld
+\end_inset
+
+power loss
+\begin_inset Quotes erd
+\end_inset
+
+ which must include both rope break and perhaps engine failure.
+ 
+\end_layout
+
+\begin_layout Standard
+The eight British fatalities from stall during rotation were surely caused
+ by too rapid rotation from aggressive pilot elevator control, as were probably
+ many of the rope break 
+\begin_inset Quotes eld
+\end_inset
+
+power loss
+\begin_inset Quotes erd
+\end_inset
+
+ failures leading to deaths and serious injury.
+ 
+\end_layout
+
+\begin_layout Standard
+Given the danger of aggressive use of the elevator during the winch launch
+ in order to gain greater height or keep the speed below a certain value,
+ we wish to explore the consequences of the other extreme: what happens
+ when the pilot gives late or little elevator input and the glider 
+\begin_inset Quotes eld
+\end_inset
+
+overspeeds
+\begin_inset Quotes erd
+\end_inset
+
+? What speeds are more dangerous on the winch than in free flight? 
+\end_layout
+
+\begin_layout Standard
+Unfortunately, as we discuss below, the manufacturer's supplied 
+\begin_inset Formula $V_{w},$
+\end_inset
+
+ the stated maximum winch speed, gives little guidance.
+ With the risk of stall and overcontrol, it is naive to say that lower speeds
+ are safest or that speeds above 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+ are unsafe.
+ In fact pilots often acknowledge that keeping speeds below the hugely varying
+ 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+ posted for different gliders is not their highest safety concern.
 \end_layout
 
 \begin_layout Section
@@ -132,14 +243,46 @@ Glider wings are designed to withstand positive wing loads
 \end_inset
 
  (aerobatic).
- The design maneuvering speed 
+ The stall speed is determined by the weight 
+\begin_inset Formula $W$
+\end_inset
+
+ of the glider:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{S}^{2}=mg=W
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $S$
+\end_inset
+
+ is the surface area of the wings, 
+\begin_inset Formula $\rho$
+\end_inset
+
+the air density, and 
+\begin_inset Formula $C_{L.max}$
+\end_inset
+
+ the maximum lift coefficient before stall.
+ 
+\end_layout
+
+\begin_layout Standard
+The design maneuvering speed 
 \begin_inset Formula $V_{A}$
 \end_inset
 
- is first determined from the stall speed by 
+ is next determined from the stall speed by
 \begin_inset Formula 
 \[
-n_{1}g=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}=L_{max}
+\frac{1}{2}\rho SC_{L.max}V_{A}^{2}=n_{1}mg=L_{max}
 \]
 
 \end_inset
@@ -208,7 +351,7 @@ Winch max speed vs maneuvering speed.
 \end_layout
 
 \begin_layout Standard
-In 9 of 12 gliders surveyd for this study, the maximum aerotow speeds 
+In 9 of 12 gliders surveyed for this study, the maximum aerotow speeds 
 \begin_inset Formula $V_{T}$
 \end_inset
 
@@ -560,6 +703,13 @@ M_{iner}=n_{a}Wy_{L}-n_{a}m_{w}gy_{G}\label{eq: inertial load bending-1}
 
 \begin_layout Subsection
 Wing bending under static loads at top of winch launch
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Wing-bending- top of launch"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -598,19 +748,19 @@ where
 \end_inset
 
  is the sum of the static loads, which are 
-\begin_inset Formula $F_{st}=mg$
+\begin_inset Formula $F_{st}=mg+T$
 \end_inset
 
-+ T.
+.
  So there is an upward bending of the wings due to lift generation, and
  a downward bending due to the weight of the wings: 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
-M_{st}=F_{st}gy_{L}-m_{w}gy_{G}
-\]
+\begin{equation}
+M_{st}=F_{st}gy_{L}-m_{w}gy_{G}\label{eq:Static bending Fst}
+\end{equation}
 
 \end_inset
 
@@ -652,8 +802,9 @@ reference "eq: inertial load bending-1"
 \begin_inset Formula $n$
 \end_inset
 
- is in both terms in the first, but only in the first term in the second.
- So for equal loads, thestatic case bends the wing 
+ is in both terms in the inertial case, but only in the first term in the
+ static.
+ So for equal loads, the static case bends the wing 
 \begin_inset Formula $more$
 \end_inset
 
@@ -669,7 +820,285 @@ reference "eq: inertial load bending-1"
 \end_layout
 
 \begin_layout Section
-Winch maneuvering speed to avoid glider damage
+Maximum bending moment
+\end_layout
+
+\begin_layout Standard
+Regardless of the details of how the glider load was certified, for safety
+ we should choose the 
+\bar under
+lower
+\bar default
+ of the static or inertial bending moment for the bending moment that accompanie
+s the maximum lift, which is the inertial loadcase.
+ Then from equ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: inertial load bending-1"
+
+\end_inset
+
+ :
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)\label{eq: Max bending moment}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Winch maneuvering speed
+\end_layout
+
+\begin_layout Standard
+In the winch launch the case with the greatest ratio of static to inertial
+ loading is at the top of the launch, as treated in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Wing-bending- top of launch"
+
+\end_inset
+
+, so it the configuration that determines the maximum speed to fly on the
+ winch.
+ This will be the speed where bending moment at the top of the winch launch
+ will equal the maximum bending moment at the maximum inertial load.
+ The lift terms 
+\end_layout
+
+\begin_layout Standard
+From equ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Static bending Fst"
+
+\end_inset
+
+, and using 
+\begin_inset Formula $F_{st}=L$
+\end_inset
+
+, 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{st}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}gy_{L}-m_{w}gy_{G}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can simplify this if we neglect the second term 
+\begin_inset Formula $-m_{w}gy_{G}$
+\end_inset
+
+ which is small compared to the others .
+ This will decrease 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ and increase the safety factor
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw1}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We now determine what maximum speed 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ the glider can fly with a rope tension 
+\begin_inset Formula $T$
+\end_inset
+
+ and keep the bending moment 
+\begin_inset Formula $M_{T}$
+\end_inset
+
+ less than the known safe 
+\begin_inset Formula $M_{max:}$
+\end_inset
+
+ The lift 
+\begin_inset Formula $L_{T.max}$
+\end_inset
+
+ will be less than the maximum the wing can produce, but the bending moment
+ will be at its maximum safe value 
+\begin_inset Formula 
+\[
+M_{T.max}=L_{T.max}y_{L}-m_{w}gy_{G}=L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+L_{T.max}=\frac{L_{max}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+m_{w}gy_{G}}{y_{L}}=L_{max}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So we can find 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ from this maximum bending moment:
+\begin_inset Formula 
+\[
+\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}=L_{T.max}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)+m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can simplify this if we neglect the last term which is small compared
+ to the others .
+ This will decrease 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ and increase the safety factor
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that tension does not appear in calculating this winch maneuvering
+ speed, below which the static loads cannot create a bending moment capable
+ of breaking the glider wings.
+ The tension does contribute to the stall speed (see below), but not the
+ winch maneuvering speed.
+ This can be a relatively small correction.
+ For a typical dry glider, 
+\begin_inset Formula $y_{G}\approx0.3\frac{b}{2}$
+\end_inset
+
+, 
+\begin_inset Formula $y_{L}\approx0.45\frac{b}{2},$
+\end_inset
+
+ so 
+\begin_inset Formula $\frac{y_{G}}{yL}=0.7,$
+\end_inset
+
+and in the case of no water ballast 
+\begin_inset Formula $\frac{m_{w}}{m}<0.3$
+\end_inset
+
+.
+ In this example, 
+\begin_inset Formula $V_{Aw}=0.9V_{A}$
+\end_inset
+
+.
+ For the 12 gliders surveyed for this work, the most water ballast allowed
+ was
+\begin_inset Formula $\frac{m_{w}}{m}=0.54$
+\end_inset
+
+.
+ In this case 
+\begin_inset Formula $V_{Aw}=0.78V_{A}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+So from a standpoint of protecting the wings, there is no reason for 
+\begin_inset Formula $V_{W}$
+\end_inset
+
+ on any glider to be less than the 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ derived here, since they were all certified and tested for the loads that
+ determine 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+Stall and rope break 
+\end_layout
+
+\begin_layout Standard
+With the wings protected, we ask if 
+\begin_inset Formula $V_{W}$
+\end_inset
+
+ should be lowered further than 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ to prevent rope breaks and stalls.
+ From a practical view, we can look at the most recent gliders that have
+ 
+\begin_inset Formula $V_{W}=81$
+\end_inset
+
+kts
+\end_layout
+
+\begin_layout Section
+Lift for any part of winch launch
 \end_layout
 
 \begin_layout Standard
@@ -703,7 +1132,7 @@ ma_{\Vert}=m\dot{v}_{air}=Tcos(\gamma+\theta_{r})-Wsin\gamma\label{eq:udot-1-2}
 
 \end_inset
 
-This is the acceleration that changes the airspeed : 
+This is the acceleration that changes the glider speed : 
 \begin_inset Formula $\dot{v}=a_{\Vert}$
 \end_inset
 
@@ -766,7 +1195,7 @@ reference "eq: inertial load bending-1"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M=n_{a}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+\left[cos\gamma+n_{T}sin(\gamma+\theta_{r})\right]y_{L}-cos\gamma\,m_{w}gy_{G}
+M=W\left[n_{a}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+\left[cos\gamma+n_{T}sin(\gamma+\theta_{r})\right]y_{L}-cos\gamma\,m_{w}gy_{G}\right]
 \]
 
 \end_inset
@@ -774,8 +1203,30 @@ M=n_{a}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+\left[cos\gamma+n_{T}sin(\gamma+
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Section
+Bending moment in rotation
+\end_layout
 
+\begin_layout Standard
+The glider will launch itself without problem as shown in simulation if
+ the pilot doesn't overcontrol the glider to keep speed down.
+ So this part is safe.
+ The question is 
+\bar under
+what speed maximum speed is safe?
+\end_layout
+
+\begin_layout Section
+Bending moment in rotation
+\end_layout
+
+\begin_layout Section
+and initial climb
+\end_layout
+
+\begin_layout Standard
+The two places with greatest stress on the wings are at the top of the launch
+ where we have the greatest static loads, and during rotation and 
 \end_layout
 
 \begin_layout Section
@@ -925,7 +1376,7 @@ ma_{\bot}=L-Wcos\gamma-Tsing(\label{eq:udot-1-1}
 \end_layout
 
 \begin_layout Subsection
-Case I: manufacturer designed and tested for inertial loads
+xxx
 \end_layout
 
 \begin_layout Standard
@@ -1837,6 +2288,17 @@ decreases.
 
  we can't damage the glider.
  
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winch accidents"
+options "plain"
+
+\end_inset
+
+
 \end_layout
 
 \end_body
