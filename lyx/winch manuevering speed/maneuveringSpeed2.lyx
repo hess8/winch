@@ -203,7 +203,8 @@ Unfortunately, as we discuss below, the manufacturer's supplied
 \begin_inset Formula $V_{w},$
 \end_inset
 
- the stated maximum winch speed, gives little guidance.
+ the stated maximum winch speed, gives little guidance because as a group
+ these speeds don't appear to be chosen on physical principles.
  With the risk of stall and overcontrol, it is naive to say that lower speeds
  are safest or that speeds above 
 \begin_inset Formula $V_{w}$
@@ -216,6 +217,11 @@ Unfortunately, as we discuss below, the manufacturer's supplied
 \end_inset
 
  posted for different gliders is not their highest safety concern.
+ Should the maximum winch speeds 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+ be updated officially or unofficially with speeds based on 
 \end_layout
 
 \begin_layout Section
@@ -1089,8 +1095,8 @@ With the wings protected, we ask if
 \end_inset
 
  to prevent rope breaks and stalls.
- From a practical view, we can look at the most recent gliders that have
- 
+ From a purely empirical view, we can look at the most recent gliders that
+ have 
 \begin_inset Formula $V_{W}=81$
 \end_inset
 
