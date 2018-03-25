@@ -156,7 +156,8 @@ key "Browning2007SafetyBGA"
  for safer winch launching.
  Of the 18 deaths, 15 were attributed to stall, and one more possibly to
  stall.
- Eight of these fatal stalls were during rotation and the rest are due 
+ Eight of these fatal stalls were during rotation and the rest are due to
+ 
 \begin_inset Quotes eld
 \end_inset
 
@@ -165,12 +166,8 @@ power loss
 \end_inset
 
  which must include both rope break and perhaps engine failure.
- 
-\end_layout
-
-\begin_layout Standard
-The eight British fatalities from stall during rotation were surely caused
- by too rapid rotation from aggressive pilot elevator control, as were probably
+ The eight British fatalities from stall during rotation were surely caused
+ by too-rapid rotation from aggressive pilot elevator control, as were probably
  many of the rope break 
 \begin_inset Quotes eld
 \end_inset
@@ -323,7 +320,7 @@ Aerotow vs winch launching speeds
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
@@ -392,7 +389,7 @@ reference "fig:Winch-max-speed vs Va"
 \begin_inset Formula $V_{W}.$
 \end_inset
 
- Yet there is a physical relation between winch loads and wing loading,
+ Yet there is a physical relation between typical winch loads and wing loading,
  and since 
 \begin_inset Formula $V_{A}$
 \end_inset
@@ -416,7 +413,55 @@ reference "fig:Winch-max-speed vs Va"
 experienced
 \emph default
  with modern winches than in increased strength.
+ In Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: VW over VA"
+
+\end_inset
+
+ we display the ratio 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+ and see a very large spread.
  
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Vw over Va.png
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig: VW over VA"
+
+\end_inset
+
+Ratio of winch max speed vs maneuvering speed.
+ Left-right position of points is only for clarity.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -433,12 +478,18 @@ This lack of a physical relationship between
 \begin_inset Formula $n_{1}$
 \end_inset
 
-, and hence the design 
+ and hence the design 
 \begin_inset Formula $V_{A}$
 \end_inset
 
-, and it specifies the strength of the tow hook and the glider parts that
+, and it specifies the loads for the tow hook and the glider parts that
  support it.
+ All the gliders have tow hooks and fuselage structure to support weak links
+ up to 
+\begin_inset Formula $T/W$
+\end_inset
+
+= 2.0.
  But for winch speed it only states that 
 \begin_inset Formula $V_{W}$
 \end_inset
@@ -1002,18 +1053,19 @@ So we can find
 \begin_layout Standard
 We can simplify this if we neglect the last term which is small compared
  to the others .
- This will decrease 
+ This will slightly decrease 
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
- and increase the safety factor
+.
+ Then we take for our proposed winch maneuvering speed:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
-V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
-\]
+\begin{equation}
+V_{Aw1}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}\label{eq: VAw}
+\end{equation}
 
 \end_inset
 
@@ -1026,8 +1078,45 @@ Note that tension does not appear in calculating this winch maneuvering
  of breaking the glider wings.
  The tension does contribute to the stall speed (see below), but not the
  winch maneuvering speed.
- This can be a relatively small correction.
- For a typical dry glider, 
+ 
+\end_layout
+
+\begin_layout Standard
+In five 15-20m gliders surveyed, the measured
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2010EstimMassHoff"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "selfCGs"
+
+\end_inset
+
+ center of gravity 
+\begin_inset Formula $y_{G}$
+\end_inset
+
+ of sailplane wings lies from 26% to 36% of the wing length from the center.
+ Adding water ballast likely reduces 
+\begin_inset Formula $y_{G}$
+\end_inset
+
+ .
+ center of lift lies further out along the wing, because sailplane wings
+ acheive nearly elliptical lift distribution.
+ In xflr5 studies of two glider wings, we find that 
+\begin_inset Formula $y_{L}$
+\end_inset
+
+ lies at 45-47% of the wing length from the center
+\end_layout
+
+\begin_layout Standard
+For a typical dry glider, 
 \begin_inset Formula $y_{G}\approx0.3\frac{b}{2}$
 \end_inset
 
@@ -1064,7 +1153,7 @@ and in the case of no water ballast
 \end_layout
 
 \begin_layout Standard
-So from a standpoint of protecting the wings, there is no reason for 
+S the wings, there is no reason for 
 \begin_inset Formula $V_{W}$
 \end_inset
 
@@ -1086,21 +1175,59 @@ Stall and rope break
 \end_layout
 
 \begin_layout Standard
-With the wings protected, we ask if 
-\begin_inset Formula $V_{W}$
-\end_inset
-
- should be lowered further than 
+With the wings protected by flying below our defined 
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
- to prevent rope breaks and stalls.
- From a purely empirical view, we can look at the most recent gliders that
- have 
-\begin_inset Formula $V_{W}=81$
+ , we ask if 
+\begin_inset Formula $V_{W}$
 \end_inset
 
-kts
+ should be any lower to prevent rope breaks and stalls.
+ 
+\end_layout
+
+\begin_layout Standard
+We could attempt a detailed analysis of the possible inertial and tension
+ loads that the glider could experience at different speeds.
+ But an important concept is that the inertial and tension stresses are
+ the same (when scaled by weight) for all gliders unless they have very
+ different control authority: if a glider has exceptionally large elevator
+ authority, there may be justification for a smaller 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+ to prevent the pilot from breaking the rope or stalling the glider by over-use
+ of the elevator.
+ So we ask if the Ventus 2c at the top of the 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+ chart (Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: VW over VA"
+
+\end_inset
+
+) has much larger elevator authority than the ASW27 at the bottom.
+ But the plan view of the drawings of the two gliders shows essentially
+ identical relative areas.
+ All the gliders likely have similar elevator (and other controls) authority,
+ which would justify having the same ratio of 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Empirically we can simply look at gliders at the top of the existing
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+ chart to see 
 \end_layout
 
 \begin_layout Section
@@ -1159,7 +1286,8 @@ This is the acceleration that changes the glider direction :
 \end_inset
 
 .
- We can write the lift in terms of g's numbers: 
+ I GOT THIS FROM A VECTOR TRIANGLE, BUT IT NEEDS CHECKING.We can write the
+ lift in terms of g's numbers: 
 \begin_inset Formula 
 \[
 L=ma_{\bot}+Wcos\gamma+Tsin(\gamma+\theta_{r})
@@ -1507,6 +1635,10 @@ So there's no danger to the glider for steady state if we stay below this
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+We can simplify this 
 \end_layout
 
 \begin_layout Section
@@ -2299,7 +2431,7 @@ decreases.
 \begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "D:/Winch launch physics/winchrep/bibtex/winch accidents"
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG"
 options "plain"
 
 \end_inset

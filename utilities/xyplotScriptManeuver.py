@@ -46,10 +46,11 @@ class plots:
         
 Aasw27A =  [116]; Wasw27 = [70];
 Aask21 =  [x]; Wask21 = [x];
-Apik20D =  [x]; Wpik20D = [x];
+
 Adg1000 =  [100]; Wasw27 = [81];
 Adg505 =  [103]; Wdg505 = [76];
-Aask21 = 
+Aduo = [x]; Wduo = [x];
+Apik20D =  [x]; Wpik20D = [x];
 
 path = 'D:\\Winch launch physics\\maneuvering\\'  #for saving plots  
 if not os.path.exists(path): os.mkdir(path)      

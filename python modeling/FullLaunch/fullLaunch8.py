@@ -239,8 +239,8 @@ class glider:
         self.Q = 36             #   L/D
         self.alphaStall = rad(6.8)         #  stall angle vs glider zero
         self.Co = 0.65             #   Lift coefficient {} at zero glider AoA
-        self.CLalpha = 5.9        
-        self.Lalpha = self.CLalpha*self.W/self.Co #from xflr.  A little less than 2 pi because part of the lift if from the elevator.  
+        self.CLalpha = 5.9    # A little less than 2 pi because part of the lift is from the elevator.      
+        self.Lalpha = self.CLalpha*self.W/self.Co #from xflr.  
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
         self.palpha = 1.9     #   This is from xflr model: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
@@ -577,12 +577,14 @@ class pilot:
         self.setpoint = setpoint
         self.currCntrl = 0
         self.tSwitch = None
+        self.pilotStart = None
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
         self.humanT = 0.7 #sec 
         #algebraic function
         self.elevTarget = 0   
         #state variable
         self.elev = 0  # elevator deflection, differs from elevTarget by about humanT
+        
         
     def control(self,t,ti,gl):
         #all angles in routines are in radians (vs degrees on the main script input) 
@@ -617,6 +619,30 @@ class pilot:
             return pid(varr,time,setpoint,c,ti.i,Nint)
 
             return pid(varr,time,setpoint,c,ti.i,Nint)
+            
+#        def vGrad(t,time,setpoint,ti,Nint):
+#            '''Start raising the vcontrol target to the setpoint at a given rate'''
+#            if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
+#                pp =  0; pd =   0; pint =  0
+#            elif gl.state == 'onGnd':
+#                pp = 0; pd = 0; pint = 0 
+#            elif gl.state == 'preClimb':
+#                if gl.thetaD>setpoint:
+#                    pp = 8; pd = 0; pint = 0
+#                else:
+#                    pp = 0; pd = 0; pint = 0
+#            elif gl.state =='initClimb':
+#                pp = 64; pd = 0; pint = 0  
+#            elif gl.state == 'mainClimb': 
+#                pp = 32; pd = 16; pint = 32
+#            elif gl.state == 'prepRelease':
+#                pp =  0; pd =   0; pint =  0   
+#            c = array([pp,pd,pint])* gl.I/gl.vb
+#            varr = gl.data['v']
+#            tRamp = 2.0
+#            vtarget = max((t - self.tSwitch)/tRamp * setpoint,setpoint)
+#            return pid(varr,time,vtarget,c,ti.i,Nint)
+
         def vDDamp(t,time,setpoint,ti,Nint):
             pp = 0; pd = 4; pint = 0 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
@@ -638,32 +664,36 @@ class pilot:
         crossAngle = rad(self.setpoint[2])  #climb angle to switch from one control to another
         Mdelev =  max(0.001,L * gl.pelev/(gl.Co + gl.CLalpha*alpha)) #ratio between moment and elevator deflection.  Avoid zero velocity case with the 0.1.  
         maxMe = gl.maxElev * Mdelev
-        if '' in control:
-            self.Me = 0
-            self.elev = 0
-        else:
-            if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.yD<0)):  #switch to 2nd control # or gl.thetaD < rad(10)
-                self.currCntrl = 1 #switches only once
-                self.tSwitch = t          
-                print 'Second control ({},{:3.1f}) turned on  at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
-            ctype = self.ctrltype[self.currCntrl]
-            setpoint = self.setpoint[self.currCntrl]
-            # determine the moment demanded by the control            
-            if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
-                self.MeTarget = vDDamp(t,time,setpoint,ti,Nint)
-            elif ctype == 'v': #target v with setpoint'
-                self.MeTarget = vControl(t,time,setpoint,ti,Nint)
-            elif ctype == 'alpha': # control AoA  
-                self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
+#         if '' in control:
+#             self.Me = 0
+#             self.elev = 0
+#         else:
+#        if self.currCntrl == 0 and (gl.y>10 and (gamma > crossAngle or gl.yD<0)):  #switch to 2nd control # or gl.thetaD < rad(10)  
+        if self.currCntrl == 0 and (gl.y>1 and (gamma > crossAngle or gl.yD<0)):  #switch to 2nd control # or gl.thetaD < rad(10)  
+ 
+            self.currCntrl = 1 #switches only once
+            self.tSwitch = t          
+            print 'Second control ({},{:3.1f}) turned on  at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
+        ctype = self.ctrltype[self.currCntrl]
+        setpoint = self.setpoint[self.currCntrl]
+        # determine the moment demanded by the control            
+        if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
+            self.MeTarget = vDDamp(t,time,setpoint,ti,Nint)
+        elif ctype == 'v': #target v with setpoint'
+            self.MeTarget = vControl(t,time,setpoint,ti,Nint)
+#        elif ctype == 'vgrad': #target v with target, but raise the target at a fixed rate, only after a certain v is reached '
+#            self.MeTarget = vGrad(t,time,setpoint,ti,Nint)
+        elif ctype == 'alpha': # control AoA  
+            self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
 #            elif ctype == 'thetaD': #control pitch rate
 #                self.MeTarget =  thetaDContr(t,time,rad(setpoint),ti,Nint)  
-            # implement
-            if self.type =='elevControl': 
-                self.elevTarget = limiter(self.MeTarget/Mdelev,gl.maxElev) # determine the elevator setting 
-                self.Me = Mdelev * self.elev #update the moment from the elevator
-            elif self.type =='momentControl': # bypass pilot's control of elevator and simply set the moment required, and the elevator to the corresponding angle.
-                self.Me = limiter(self.MeTarget,maxMe)
-                self.elev = self.Me/Mdelev
+        # implement
+        if self.type =='elevControl': 
+            self.elevTarget = limiter(self.MeTarget/Mdelev,gl.maxElev) # determine the elevator setting 
+            self.Me = Mdelev * self.elev #update the moment from the elevator
+        elif self.type =='momentControl': # bypass pilot's control of elevator and simply set the moment required, and the elevator to the corresponding angle.
+            self.Me = limiter(self.MeTarget,maxMe)
+            self.elev = self.Me/Mdelev
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
@@ -821,7 +851,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- simulation times
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 10 # end time for simulation
 ntime = ((tEnd - tStart)/dt + 1 )  # number of time steps to allow for data points saved
 
 #--- air
@@ -862,8 +892,13 @@ if not ropeBreakAngle is None: print 'Rope break simulation at angle {} deg'.for
 #setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['alpha','v']
-setpoint = [3,35, 30]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['alpha','v']
+#setpoint = [3,35, 30]  # deg,speed, deg last one is climb angle to transition to final control
+#control = ['','vgrad']
+#setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
+control = ['','v']
+setpoint = [0,35,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
+
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
@@ -1114,7 +1149,7 @@ plts.i = 0 #restart color cycle
 #plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
 #        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
 #        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
-plts.xyy([tData,t,t,tData,tData,t,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,gl.vD/g,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack','stall angle','climb angle','elev deflection','throttle','rpm/100'],'Glider and engine')
 if len(tRampUpList) > 1:

@@ -2498,6 +2498,30 @@ Appendix
 \end_layout
 
 \begin_layout Subsection
+Lift model including beyond stall
+\end_layout
+
+\begin_layout Standard
+Define 
+\begin_inset Formula $s=\sqrt{2\alpha_{s}/(L_{\alpha}-1)}$
+\end_inset
+
+ 
+\begin_inset Formula 
+\[
+L=[tanh(L_{\alpha}\alpha)+e^{-\alpha_{s}^{2}/s^{2}}e^{-[(\alpha-\alpha_{s})^{2}/s^{2}}]u^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Gaussian function is centered at the stall speed.
+\end_layout
+
+\begin_layout Subsection
 Rope sag and drag
 \begin_inset CommandInset label
 LatexCommand label
