@@ -25,6 +25,9 @@ class glider():
     def __init__(self):
         # parameters
         self.vb = 30              #   speed of glider at best glide angle
+        self.vStall = 22          # stall speed fully loaded (m/s)
+        self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
+        self.wStall = rad(5)      #transition width for stall loss
         self.m = 400
         self.W = self.m*9.8          #   weight (N)
         self.Q = 20             #   L/D

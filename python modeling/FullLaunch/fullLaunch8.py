@@ -233,14 +233,18 @@ class timeinfo:
 class glider:
     def __init__(self,theta0,ntime):
         # parameters
-        self.vb = 32              #   speed of glider at best glide angle
+        self.vb = 35              #   speed of glider at best glide angle
+#        self.vStall = 22          # stall speed fully loaded (m/s)
+        self.alphaStall = rad(8.5)         #  stall angle vs glider zero
+        self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
+#        self.wStall = rad(.5)      #transition width for post-stall loss
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
         self.Q = 36             #   L/D
-        self.alphaStall = rad(6.8)         #  stall angle vs glider zero
-        self.Co = 0.65             #   Lift coefficient {} at zero glider AoA
-        self.CLalpha = 5.9    # A little less than 2 pi because part of the lift is from the elevator.      
-        self.Lalpha = self.CLalpha*self.W/self.Co #from xflr.  
+        
+        self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
+        self.CLalpha = 5.2    # CL slope: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
+        self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
         self.palpha = 1.9     #   This is from xflr model: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
@@ -249,6 +253,13 @@ class glider:
 #         self.de = 0.025          #   drag constant (/m) for elevator moment
         self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
         self.Agear = 0.02        # drag area (m^2) of main gear
+        self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #Drag parameters for polynomial about zero.  y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
+        self.deltar = 0.02  #ground contact force distance of action (m)
+#        self.deltar = 0.05  #ground contact force distance of action (m)
+        self.d_m = 0.25  # distance main wheel to CG (m) 
+        self.d_t = 3.3  # distance tail wheel to CG (m) 
+        self.theta0 = rad(theta0)
+        self.oldState = None
         #logic
 #        self.lastvy = 0
         self.vypeaked = False
@@ -260,18 +271,12 @@ class glider:
         self.yD = 0
         self.theta = 0  #pitch vs horizontal
         self.thetaD = 0
-        self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
-        self.deltar = 0.02  #ground contact force distance of action (m)
-#        self.deltar = 0.05  #ground contact force distance of action (m)
-        self.d_m = 0.25  # distance main wheel to CG (m) 
-        self.d_t = 3.3  # distance tail wheel to CG (m) 
-        self.theta0 = rad(theta0) 
-        self.oldState = None
         #data
         self.data = zeros(ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),('v', float),('theta', float),('thetaD', float),\
                                     ('gamma', float),('alpha', float),('alphaStall', float),('vD', float),('vgw', float),('L', float),('D', float),('L/D',float),\
                                     ('gndTorq',float),('Fmain',float),('Ftail',float),('Malpha',float),\
                                     ('Pdeliv',float),('Edeliv',float),('Emech',float)])
+                    
     def findState(self,t,ti,rp):
         '''Determine where in the launch the glider is'''
         gd = self.data[ti.i]
@@ -296,11 +301,11 @@ class glider:
             print 'Glider state : {} at {:3.1f} s'.format(self.state,t)
             self.oldState = self.state
     
-    def gndForces(self,ti,gl,rp):
+    def gndForces(self,ti,rp):
         del_ymain = self.y + self.d_m*(sin(self.theta) - sin(self.theta0))
         del_ytail = self.y - self.d_t*(sin(self.theta) - sin(self.theta0))
         muS = 0.1  # static friction, including runway bumpiness
-        muK = 0.05 # kinetic friction, including runway bumpiness
+        muK = 0.05 # kinetic friction, including r unway bumpiness
         damp = 0 #wheels damp, too.  If more than this it excites the short-period oscillation
         if del_ymain < self.deltar:
             Fmain =  self.W * self.d_t/(self.d_m + self.d_t) * (1-  del_ymain/self.deltar) - damp*gl.yD
@@ -310,15 +315,26 @@ class glider:
             Ftail =  self.W * self.d_m/(self.d_m + self.d_t) * (1-  (del_ytail)/self.deltar) - damp*gl.yD
         else:
             Ftail = 0
-        if gl.state == 'onGnd' :
-            if gl.xD < 0.001 and rp.T < muS*gl.W: #not moving             
+        if self.state == 'onGnd' :
+            if self.xD < 0.001 and rp.T < muS*self.W: #not moving             
                 Ffric = rp.T
             else: #static broken
-                Ffric =  muK*gl.W
+                Ffric =  muK*self.W
         else:
             Ffric = 0
         return [Fmain, Ftail,Ffric]
         
+        
+#    def Lnl(self,v,alpha):
+#         '''Nonlinear lift including post stall'''
+##         Lmax_vb = self.W * (self.vb/self.vStall)**2 
+##         L = self.W * (1 + tanh (alpha/self.alphaStall) - 2*self.stallLoss*(1 + tanh((alpha-self.alphaStall)/self.wStall))) * (v/self.vb)**2
+##         return L
+#         if 
+#         s = sqrt(2*self.alphaStall/(self.Lalpha/self.W  - 1))
+#         A = .5
+#         L = gl.W*(tanh(self.Lalpha/self.W * alpha) + A*exp(self.alphaStall**2/s**2) * exp(-(alpha - self.alphaStall)**2 / s**2)) * (v/self.vb)**2
+#         return L
 
 class air:
     def __init__(self,vhead,vupdr,hupdr):
@@ -747,7 +763,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             L = 0.70*L #this is supported by calculations 
             D = 4*L/float(gl.Q)
         alphatorq = -L * gl.palpha * alpha/(gl.Co + gl.CLalpha*alpha)
-        [Fmain, Ftail, Ffric] = gl.gndForces(ti,gl,rp)
+        [Fmain, Ftail, Ffric] = gl.gndForces(ti,rp)
         gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
         M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
         ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG) #torque of rope on glider
@@ -783,7 +799,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 #            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-#            print 't,state,y',t,gl.state,gl.y
+            print 't,elev',t,deg(pl.elev)
     #         if rp.T > 10:
     #             print 'pause'
             # store data from this time step for use /in controls or plotting.  
@@ -862,7 +878,8 @@ hupdr = 600 #m At what height to turn the updraft on for stress testing
 if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
 dt = 0.05/float(tfactor) # nominal time step, sec
-
+#--- pilot
+elevTrim = 5  #deg
 #--- throttle and engine
 #tRampUpList = linspace(3,10,10)
 tRampUpList = [2] #If you only want to run one value
@@ -930,6 +947,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     gl.v = 1e-6  #to avoid div/zero
     en.v = en.idle
     gl.theta  = rad(theta0)
+    pl.elev = rad(elevTrim)
     #initialize state vector to zero  
     S0 = zeros(10)
     #integrate the ODEs
@@ -1118,6 +1136,12 @@ for i in range(1,len(engvel)):
     torq[i] = en.Pavail(engvel[i])/omegaEng[i]*0.74 #leave zero speed at zero torque
 torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero speed torq calculation by extrapolating
 plts.xy([rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
+
+##plot lift curve vs alpha at v_best
+#alphaList = linspace(-10,15,100)
+#lift = array([gl.Lnl(gl.vb,rad(alph)) for alph in alphaList])
+#plts.xy([alphaList],[lift/gl.W],\
+#        'Angle of attack (deg)','Lift/Weight',[''],'Lift vs angle of attack')
 
 #glider position vs time
 plts.xy([t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')

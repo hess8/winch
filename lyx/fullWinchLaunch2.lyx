@@ -28,6 +28,7 @@
 \bibtex_command default
 \index_command default
 \paperfontsize default
+\spacing single
 \use_hyperref false
 \papersize default
 \use_geometry false
@@ -41,8 +42,8 @@
 \use_package stackrel 1
 \use_package stmaryrd 1
 \use_package undertilde 1
-\cite_engine basic
-\cite_engine_type default
+\cite_engine natbib
+\cite_engine_type numerical
 \biblio_style plain
 \use_bibtopic false
 \use_indices false
@@ -959,7 +960,7 @@ glider as a whole
 \end_inset
 
 .
- So the lift is 
+ So in the linear region below stall the lift is 
 \begin_inset Formula $L=W(1+\frac{2\pi}{C_{o}}\alpha)\left(\frac{v}{vo}\right)^{2}$
 \end_inset
 
@@ -2502,14 +2503,9 @@ Lift model including beyond stall
 \end_layout
 
 \begin_layout Standard
-Define 
-\begin_inset Formula $s=\sqrt{2\alpha_{s}/(L_{\alpha}-1)}$
-\end_inset
-
- 
 \begin_inset Formula 
 \[
-L=[tanh(L_{\alpha}\alpha)+e^{-\alpha_{s}^{2}/s^{2}}e^{-[(\alpha-\alpha_{s})^{2}/s^{2}}]u^{2}
+L_{max.v_{b}}=W\frac{v_{b}^{2}}{v_{stall}^{2}}
 \]
 
 \end_inset
@@ -2518,7 +2514,35 @@ L=[tanh(L_{\alpha}\alpha)+e^{-\alpha_{s}^{2}/s^{2}}e^{-[(\alpha-\alpha_{s})^{2}/
 \end_layout
 
 \begin_layout Standard
-The Gaussian function is centered at the stall speed.
+\begin_inset Formula 
+\[
+L=W\left[1+tanh\left(\frac{W}{L_{max.v_{b}}}\alpha\right)-q\left(1-tanh\left(\frac{\alpha-\alpha_{s}}{w_{s}}\right)\right)\right]\left(\frac{v}{v_{b}}\right)^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $q$
+\end_inset
+
+ is the loss of lift for reasonably small angles beyond stall, which is
+ about 1/4 of maixum lift, and 
+\begin_inset Formula $w_{s}\approx5$
+\end_inset
+
+deg is a post-stall transition width (see NASA report
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2013PetrilliNASApostStall"
+
+\end_inset
+
+, fig.
+ 20b ).
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -3982,16 +4006,16 @@ Grob Twin Astir, glider angle of attack at
 \begin_inset Formula $v_{b}$
 \end_inset
 
- is 1.25 degrees from the chord, where
+ is 1.0 degrees from the chord, where
 \begin_inset Formula $C_{o}$
 \end_inset
 
-= 0.650.
+= 0.49.
  The wing Re that is closest to this is 1.2x10
 \begin_inset Formula $^{6}.$
 \end_inset
 
- The stall angle is 8.0 degrees above wing chord, or 6.75 degrees above normal
+ The stall angle is 9.5 degrees above wing chord, or 8.5 degrees above normal
  glider attitude.
  Using these parameters, the stall speed fully loaded agrees with the pilot
  operating handbook for the Twin Astir.
@@ -4220,6 +4244,24 @@ USA 2nd gear: 1:1.52 transmission.
 .
  So when the engine turns 4500 rpm (max power) the winch turns at 820 rpm,
  x 1rad/sec/10rpm x 0.4m = 33 m/s peak engine speed.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-5"
+
+\end_inset
+
+
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/aerodynamics"
+options "plain"
+
+\end_inset
+
+
 \end_layout
 
 \end_body

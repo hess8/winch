@@ -1,8 +1,8 @@
 % Encoding: UTF-8
 
-@PhdThesis{Santel2010Accidents,
+@PhdThesis{Santel2008LaunchSims,
   author = {Santel, Christoph},
-  title  = {An investigation of glider winch launch accidents utilizing multipoint aerodynamics models in flight simulation},
+  title  = {Numerical Simulation of Glider Winch Launches},
   school = {Institute of Flight System Dynamics, RWTH Aachen, Germany},
   year   = {2008},
   type   = {phdthesis},
