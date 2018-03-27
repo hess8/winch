@@ -636,29 +636,6 @@ class pilot:
 
             return pid(varr,time,setpoint,c,ti.i,Nint)
             
-#        def vGrad(t,time,setpoint,ti,Nint):
-#            '''Start raising the vcontrol target to the setpoint at a given rate'''
-#            if (gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1)) or gl.data[ti.i]['v'] < 25: #no reason to control if going too slow
-#                pp =  0; pd =   0; pint =  0
-#            elif gl.state == 'onGnd':
-#                pp = 0; pd = 0; pint = 0 
-#            elif gl.state == 'preClimb':
-#                if gl.thetaD>setpoint:
-#                    pp = 8; pd = 0; pint = 0
-#                else:
-#                    pp = 0; pd = 0; pint = 0
-#            elif gl.state =='initClimb':
-#                pp = 64; pd = 0; pint = 0  
-#            elif gl.state == 'mainClimb': 
-#                pp = 32; pd = 16; pint = 32
-#            elif gl.state == 'prepRelease':
-#                pp =  0; pd =   0; pint =  0   
-#            c = array([pp,pd,pint])* gl.I/gl.vb
-#            varr = gl.data['v']
-#            tRamp = 2.0
-#            vtarget = max((t - self.tSwitch)/tRamp * setpoint,setpoint)
-#            return pid(varr,time,vtarget,c,ti.i,Nint)
-
         def vDDamp(t,time,setpoint,ti,Nint):
             pp = 0; pd = 4; pint = 0 #when speed is too high, pitch up
             c = array([pp,pd,pint])* gl.I/gl.vb
@@ -799,7 +776,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 #            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-            print 't,elev',t,deg(pl.elev)
+#            print 't,elev',t,deg(pl.elev)
     #         if rp.T > 10:
     #             print 'pause'
             # store data from this time step for use /in controls or plotting.  
@@ -878,8 +855,7 @@ hupdr = 600 #m At what height to turn the updraft on for stress testing
 if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
 dt = 0.05/float(tfactor) # nominal time step, sec
-#--- pilot
-elevTrim = 5  #deg
+
 #--- throttle and engine
 #tRampUpList = linspace(3,10,10)
 tRampUpList = [2] #If you only want to run one value
@@ -901,20 +877,23 @@ if 'dip' in throttleType: print 'dipT',dipT
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 70
 #ropeBreakAngle = None
-if not ropeBreakAngle is None: print 'Rope break simulation at angle {} deg'.format(ropeBreakAngle)  #
-
+if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.format(ropeBreakAngle)  #
 
 #--- pilot controls
-#control = ['alpha','alpha']  # Use '' for none
-#setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','alpha']  # Use '' for none
+setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
 #setpoint = [3,35, 30]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
-control = ['','v']
-setpoint = [0,35,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
+#control = ['v','v']
+#setpoint = [30,30,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
+
+#control = ['','']
+#setpoint = [0,30,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
+
 
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
@@ -947,7 +926,6 @@ for iloop,tRampUp in enumerate(tRampUpList):
     gl.v = 1e-6  #to avoid div/zero
     en.v = en.idle
     gl.theta  = rad(theta0)
-    pl.elev = rad(elevTrim)
     #initialize state vector to zero  
     S0 = zeros(10)
     #integrate the ODEs
@@ -963,8 +941,7 @@ for iloop,tRampUp in enumerate(tRampUpList):
     else:
         ti.i = argmax(ti.data['t'])
         itr = len(t)
-    #Find where release occurred in state data
-    
+    #Shorten state data
     t = t[:itr] #shorten
     
 # where(gl.yD < negvyTrigger/2)[0]    
@@ -1173,9 +1150,9 @@ plts.i = 0 #restart color cycle
 #plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
 #        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
 #        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
-plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,deg(alpha),deg(gData['alphaStall']),deg(gamma),deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack','stall angle','climb angle','elev deflection','throttle','rpm/100'],'Glider and engine')
+        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
 if len(tRampUpList) > 1:
     # plot loop results
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
