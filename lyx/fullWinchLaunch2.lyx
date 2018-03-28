@@ -2307,17 +2307,6 @@ M_{e}=M_{\delta e}(\alpha)\delta_{e}
 
 \end_layout
 
-\begin_layout Subsection*
-Ground roll
-\end_layout
-
-\begin_layout Standard
-The glider needs to be stable as it enter the rotation.
- If we're choosing constant angle of attack, the elevator should already
- have the setting needed.
- We
-\end_layout
-
 \begin_layout Section
 Winch operator
 \end_layout
@@ -2491,6 +2480,33 @@ we explain small changes to
 \end_inset
 
  at the glider that are caused by rope weight and drag.
+ 
+\end_layout
+
+\begin_layout Section
+Good pilot control
+\end_layout
+
+\begin_layout Standard
+1.
+ At least for T=1 launch on Grob Twin Astir, let the glider start the rotation.
+ It will be about 10 deg/sec.
+ Use the elevator to keep this rate going and then worry about speed control
+ 
+\end_layout
+
+\begin_layout Standard
+2.
+ Angle of attack control constant at 3 degreees is the best height in initial
+ test (T=1), and 70 knots is easy to control around.
+ 
+\end_layout
+
+\begin_layout Standard
+3.
+ Angle of attack control constant at 3 degreees (after glider starts rotation)
+ even works for constant throttle 100%....But weak link (1.3) breaks at 10 sec
+ when fully loaded.
  
 \end_layout
 
@@ -3607,8 +3623,6 @@ So now we can define a winch launch maneuvering speed that is independent
 \end_inset
 
 
-\backslash
-
 \end_layout
 
 \begin_layout Standard
@@ -3852,10 +3866,10 @@ n=1+n_{gust}=1+\frac{L_{\alpha}tan^{-1}\left(\frac{v_{wy}}{v_{o}}\right)}{W}
 \end_layout
 
 \begin_layout Standard
-The JAR-22 regulations specify ability to withstand vertiacl gusts of 15m/s,
+The JAR-22 regulations specify ability to withstand vertical gusts of 15m/s,
  and they give a default method that includes gust alleviation factor for
- the physical effects of a smooth entrance into the gust, and the small
- angle approximation: 
+ the physical effects of a smooth entrance into the gust, and the glider's
+ rotational response to it: 
 \end_layout
 
 \begin_layout Standard
