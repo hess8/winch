@@ -368,11 +368,11 @@ class rope:
         self.hystRate = 100     # hysteresis rate (1/sec) for dynamic stiffness. To turn this effect off, make this rate large, not small
         self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
 #        print'b set equal to zero!'
-#        self.b = 0.0            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
-        print'b set equal to 0.6!'
-        self.b = 0.6 
+#        self.b = 0.0            #  vertical distance (m) of rope attachment below CG
+#        print 'b set equal to 0.4!'
+#        self.b = 0.5 
 
-#        self.b = 0.3            #  vertial distance (m) of rope attachment below CG (guess that CG is at wing root height with pilots
+        self.b = 0.3            #  vertical distance (m) of rope attachment below CG  
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
@@ -876,12 +876,12 @@ tRampUp = 2
 tHold = 0.5
 targetT = 1.0
 dipT = 0.7
-thrmax =  0.75
+thrmax =  0.5
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
 #throttleType = 'constT'
-throttleType = 'constTdip'
-#throttleType = 'constThr'
+#throttleType = 'constTdip'
+throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
@@ -895,9 +895,10 @@ if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.
 
 #--- pilot controls
 #loopParams = linspace(3,8,20) #Alpha
-loopParams = [3] #Alpha
+#loopParams = [3] #Alpha
+loopParams = [''] #Alpha
 control = ['alpha','alpha']  # Use '' for none
-# setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
@@ -923,9 +924,10 @@ pilotType = 'elevControl' # includes elevator and response time, and necessary g
 data = zeros(len(loopParams),dtype = [('alpha1', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
-for iloop,param in enumerate(loopParams):
-    alpha1 = param
-    setpoint = [alpha1 ,3.0 , 150]  # deg,speed, deg last one is climb angle to transition to final control
+for iloop,param in enumerate(loopParams): 
+    if len(loopParams)>1: 
+        setpoint = [param ,3.0 , 150]  # deg,speed, deg last one is climb angle to transition to final control
+    alpha1 = setpoint[0]
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
     theta0 = 6   # deg resting angle of glider on ground    
     # create the objects we need from classes

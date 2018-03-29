@@ -1,0 +1,23 @@
+% Encoding: UTF-8
+
+@Article{1999RevMehodsExtremeWinds,
+  author   = {J P Palutikof and B B Brabson and D H Lister and S T Adcock},
+  title    = {A review of methods to calculate extreme wind speeds},
+  journal  = {Meteorological Applications},
+  year     = {1999},
+  volume   = {6},
+  number   = {2},
+  pages    = {119-132},
+  abstract = {Abstract Methods to calculate extreme wind speeds are described and reviewed, including ‘classical’ methods based on the generalized extreme value (GEV) distribution and the generalized Pareto distribution (GPD), and approaches designed specifically to deal with short data sets. The emphasis is very much on the needs of users who seek an accurate method to derive extreme wind speeds but are not fully conversant with up‐to‐date developments in this complex subject area. First, ‘standard’ methods are reviewed: annual maxima, independent storms, r‐largest extremes with the GEV distribution, and peak‐over‐threshold extremes with the GPD. Techniques for calculating the distribution parameters and quantiles are described. There follows a discussion of the factors which must be considered in order to fulfil the criterion that the data should be independent and identically distributed, and in order to minimize standard errors. It is commonplace in studies of extreme wind speeds that the time series available for analysis are very short. Finally, therefore, the paper deals with techniques applicable to data sets as short as two years, including simulation modelling and methods based on the parameters of the parent distribution. Copyright © 1999 Royal Meteorological Society},
+  doi      = {10.1017/S1350482799001103},
+  eprint   = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1017/S1350482799001103},
+  url      = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1017/S1350482799001103},
+}
+
+@Misc{FAAGustAdvisory2014,
+  title = {Federal Aviation Authority Advisory Circular 25.341-1},
+  month = dec,
+  year  = {2014},
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}

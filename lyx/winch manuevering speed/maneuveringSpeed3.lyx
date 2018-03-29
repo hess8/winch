@@ -158,7 +158,8 @@ key "Browning2007SafetyBGA"
 \end_inset
 
  did a similar study of the 391 British winch accidents from 1987 to 2004.
- He reported that the accident rate 
+ While winch launch accidents are rare (1.1 fatal or serious per 100,000),
+ he reported that the accident rate 
 \emph on
 per flight
 \emph default
@@ -179,14 +180,14 @@ key "Browning2007SafetyBGA"
 \end_inset
 
  for safer winch launching which were adoped by the British Gliding Association,
- which and are included in training material
+ which and are included in training materials 
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2010DanielsBGAWinchTraining"
 
 \end_inset
 
- compiled by Bill Daniels.
+ by Bill Daniels.
  Of the 18 deaths in Browning's study, 15 were attributed to stall, and
  one more possibly to stall.
  Eight of these fatal stalls were during rotation and the rest are due to
@@ -1251,7 +1252,7 @@ But for winch launching we should consider them at speeds near
 \begin_inset Formula $15$
 \end_inset
 
- m/s upward and downward relative to the flight path.
+ m/s (30 kts) upward and downward relative to the flight path.
  They give a 
 \begin_inset Quotes eld
 \end_inset
@@ -1330,6 +1331,129 @@ maximum gusts of
 \begin_layout Standard
 Gusts can increase the tension slightly (as shown by simulations) but the
  glider is protected by the weak link.
+\end_layout
+
+\begin_layout Subsubsection
+Gust probability distribution
+\end_layout
+
+\begin_layout Standard
+The choice of the specific design gust (
+\emph on
+perpendicular to the glider
+\begin_inset Formula $)$
+\end_inset
+
+ 
+\emph default
+of 15 m/s (30 kts) is derived by civial aviation authorities from the chance
+ gusts greater than this ocurring 
+\begin_inset Quotes eld
+\end_inset
+
+once in 70,000 flight hours
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "FAAGustAdvisory2014"
+
+\end_inset
+
+, Assuming an average winch launch time of 60 seconds, and expressing the
+ probability per launch, 
+\begin_inset Formula $Prob(15m/s)=\frac{60sec/launch}{70,000hrs\times3600sec/hr}=2\times10^{-7}$
+\end_inset
+
+ per launch.
+ In other words, it would take on average about 5 million launches of certified
+ gliders for one to even 
+\emph on
+experience
+\emph default
+ a 30 knot gust perpendicular to the glider.
+ This is more than the number of winch launches that have ever ocurred,
+ so it's not surprising that the statistics don't show a glider breaking
+ up due to gusts!
+\end_layout
+
+\begin_layout Standard
+Certainly the probability of gusts greater than 30 kts during a winch launch
+ is even lower than 
+\begin_inset Formula $2\times10^{-7}$
+\end_inset
+
+ per launch, because we don't launch in the worst of weather that a typical
+ aircraft must fly though.
+ 
+\end_layout
+
+\begin_layout Standard
+The probability distributions for extreme vertical gust speeds are well
+ approximated (order of magnitude) 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "1999RevMehodsExtremeWinds"
+
+\end_inset
+
+ with the Gumbel distribution, which is of a double-exponential decay form.
+ The probability during a launch that any gust observed is greater than
+ some 
+\begin_inset Formula $extreme$
+\end_inset
+
+ speed 
+\begin_inset Formula $v$
+\end_inset
+
+ is (a cumulative distribution function): 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+Prob(v)=1-exp\left(-exp\left(-\frac{v}{v_{d}}\right)\right)\label{eq:Gumbel probability distribution-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $v_{d}$
+\end_inset
+
+ is a speed that characterizes the distribution.
+ For very low probabilities, 
+\begin_inset Formula $Prob(v)=exp\left(-\frac{v}{v_{d}}\right)$
+\end_inset
+
+.
+ Setting this equal to the probability of 
+\begin_inset Formula $2\times10^{-7}$
+\end_inset
+
+per launch we get 
+\begin_inset Formula $v_{d}=\frac{15m/s}{-ln(2\times10^{-7})}$
+\end_inset
+
+= 1 m/s.
+ We can now use eqn.
+ A to find that the chance (in this distribution) of vertical gusts of 
+\begin_inset Formula $10$
+\end_inset
+
+m/s (20 kts) or more or more is about once in every 30,000 launches.
+ Similarly gusts of 5m/s or more (in this distribution) occur about once
+ in every 200 launches.
+ 
+\end_layout
+
+\begin_layout Standard
+Obviously with more than one variable, we can get a distribution that is
+ more accurate at different velocities.
+ 
 \end_layout
 
 \begin_layout Section
@@ -1563,7 +1687,7 @@ key "key-4"
 
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery"
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,D:/Winch launch physics/winchrep/bibtex/gustDistribModels"
 options "plain"
 
 \end_inset

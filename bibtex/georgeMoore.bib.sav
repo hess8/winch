@@ -7,11 +7,11 @@
   url    = {https://drive.google.com/open?id=12JWEclveavjwfWa5p6GpbucImS292ga9},
 }
 
-@Misc{x,
+@Misc{2012MooreConstAoaTdip,
   author = {George S. Moore},
-  title  = {ASK-21 Launch Failure Recovery Simulations},
-  year   = {2010},
-  url    = {https://drive.google.com/open?id=12JWEclveavjwfWa5p6GpbucImS292ga9},
+  title  = {Constant AoA Launch Simulations},
+  year   = {2012},
+  url    = {https://drive.google.com/open?id=1-LCYQuhzh6OWCffp6339i2NoQ6RYiGHM},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

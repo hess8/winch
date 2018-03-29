@@ -2532,7 +2532,7 @@ L_{max.v_{b}}=W\frac{v_{b}^{2}}{v_{stall}^{2}}
 \begin_layout Standard
 \begin_inset Formula 
 \[
-L=W\left[1+tanh\left(\frac{W}{L_{max.v_{b}}}\alpha\right)-q\left(1-tanh\left(\frac{\alpha-\alpha_{s}}{w_{s}}\right)\right)\right]\left(\frac{v}{v_{b}}\right)^{2}
+L=W\left[\right]\left(\frac{v}{v_{b}}\right)^{2}
 \]
 
 \end_inset
@@ -2995,7 +2995,7 @@ Then the angle at the glider is approximately:
 
 \end_inset
 
-We substitute write 
+We substitute 
 \begin_inset Formula $p=\frac{C_{dr}\rho v_{t}^{2}d_{r}}{2l^{2}}$
 \end_inset
 
@@ -3074,6 +3074,110 @@ reference "eq: theta rope at glider"
 \end_inset
 
  be greater than zero
+\end_layout
+
+\begin_layout Subsection
+Rope sag spring constant
+\end_layout
+
+\begin_layout Standard
+To test whether we need to consider the spring-like behavior of the rope
+ sag, we define 
+\begin_inset Formula $\Delta\theta=\theta_{r,glider}-\theta_{r}$
+\end_inset
+
+.
+ We make a poorer approximation compared to those above, and consider all
+ the mass and drag area to be at the midpoint.
+ Summing the forces along a line perpendicular to the winch-glider line:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+2Tsin\left(\Delta\theta\right)-m_{r}gcos\theta_{r}-f=m_{r}a_{y}=ml\left(\ddot{\Delta\theta}\right)
+\]
+
+\end_inset
+
+, where 
+\begin_inset Formula $m_{r}$
+\end_inset
+
+is the mass of the rope and 
+\begin_inset Formula $f$
+\end_inset
+
+ is the friction.
+ The rope weight is negligible vs the friction force, as per the simulation,
+ except at the beginning of the launch.
+ Neglect the acceleration term.
+ 
+\begin_inset Formula 
+\[
+\Delta\theta\approx\frac{f}{2T}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The distance between the glider and winch is (from a right triangle)
+\begin_inset Formula 
+\[
+d_{wg}=l_{o}\left(1+\frac{T}{YA}\right)\sqrt{1-sin(\Delta\theta)^{2}}\approx l_{o}\left(1+\frac{T}{YA}\right)\left(1-\frac{(\Delta\theta)^{2}}{2}\right)\approx l_{o}\left(1+\frac{T}{YA}-\frac{(\Delta\theta)^{2}}{2}\right)
+\]
+
+\end_inset
+
+.
+ Then 
+\begin_inset Formula 
+\[
+v_{wg}=\dot{d}_{wg}=l_{o}\left(\frac{1}{YA}-\frac{\partial}{\partial T}\frac{\left(\frac{f}{2T}\right)^{2}}{2}\right)\frac{dT}{dt}=l_{o}\left(\frac{1}{YA}+\frac{2\left(\frac{f}{2}\right)^{2}}{2T^{3}}\right)\frac{dT}{dt}=l_{o}\left(\frac{1}{YA}+\frac{f^{2}}{4T^{3}}\right)\frac{dT}{dt}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+, assuming that 
+\begin_inset Formula $f$
+\end_inset
+
+ doesn't change much with time.
+ So here's the point: 
+\begin_inset Formula $\frac{1}{YA}$
+\end_inset
+
+ is small (
+\begin_inset Formula $1.7x10^{-6}\text{T}^{-1}$
+\end_inset
+
+).
+ But the other term is smaller.
+ For a tension of 6000N, this means that 
+\begin_inset Formula $\frac{f^{2}}{4T^{3}}\approx\frac{1}{YA}$
+\end_inset
+
+ for us to consider it.
+ Solving, this gives 
+\begin_inset Formula $f\approx2000N$
+\end_inset
+
+ for it to be important, which will never happen.
+ So the 
+\bar under
+sag due to friction is stiffer than the rope
+\bar default
+, and we only need to consider the elasticity of the rope.
+ Likewise the small mass sag is also too stiff, even at the beginning of
+ the launch.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -3229,7 +3333,7 @@ and each is zero when the wheel has risen more than
 .
  It's best not to sum these analytically since they go to zero at different
  times.
- We also add some damping too each wheel through 
+ We also added some damping to each wheel through 
 \begin_inset Formula $c_{damp}.$
 \end_inset
 
