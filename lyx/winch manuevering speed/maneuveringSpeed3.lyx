@@ -356,7 +356,7 @@ Glider rated loads and maneuvering speed
 
 \begin_layout Standard
 Glider wings are designed to withstand positive wing loads 
-\begin_inset Formula $L_{max}$
+\begin_inset Formula $L_{max.design}$
 \end_inset
 
  of at least 
@@ -383,7 +383,7 @@ Glider wings are designed to withstand positive wing loads
 \begin_inset Formula $W$
 \end_inset
 
- of the glider:
+ of the loaded glider:
 \end_layout
 
 \begin_layout Standard
@@ -415,7 +415,11 @@ The design maneuvering speed
 \begin_inset Formula $V_{A}$
 \end_inset
 
- is next determined from the stall speed by
+ is next determined from the stall speed 
+\begin_inset Formula $V_{S}$
+\end_inset
+
+ by
 \begin_inset Formula 
 \[
 \frac{1}{2}\rho SC_{L.max}V_{A}^{2}=n_{1}mg=L_{max}
@@ -650,17 +654,16 @@ Wing bending under inertial loads
 \end_layout
 
 \begin_layout Standard
-For the moment we ignore gravity, the pilot, the fuselage and the tail,
- and just consider a flying wing under acceleratioin for example at speed
- v, turning in a circle of radius 
-\begin_inset Formula $R$
-\end_inset
-
- .
+For the moment we ignore gravity, the pilot, the fuselage and the tail.
+ We just consider a flying wing under 
+\emph on
+turning
+\emph default
+ acceleration (maneuvering).
  The lift it generates is
 \begin_inset Formula 
 \[
-L_{1}=m_{w}a=\frac{m_{w}v^{2}}{R}
+L_{1}=m_{w}a
 \]
 
 \end_inset
@@ -688,7 +691,7 @@ d (lift per length
  the circle.
  But because the mass is not distributed in the same manner as the lift,
  it will create bending along the wing which could be positive or negative.
- We focus on the bending of the wing spar at its root:
+ We study only the bending of the wing spar at the center of the span:
 \end_layout
 
 \begin_layout Standard
@@ -734,9 +737,7 @@ M_{1}=L_{1}\int_{0}^{b/2}\left(f_{L}(y)-f_{m}(y)\right)ydy
 
 \end_inset
 
-These functions could be close to elliptical, linear, trapezoidal, etc.
- But the integrals above are simply the definitions of the center of lift
- 
+The integrals above are simply the definitions of the center of lift 
 \begin_inset Formula $y_{L}$
 \end_inset
 
@@ -766,10 +767,10 @@ Now we add the mass of everything else: fuselage, tail, pilot,etc which
 \end_inset
 
 .
- Then the wing must generate an additional lift 
+ Then the wing must generate an additional lift to turn these masses: 
 \begin_inset Formula 
 \[
-L_{2}=m_{nl}a=\frac{m_{nl}v^{2}}{R}=\frac{m_{nl}}{m_{w}}L_{1}
+L_{2}=m_{nl}a=\frac{m_{nl}}{m_{w}}L_{1}
 \]
 
 \end_inset
@@ -856,7 +857,11 @@ M_{iner}=n_{a}Wy_{L}-n_{a}m_{w}gy_{G}\label{eq: inertial load bending-1}
 \end_inset
 
 , because the glider mass 
-\begin_inset Formula $m=m_{w}+m_{nl}$
+\begin_inset Formula $m=m_{w}+m_{nl},$
+\end_inset
+
+and 
+\begin_inset Formula $W=mg$
 \end_inset
 
 .
@@ -874,8 +879,9 @@ name "subsec:Wing-bending- top of launch"
 \end_layout
 
 \begin_layout Standard
-For now, we will consider the case just before release the glider is essentially
- above the winch and the rope angle is greater than 70 deg above the horizon.
+For now, we will consider the case just before release.
+ The glider is essentially just above the winch and the rope angle is greater
+ than 70 deg above the horizon.
  This is the part of the launch when the tension 
 \begin_inset Formula $T$
 \end_inset
@@ -970,9 +976,9 @@ reference "eq: inertial load bending-1"
 \end_inset
 
  than for inertial loads.
- This is because of the mass of the wing.
- In the inertial case, the lift bending is partially opposed by the opposite
- bending needed to accelerate the mass distributed along the wing.
+ This is because of the mass of the wing: in the inertial case, the lift
+ bending is partially opposed by the opposite bending needed to accelerate
+ the mass distributed along the wing.
  
 \end_layout
 
@@ -1004,7 +1010,7 @@ M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)\label{eq: Max bending mome
 
 \begin_layout Standard
 If the glider load was certified as inertial in addition to the glider's
- weight then we , from equ 
+ weight then we would subtract a term , from equ 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq: inertial load bending-1"
@@ -1016,8 +1022,19 @@ reference "eq: inertial load bending-1"
 
 \begin_layout Standard
 \begin_inset Formula 
+\[
+M_{max}=(n_{1}-1)W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+Wy_{L}-m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
 \begin{equation}
-M_{max}=(n_{1}-1)W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+Wy_{L}-m_{w}gy_{G}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}\label{eq: Max bending moment-1}
+M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}\label{eq: Max bending with weight static}
 \end{equation}
 
 \end_inset
@@ -1026,19 +1043,23 @@ M_{max}=(n_{1}-1)W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+Wy_{L}-m_{w}gy_{G}=n_{
 \end_layout
 
 \begin_layout Standard
-These differ only in the last term in eqn 
+These differ only in the last (small) term 
+\begin_inset Formula $-m_{w}gy_{G},$
+\end_inset
+
+ so we're on the safe side if we take the smaller of the two (eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "eq: Max bending moment-1"
+reference "eq: Max bending with weight static"
 
 \end_inset
 
-, which can be neglected as we discuss below.
+) in any case.
  
 \end_layout
 
 \begin_layout Subsection
-Winch maneuvering speed 
+Winch maneuvering speed: 
 \end_layout
 
 \begin_layout Standard
@@ -1075,7 +1096,7 @@ reference "eq:Static bending Fst"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}
 \]
 
 \end_inset
@@ -1086,7 +1107,7 @@ M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}gy_{L}-m_{w}gy_{G}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
+\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}gy_{L}-m_{w}gy_{G}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}
 \]
 
 \end_inset
@@ -1095,14 +1116,7 @@ M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
 \end_layout
 
 \begin_layout Standard
-We can simplify this if we neglect the last term which is small compared
- to the others .
- This will slightly decrease 
-\begin_inset Formula $V_{Aw}$
-\end_inset
-
-.
- Then we take for our proposed winch maneuvering speed:
+Then we take for our proposed winch maneuvering speed:
 \end_layout
 
 \begin_layout Standard
@@ -1214,7 +1228,104 @@ To stay under the maximum bending moment for the wings,
  
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Section
+Safety margins in winch launching
+\end_layout
+
+\begin_layout Standard
+There are three safety margins to consider in winch launching.
+ To give them similar form, we write them in terms of load factors (g's).
+ First a 
+\emph on
+structural
+\emph default
+ safety margin which shows how many g's of wing loading we are from breaking
+ the wing.
+\begin_inset Formula 
+\begin{equation}
+\overline{sm}_{struct}=\frac{L_{max.design}-L(t)}{W}\label{eq: structural SM}
+\end{equation}
+
+\end_inset
+
+Next the stall safety margin shows how many g's of wing loading we are from
+ stalling the wing at a certain speed.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\overline{sm}_{stall}=\frac{L_{max}(v)-L(t)}{W}\label{eq: stall SM}
+\end{equation}
+
+\end_inset
+
+, where 
+\begin_inset Formula $L_{max}(v)=\frac{1}{2}\rho SC_{L.max}v^{2}$
+\end_inset
+
+, the maximum lift that can be generated at speed 
+\begin_inset Formula $v$
+\end_inset
+
+, which occurs when the wing coefficient reaches its maximum (at the maximum
+ angle of attack).
+ We will use 
+\bar under
+only one stall speed
+\bar default
+ 
+\begin_inset Formula $V_{S}$
+\end_inset
+
+ in the discussion.
+ Any 
+\begin_inset Quotes eld
+\end_inset
+
+accelerated
+\begin_inset Quotes erd
+\end_inset
+
+ stall effects are in the magnitude of 
+\begin_inset Formula $L(t).$
+\end_inset
+
+ We can write 
+\begin_inset Formula $\overline{sm}_{stall}$
+\end_inset
+
+ in terms of the stall speed:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\overline{sm}_{stall}=\frac{L_{max}(v)-L(t)}{W}=\frac{W\left(\frac{v}{V_{S}}\right)^{2}-L(t)}{W}=\left(\frac{v}{V_{S}}\right)^{2}-\frac{L(t)}{W}
+\]
+
+\end_inset
+
+Finally the rope break margin which shows how close the rope is to breaking:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\overline{sm}_{rope}=\frac{T_{wl}-T(t)}{W}\label{eq: tension SM}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $T_{wl}$
+\end_inset
+
+is the weak link breaking force.
+ 
+\end_layout
+
+\begin_layout Section
 Gusts
 \end_layout
 
@@ -1340,14 +1451,14 @@ Gust probability distribution
 \begin_layout Standard
 The choice of the specific design gust (
 \emph on
-perpendicular to the glider
+perpendicular to the flight path
 \begin_inset Formula $)$
 \end_inset
 
  
 \emph default
 of 15 m/s (30 kts) is derived by civial aviation authorities from the chance
- gusts greater than this ocurring 
+ of gusts greater than this ocurring 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1362,14 +1473,15 @@ key "FAAGustAdvisory2014"
 
 \end_inset
 
-, Assuming an average winch launch time of 60 seconds, and expressing the
+.
+ Assuming an average winch launch time of 60 seconds, and expressing the
  probability per launch, 
 \begin_inset Formula $Prob(15m/s)=\frac{60sec/launch}{70,000hrs\times3600sec/hr}=2\times10^{-7}$
 \end_inset
 
  per launch.
- In other words, it would take on average about 5 million launches of certified
- gliders for one to even 
+ In other words, it would take on average about 5 million launches for one
+ to even 
 \emph on
 experience
 \emph default
@@ -1377,17 +1489,6 @@ experience
  This is more than the number of winch launches that have ever ocurred,
  so it's not surprising that the statistics don't show a glider breaking
  up due to gusts!
-\end_layout
-
-\begin_layout Standard
-Certainly the probability of gusts greater than 30 kts during a winch launch
- is even lower than 
-\begin_inset Formula $2\times10^{-7}$
-\end_inset
-
- per launch, because we don't launch in the worst of weather that a typical
- aircraft must fly though.
- 
 \end_layout
 
 \begin_layout Standard
@@ -1401,11 +1502,7 @@ key "1999RevMehodsExtremeWinds"
 
  with the Gumbel distribution, which is of a double-exponential decay form.
  The probability during a launch that any gust observed is greater than
- some 
-\begin_inset Formula $extreme$
-\end_inset
-
- speed 
+ some speed 
 \begin_inset Formula $v$
 \end_inset
 
@@ -1426,7 +1523,7 @@ where
 
  is a speed that characterizes the distribution.
  For very low probabilities, 
-\begin_inset Formula $Prob(v)=exp\left(-\frac{v}{v_{d}}\right)$
+\begin_inset Formula $Prob(v)\approx exp\left(-\frac{v}{v_{d}}\right)$
 \end_inset
 
 .
@@ -1450,10 +1547,146 @@ m/s (20 kts) or more or more is about once in every 30,000 launches.
  
 \end_layout
 
+\begin_layout Subsubsection
+Gust time correlations and our choice to launch
+\end_layout
+
 \begin_layout Standard
-Obviously with more than one variable, we can get a distribution that is
- more accurate at different velocities.
+The gust statistics used to establish a 15 m/s (30 kt) come from data amassed
+ from many thousands of hours of flight data and have no information about
+ the time-correlations of extreme gusts with weaker gusts.
+ We all know that it's more likely to experience a very strong gust soon
+ after we've experienced other gusts rather than other times.
+ So there are really many different distributions of gust probabilities
+ that change in time and the information we have about the recent past.
+ The winch launch (or aerotow ) extreme gust probabilities are 
+\emph on
+less
+\emph default
+ than the probabilities averaged over the life of the glider or pilot simply
+ because when we experience poor weather, we stop launching.
+ We shut down launching in about 60 sec on learning of poor weather, reducing
+ exposure to very extreme gusts in nastier weather.
+ On the other hand during a typical soaring flight when we discover bad
+ weather the time it takes to escape reduce our risk by changing route or
+ landing is closer to an hour, or 60 times longer.
+ This means during launch we use our knowledge of current bad weather to
+ reduce risk much more effectively than during typical flight..
+ It's the 
+\emph on
+extreme 
+\emph default
+gusts (probability distribution tails) that are the most time-correlated
+\begin_inset CommandInset citation
+LatexCommand citep
+key "StatWindGustsBoettcher2003"
+
+\end_inset
+
+ (see the strong dependence of the tails on sampling time in this reference,
+ fig 2).
+ Hence during launching extreme gusts are much less likely than the FAA
+ statistics for general flight.
+ In other words, we are warned away from the very infrequent most extreme
+ gusts by experiencing a few less extreme gusts; and during launching we
+ (as a group) act on the warning, reducing our risk.
  
+\end_layout
+
+\begin_layout Subsubsection
+Gusts causing stalls.
+ 
+\end_layout
+
+\begin_layout Standard
+When 
+\end_layout
+
+\begin_layout Subsubsection
+Gust probabilities vs serious or fatal accident probabilities
+\end_layout
+
+\begin_layout Standard
+From Browning's work, the fatal or serious accident rate per launch is 1.1
+ per 100,000.
+ The chance of gusts causing these accidents is related to the time spent
+ in the phases most sensitive to gusts.
+ 
+\end_layout
+
+\begin_layout Section
+Scheme
+\end_layout
+
+\begin_layout Standard
+Define a 
+\begin_inset Quotes eld
+\end_inset
+
+safety margin
+\begin_inset Quotes erd
+\end_inset
+
+ that includes risks of accelerated stall, gust stall, rope break, and inability
+ to recover from rope break.
+ LOGARITHMIC SCALE????
+\end_layout
+
+\begin_layout Standard
+Risks at top of launch:
+\end_layout
+
+\begin_layout Itemize
+Stall from vertical gust: : not dangerous
+\end_layout
+
+\begin_layout Itemize
+Wing breaking from vertical gust: L>Lmax
+\end_layout
+
+\begin_layout Itemize
+Rope break: not dangerous
+\end_layout
+
+\begin_layout Standard
+Risks during rotation:
+\end_layout
+
+\begin_layout Itemize
+stall from acceleration:
+\end_layout
+
+\begin_layout Itemize
+stall from gust
+\end_layout
+
+\begin_layout Itemize
+rope break
+\end_layout
+
+\begin_layout Standard
+Define a human maneuvering fluctuation from accident data
+\end_layout
+
+\begin_layout Standard
+Loss of control due to wing stalling before elevator stalls: spin
+\end_layout
+
+\begin_layout Paragraph
+Test STEP RESPONSE of system (T and en.v) to 
+\end_layout
+
+\begin_layout Itemize
+upward gust
+\end_layout
+
+\begin_layout Itemize
+full elevator deflection
+\end_layout
+
+\begin_layout Paragraph
+Have to include elevator flying separately from wind during stall to get
+ pitching
 \end_layout
 
 \begin_layout Section

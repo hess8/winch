@@ -85,7 +85,8 @@ def pid(var,time,setpoint,c,j,Nint):
         interr = sum(var[j-Nint : j])/(Nint + 1) - setpoint
     else:
         interr = 0 
-#    print 't',time[j],c[0]*err , c[1]*derr , c[2]*interr,c[0]*err + c[1]*derr + c[2]*interr   
+#     if 10<time[j] <13:
+#         print 't',time[j],c[0]*err , c[1]*derr , c[2]*interr,c[0]*err + c[1]*derr + c[2]*interr   
     return c[0]*err + c[1]*derr + c[2]*interr    
     
 def smooth(data,time,N):
@@ -433,7 +434,7 @@ class torqconv:
          return 1/float(self.Ko) * tanh((1-vrel)/self.dw)
 
 class engine:
-    '''This version models the torque curve with parameters rather than the power curve, and allows setting the peak torque and peak power 
+    '''Models the torque curve with parameters rather than the power curve, and allows setting the peak torque and peak power 
     rpms independently'''
     def __init__(self,tcUsed,rdrum):
         # Engine parameters  
@@ -686,7 +687,6 @@ class pilot:
         if self.currCntrl == 0 and (gl.y>1 and (gamma > crossAngle or gl.data[ti.i]['yDD']<0)):  #switch to 2nd control # or gl.thetaD < rad(10)  
             self.currCntrl = 1 #switches only once
             self.tSwitch = t
-            self.cOld = self.cCurr
             print 'Second control ({},{:3.1f}) turned on  at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
         ctype = self.ctrltype[self.currCntrl]
         setpoint = self.setpoint[self.currCntrl]
@@ -801,7 +801,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             # store data from this time step for use /in controls or plotting.
 #             if 9<t<10:
 #                 print 't',t,thetarope,vtrans,Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG)
-  
+            if 10<t<15:
+                print 't',t, ropetorq, M  
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
             gl.data[ti.i]['xD'] = gl.xD
@@ -910,7 +911,7 @@ if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(rop
 #loopParams = [3] #Alpha
 loopParams = [''] #Alpha
 control = ['alpha','alpha']  # Use '' for none
-setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [1 ,1 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
