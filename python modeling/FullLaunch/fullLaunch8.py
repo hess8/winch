@@ -241,17 +241,18 @@ class glider:
     def __init__(self,theta0,ntime):
         # parameters
         self.vb = 35              #   speed of glider at best glide angle
-#        self.vStall = 22          # stall speed fully loaded (m/s)
         self.alphaStall = rad(8.5)         #  stall angle vs glider zero
         self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
 #        self.wStall = rad(.5)      #transition width for post-stall loss
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
         self.Q = 36             #   L/D
-        
+        self.n1 = 5.3           # max wing loading before danger of structural failure        
         self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
         self.CLalpha = 5.2    # CL slope: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
+        self.CLmax = self.Co + self.CLalpha * self.alphaStall
+        self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
         self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
         self.palpha = 1.9     #   This is from xflr model: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
@@ -282,7 +283,7 @@ class glider:
         self.data = zeros(ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),('v', float),('vD', float),('yDD', float),('theta', float),('thetaD', float),\
                                     ('gamma', float),('alpha', float),('alphaStall', float),('vgw', float),('L', float),('D', float),('L/D',float),\
                                     ('gndTorq',float),('Fmain',float),('Ftail',float),('Malpha',float),\
-                                    ('Pdeliv',float),('Edeliv',float),('Emech',float)])
+                                    ('Pdeliv',float),('Edeliv',float),('Emech',float),('smStruct', float),('smStall', float)])
                     
     def findState(self,t,ti,rp):
         '''Determine where in the launch the glider is'''
@@ -382,7 +383,8 @@ class rope:
         # state variables 
         self.T = 0
         # data
-        self.data = zeros(ntime,dtype = [('T', float),('Tglider', float),('torq', float),('theta',float),('Pdeliv',float),('Edeliv',float)]) 
+        self.data = zeros(ntime,dtype = [('T', float),('Tglider', float),('torq', float),\
+                       ('theta',float),('Pdeliv',float),('Edeliv',float),('sm', float)]) 
         
         
 #     def avgT(self,ti):          
@@ -729,6 +731,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
                 rp.broken = True
                 rp.tRelease = t
                 print 'Rope broke at rope angle {:4.1f} deg, {:4.1f} s.'.format(deg(thetarope),t)
+                print 'Horizontal velocity {:4.1f} m/s.'.format(gl.xD)
         else:
             rp.T = 0.0
         lenrope = sqrt((rp.lo-gl.x)**2 + gl.y**2)
@@ -816,7 +819,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            
+            gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
+            gl.data[ti.i]['smStruct']  = gl.n1 - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
             gl.data[ti.i]['L']  = L
             gl.data[ti.i]['D']  = D
@@ -835,6 +839,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             rp.data[ti.i]['Tglider'] = Tg            
             rp.data[ti.i]['torq'] = ropetorq
             rp.data[ti.i]['theta'] = thetarope
+            rp.data[ti.i]['sm']
             wi.data[ti.i]['v'] = wi.v
             wi.data[ti.i]['Pdeliv'] = Few * wi.v
             wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
@@ -901,15 +906,15 @@ if 'dip' in throttleType: print 'dipT',dipT
 #--- rope
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
-ropeBreakTime = 100 #sec
+ropeBreakTime = 100#sec
 #ropeBreakAngle = None
 if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.format(ropeBreakAngle)  #
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
 
 #--- pilot controls
 #loopParams = linspace(3,8,20) #Alpha
-#loopParams = [3] #Alpha
-loopParams = [''] #Alpha
+loopParams = [3] #Alpha
+#loopParams = [''] #Alpha
 control = ['alpha','alpha']  # Use '' for none
 setpoint = [1 ,1 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
@@ -1032,6 +1037,9 @@ for iloop,param in enumerate(loopParams):
         gndTorq = smooth(gData['gndTorq'],tData,1)
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
+        smRope = smooth(rData['sm'],tData,1)
+        smStall = smooth(gData['smStall'],tData,1)
+        smStruct = smooth(gData['smStruct'],tData,1)
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]
@@ -1061,8 +1069,11 @@ for iloop,param in enumerate(loopParams):
         ropP = rData['Pdeliv']
         gliP = gData['Pdeliv']
         gndTorq = gData['gndTorq']
-        ropeTheta = rData['theta']
+        ropeTheta = gData['theta']
         ropeTorq = rData['torq']
+        smRope = rData['sm'] 
+        smStall = gData['smStall'] 
+        smStruct = gData['smStruct'] 
     #ground roll
     if max(gl.y) >gl.deltar:
         iEndRoll = where(gl.y > gl.deltar)[0][0]
@@ -1187,6 +1198,10 @@ plts.i = 0 #restart color cycle
 plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
+#plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+#        [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+#        ['v (glider)','T/W', 'L/W'],'Glider and safety margins')
+
 #zoom in on a time range same plot as above
 zoom = True
 if zoom:

@@ -368,8 +368,9 @@ Glider wings are designed to withstand positive wing loads
 \end_inset
 
  is a load factor.
- This must support the glider weight plus provide for turning acceleration.
- Winch rope tension doesn't affect negative loads so we ignore them.
+ This must support the glider weight plus provide for turning acceleration
+ and countering the rope tension.
+ We ignore negative loads.
  Generally in gliders 
 \begin_inset Formula $n_{1}=5.3$
 \end_inset
@@ -1233,7 +1234,8 @@ Safety margins in winch launching
 \end_layout
 
 \begin_layout Standard
-There are three safety margins to consider in winch launching.
+There are three safety margins that could apply to all phases of winch launching
+ .
  To give them similar form, we write them in terms of load factors (g's).
  First a 
 \emph on
@@ -1243,21 +1245,14 @@ structural
  the wing.
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{struct}=\frac{L_{max.design}-L(t)}{W}\label{eq: structural SM}
+\overline{sm}_{struct}=\frac{L_{max.design}-L(t)}{W}=n_{1}-\frac{L(t)}{W}\label{eq: structural SM}
 \end{equation}
 
 \end_inset
 
 Next the stall safety margin shows how many g's of wing loading we are from
  stalling the wing at a certain speed.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-\overline{sm}_{stall}=\frac{L_{max}(v)-L(t)}{W}\label{eq: stall SM}
-\end{equation}
-
+\begin_inset Formula $\overline{sm}_{stall}=\frac{L_{max}(v)-L(t)}{W}$
 \end_inset
 
 , where 
@@ -1268,17 +1263,18 @@ Next the stall safety margin shows how many g's of wing loading we are from
 \begin_inset Formula $v$
 \end_inset
 
-, which occurs when the wing coefficient reaches its maximum (at the maximum
+.
+ This occurs when the wing coefficient reaches its maximum (at the maximum
  angle of attack).
- We will use 
+ In ourdiscussion we will use 
 \bar under
 only one stall speed
 \bar default
- 
+, the unaccelerated stall speed 
 \begin_inset Formula $V_{S}$
 \end_inset
 
- in the discussion.
+ .
  Any 
 \begin_inset Quotes eld
 \end_inset
@@ -1291,22 +1287,23 @@ accelerated
 \begin_inset Formula $L(t).$
 \end_inset
 
- We can write 
+ We can write rewrite 
 \begin_inset Formula $\overline{sm}_{stall}$
 \end_inset
 
- in terms of the stall speed:
+ in terms of the unaccelerated stall speed:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
-\overline{sm}_{stall}=\frac{L_{max}(v)-L(t)}{W}=\frac{W\left(\frac{v}{V_{S}}\right)^{2}-L(t)}{W}=\left(\frac{v}{V_{S}}\right)^{2}-\frac{L(t)}{W}
-\]
+\begin{equation}
+\overline{sm}_{stall}=\left(\frac{v}{V_{S}}\right)^{2}-\frac{L(t)}{W}\label{eq:SM stall}
+\end{equation}
 
 \end_inset
 
-Finally the rope break margin which shows how close the rope is to breaking:
+Third, the rope break margin which shows how close the rope is to breaking
+ is:
 \end_layout
 
 \begin_layout Standard
@@ -1323,6 +1320,317 @@ where
 
 is the weak link breaking force.
  
+\end_layout
+
+\begin_layout Section
+Rope break recovery safety margin
+\end_layout
+
+\begin_layout Standard
+The last safety margin applies during the rotation and initial climb, and
+ is more difficult to write.
+ It is having more than sufficient speed and height after a rope break or
+ power failure to recover to level flight.
+ Browning
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+, Hills
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+ and Moore
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2011MooreRecoveryASK21"
+
+\end_inset
+
+ did simulations to find safe speeds and heights, and heights lost during
+ recovery.
+\end_layout
+
+\begin_layout Standard
+We wish to define a safety margin that doesn't require a separate simultation,
+ so we solve the differential equations approximately.
+ For now we neglect drag.
+ At the time of the break, the glider has speed 
+\begin_inset Formula $v_{b}$
+\end_inset
+
+ and climb angle 
+\begin_inset Formula $\gamma_{br}.$
+\end_inset
+
+ We call the glider height 
+\begin_inset Formula $y=0.$
+\end_inset
+
+ The pilot puts the glider in a ballistic (zero lift) pushover right after
+ the rope break.
+ The arc continues past the peak until the glider has reached speed 
+\begin_inset Formula $V_{S}$
+\end_inset
+
+ (a slower speed could be chosen, but we can choose 
+\begin_inset Formula $V_{S}$
+\end_inset
+
+ for simplicity and to be conservative.
+ Then the pilot must pull out to level flight.
+ 
+\end_layout
+
+\begin_layout Standard
+The height gain during the ballistic pushover is obtained by energy conservation
+; 
+\begin_inset Formula 
+\[
+\Delta y_{1}=\frac{v_{br}^{2}-V_{S}^{2}}{2g}
+\]
+
+\end_inset
+
+At this point the flight angle is 
+\begin_inset Formula 
+\[
+\gamma_{1}=tan^{-1}\left(\frac{v_{y}}{v_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{S}^{2}-v_{x}^{2}}}{v_{x}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The horizontal velocity 
+\begin_inset Formula $v_{x}=v_{b}cos\gamma_{b}$
+\end_inset
+
+ doesn't change much during the pushover.
+ 
+\end_layout
+
+\begin_layout Standard
+The height loss during the pull out to level flight is more complicated.
+ The differential equations can be written in terms of speed and the climb
+ angle, from Newton's laws written for directions along the path and perpendicul
+ar to it.
+ 
+\begin_inset Formula 
+\[
+m\dot{v}=mgsin\gamma
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
+\]
+
+\end_inset
+
+During a time 
+\begin_inset Formula $t_{p}$
+\end_inset
+
+ the flight angle must change from 
+\begin_inset Formula $\gamma_{1}$
+\end_inset
+
+ to zero, and the average flight angle is approximately 
+\begin_inset Formula $\bar{\gamma}=\frac{\gamma_{1}}{2}$
+\end_inset
+
+ below the horizon (a bar over a variable means average).
+ Then
+\begin_inset Formula 
+\[
+t_{p}\approx\frac{\gamma_{1}}{\bar{\dot{\gamma}}}\approx\frac{\gamma_{1}m\bar{v}}{\bar{L}-mgcos\bar{\gamma}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We write the average lift as an n-factor 
+\begin_inset Formula $\bar{L}=n_{p}mg$
+\end_inset
+
+.
+ For example in a 2-g pull up, 
+\begin_inset Formula $n=2.$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+t_{p}\approx\frac{\gamma_{1}\bar{v}}{g(n_{p}-cos\bar{\gamma})}\label{eq: pullup time}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The height lost will be approximately
+\begin_inset Formula 
+\begin{equation}
+\Delta y_{2}\approx\bar{v_{y}}t_{p}=\bar{v}sin\bar{\gamma}t_{p}\label{eq: height lost 1}
+\end{equation}
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Finally we estimate the average lift and speed during the pull-up.
+ The speed increases during the pull out (from approximate energy conservation)
+ and the final speed is 
+\begin_inset Formula $v_{f}=\sqrt{V_{S}^{2}+2g\Delta y_{2}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The final speed (after the pull out) is from the average acceleration along
+ the path:
+\begin_inset Formula 
+\[
+v_{f}\approx V_{S}+gsin\bar{\gamma}\,t_{p}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then the average speed is 
+\begin_inset Formula 
+\begin{equation}
+\bar{v}\approx V_{S}+\frac{1}{2}gsin\bar{\gamma}\,t_{p}\label{eq:avg speed 1}
+\end{equation}
+
+\end_inset
+
+.We substitute this into eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: pullup time"
+
+\end_inset
+
+ :
+\begin_inset Formula 
+\[
+t_{p}\approx\frac{\gamma_{1}\left(V_{S}+\frac{1}{2}gsin\bar{\gamma}\,t_{p}\right)}{g(n_{p}-cos\bar{\gamma})}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and solve for 
+\begin_inset Formula $t_{p}:$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+t_{p}=\frac{\gamma_{1}V_{S}}{g(n_{p}-cos\bar{\gamma}-\frac{1}{2}sin\bar{\gamma})}\label{eq: pull up time finished}
+\end{equation}
+
+\end_inset
+
+ and the average speed during the pull up is using eqns 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:avg speed 1"
+
+\end_inset
+
+,
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: pull up time finished"
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\bar{v}\approx V_{S}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-\frac{1}{2}sin\bar{\gamma})}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then the height lost, using the previous equation and eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: height lost 1"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\Delta y_{2}\approx\bar{v}sin\bar{\gamma}t_{p}\label{eq: height lost finished}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\Delta y_{2}\approx V_{S}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-\frac{1}{2}sin\bar{\gamma})}\right)sin\bar{\gamma}\frac{\gamma_{1}V_{S}}{g(n_{p}-cos\bar{\gamma}-\frac{1}{2}sin\bar{\gamma})}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is not a simple equation, but it's much easier than solving the differentia
+l equations by simultions
 \end_layout
 
 \begin_layout Section
