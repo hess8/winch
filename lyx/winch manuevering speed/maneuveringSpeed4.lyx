@@ -529,7 +529,7 @@ status collapsed
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename Vw over Va.png
-	scale 80
+	scale 70
 
 \end_inset
 
@@ -1230,6 +1230,232 @@ To stay under the maximum bending moment for the wings,
 \end_layout
 
 \begin_layout Section
+Stall and rope break risks 
+\end_layout
+
+\begin_layout Standard
+With the wings protected by flying below our defined 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ , we ask if 
+\begin_inset Formula $V_{W}$
+\end_inset
+
+ should be any lower than 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ to prevent rope breaks and stalls.
+ 
+\end_layout
+
+\begin_layout Standard
+We could attempt a detailed analysis of the inertial and tension loads that
+ the glider could experience at different speeds, and probably not come
+ to a definitive conclusion.
+ But an important concept is that the tension and inertial stresses are
+ the same (when scaled by glider weight and 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+) for all gliders unless they have very different control authority.
+ If a glider had exceptionally large elevator authority, there might be
+ justification for a smaller 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+ to prevent the pilot from breaking the rope or stalling the glider by over-use
+ of the elevator.
+ So we ask if the ASW-27 at the bottom of the 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+ chart (Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: VW over VA"
+
+\end_inset
+
+) has much larger elevator authority than the Ventus 2c at the top.
+ The plan view drawings of the two gliders show essentially identical relative
+ areas.
+ All the composite gliders flying today likely have similar elevator (and
+ other controls) authority, and hence the same risk of stall or rope break
+ with variation of pilot maneuvers, which would justify having very similar
+ ratios of 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Empirically we can simply look at gliders at the top of the existing 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+ chart to see that some have been certified and tested to fly with winch
+ speeds up to 
+\begin_inset Formula $V_{w}/V_{A}=0.84$
+\end_inset
+
+.
+ If all common gliders have similar control authority, and hence similar
+ risk of stall or rope break, is there any reason why 
+\begin_inset Formula $V_{W}$
+\end_inset
+
+ for each composite glider flying today should not be the lower of 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ or 0.84 
+\begin_inset Formula $V_{A}?$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Vw2 Vw vs VA.png
+	scale 35
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig: VW2, Vw vs VA"
+
+\end_inset
+
+Manufacturers' max winch speed 
+\begin_inset Formula $V_{W}$
+\end_inset
+
+ (blue) and proposed 
+\begin_inset Formula $V_{w2}$
+\end_inset
+
+(red) vs maneuvering speed 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+.
+ Here 
+\begin_inset Formula $\frac{y_{G}}{y_{L}}=0.7$
+\end_inset
+
+ is used, though this should be determined for each glider by wing CG measuremen
+t and wing lift distribution modeling.
+ Note that the Grob point covers the Cirrus point; the Duo points cover
+ the Ventus 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+point.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: VW2, Vw vs VA"
+
+\end_inset
+
+we plot the same data in Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: VW over VA"
+
+\end_inset
+
+ along with a new proposed maximum speed which we label
+\begin_inset Formula $V_{W2}$
+\end_inset
+
+ : it is the lower of
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ or 0.84 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+.
+ For the figure we have simply assumed 
+\begin_inset Formula $\frac{y_{G}}{y_{L}}=0.7$
+\end_inset
+
+, though this should be determined for each glider by wing CG measurement
+ and simple wing lift distribution modeling, and have used 
+\begin_inset Formula $m$
+\end_inset
+
+ as the manuals' maximum gross mass, and 
+\begin_inset Formula $m_{w}$
+\end_inset
+
+as the difference between 
+\begin_inset Formula $m$
+\end_inset
+
+ and the maximum non-lifting mass.
+ For the Ventus 2c, 
+\begin_inset Formula $V_{W2}$
+\end_inset
+
+ is lower than the present 
+\begin_inset Formula $V_{w,}$
+\end_inset
+
+because it is calculated with maximum water load, and the wing weight ratio
+ is large.
+ For all the others, 
+\begin_inset Formula $V_{W2}$
+\end_inset
+
+ is the same or larger.
+ Note that the Grob point covers the Cirrus point and the Duo points cover
+ the Ventus 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+(blue) point.
+ 
+\end_layout
+
+\begin_layout Standard
+We now examine other factors that influence our choice of glider speed during
+ the launch.
+\end_layout
+
+\begin_layout Section
 Safety margins in winch launching
 \end_layout
 
@@ -1435,7 +1661,7 @@ above the ground
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left(\left(\frac{V_{br}}{V_{r}}\right)^{2}-1\right)+\frac{\sqrt{V_{x}^{2}-V_{R}^{2}}}{2g}-\label{eq: recovery SM without dive}
+\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left(\left(\frac{V_{br}}{V_{r}}\right)^{2}-1\right)+\frac{\sqrt{V_{x}^{2}-V_{R}^{2}}}{2g}\label{eq: recovery SM without dive}
 \end{equation}
 
 \end_inset
@@ -1448,7 +1674,7 @@ Recovery with dive:
 \begin_inset Formula $V_{x}<V_{r}$
 \end_inset
 
-
+ constant transverse acceleration 
 \end_layout
 
 \begin_layout Standard
@@ -1470,7 +1696,7 @@ In this case the ballistic arc continues until the glider has reached speed
 At this point the dive angle is below the horizon at
 \begin_inset Formula 
 \begin{equation}
-\gamma_{1}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)\label{eq: gamma 1}
+\gamma_{d}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)\label{eq: gamma 1-2}
 \end{equation}
 
 \end_inset
@@ -1483,6 +1709,7 @@ The height loss during the pullout to level flight is more complicated.
  The differential equations can be written in terms of speed and the climb
  angle, from Newton's laws written for directions along the path and perpendicul
 ar to it.
+ We neglect drag for now.
  
 \begin_inset Formula 
 \[
@@ -1502,367 +1729,15 @@ ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
 
 \end_inset
 
-During a time 
-\begin_inset Formula $t_{p}$
-\end_inset
-
- the dive angle changes from 
-\begin_inset Formula $\gamma_{1}$
-\end_inset
-
- to zero, and the average flight angle is approximately 
-\begin_inset Formula $\bar{\gamma}=\frac{\gamma_{1}}{2}$
-\end_inset
-
- below the horizon (a bar over a variable means average).
- Then
-\begin_inset Formula 
-\[
-t_{p}\approx\frac{\gamma_{1}}{\bar{\dot{\gamma}}}\approx\frac{\gamma_{1}m\bar{v}}{\bar{L}-mgcos\bar{\gamma}}
-\]
+If the pilot executes a pullout with constant turning g's (turning acceleration)
+ as suggested by Browning
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-We write the average lift as an n-factor 
-\begin_inset Formula $\bar{L}=n_{p}mg$
-\end_inset
-
-.
- For example in a 2-g pull up, 
-\begin_inset Formula $n=2.$
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-t_{p}\approx\frac{\gamma_{1}\bar{v}}{g(n_{p}-cos\bar{\gamma})}\label{eq: pullup time}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The height lost will be approximately
-\begin_inset Formula 
-\begin{equation}
-\Delta y_{2}\approx\bar{v_{y}}t_{p}=\bar{v}sin\bar{\gamma}t_{p}\label{eq: height lost 1}
-\end{equation}
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-Finally we estimate the average lift and speed during the pull-up.
- The speed increases during the pullout (from approximate energy conservation)
- and the final speed is 
-\begin_inset Formula $v_{f}=\sqrt{V_{r}^{2}+2g\Delta y_{2}}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The final speed (after the pullout) is from the average acceleration along
- the path:
-\begin_inset Formula 
-\[
-v_{f}\approx V_{r}+gsin\bar{\gamma}\,t_{p}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-If the speed increased linearly during the pullup then average speed would
- be 
-\begin_inset Formula $\bar{v}=V_{r}+\frac{1}{2}gsin\bar{\gamma}\,t_{p}$
-\end_inset
-
-.
- But the speed is not linear, so we replace the 
-\begin_inset Formula $\frac{1}{2}$
-\end_inset
-
- with an adjustable constant 
-\begin_inset Formula $a_{p}$
-\end_inset
-
-
-\begin_inset Formula 
-\begin{equation}
-\bar{v}\approx V_{r}+a_{p}gsin\bar{\gamma}\,t_{p}\label{eq:avg speed 1}
-\end{equation}
-
-\end_inset
-
-.We substitute this into eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: pullup time"
-
-\end_inset
-
- :
-\begin_inset Formula 
-\[
-t_{p}\approx\frac{\gamma_{1}\left(V_{r}+a_{p}gsin\bar{\gamma}\,t_{p}\right)}{g(n_{p}-cos\bar{\gamma})}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-and solve for 
-\begin_inset Formula $t_{p}:$
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-t_{p}=\frac{\gamma_{1}V_{r}}{g(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}\label{eq: pull up time finished}
-\end{equation}
-
-\end_inset
-
- and the average speed during the pull up is using eqns 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:avg speed 1"
-
-\end_inset
-
-,
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: pull up time finished"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\bar{v}\approx V_{r}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Then the height lost, using the previous equation and eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: height lost 1"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-\Delta y_{2}\approx\bar{v}sin\bar{\gamma}t_{p}\label{eq: height lost finished}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\Delta y_{2}\approx V_{r}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}\right)sin\bar{\gamma}\frac{\gamma_{1}V_{r}}{g(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\Delta y_{2}\approx\frac{V_{r}^{2}}{g}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}\right)sin\bar{\gamma}\frac{\gamma_{1}}{(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-We add 
-\begin_inset Formula $\Delta y_{1}$
-\end_inset
-
-and 
-\begin_inset Formula $\Delta y_{2}$
-\end_inset
-
-to get the total height change for the entire recovery after rope break:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\Delta y=\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{b}}{Vr}\right)^{2}-1-\frac{2\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma}-a_{p}\gamma_{1}sin\bar{\gamma})}\right)\right]
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Then the recovery safety margin 
-\emph on
-expressed in height
-\emph default
- 
-\emph on
-above the ground
-\emph default
- is 
-\begin_inset Newline linebreak
-\end_inset
-
-
-\begin_inset Formula 
-\[
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-where 
-\begin_inset Formula 
-\begin{equation}
-\Gamma=\frac{\gamma_{1}sin\frac{\gamma_{1}}{2}}{(n_{p}-cos\frac{\gamma_{1}}{2}-a_{p}\gamma_{1}sin\frac{\gamma_{1}}{2})}\label{eq: big Gamma}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $ $
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection*
-Recovery with dive: 
-\begin_inset Formula $V_{x}<V_{r}$
-\end_inset
-
- Constant transverse acceleration (
-\begin_inset Quotes eld
-\end_inset
-
-perceived
-\begin_inset Quotes erd
-\end_inset
-
- as suggested by Browning)
-\end_layout
-
-\begin_layout Standard
-In this case the ballistic arc continues until the glider has reached speed
- 
-\begin_inset Formula $V_{r}$
-\end_inset
-
- (a slower speed could be chosen, but we can choose 
-\begin_inset Formula $V_{r}$
-\end_inset
-
- for simplicity and to be conservative).
- Then the pilot must pullout to level flight.
- 
-\end_layout
-
-\begin_layout Standard
-At this point the dive angle is below the horizon at
-\begin_inset Formula 
-\begin{equation}
-\gamma_{1}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)\label{eq: gamma 1-2}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The height loss during the pullout to level flight is more complicated.
- The differential equations can be written in terms of speed and the climb
- angle, from Newton's laws written for directions along the path and perpendicul
-ar to it.
- 
-\begin_inset Formula 
-\[
-m\dot{v}=mgsin\gamma-D
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
-\]
-
-\end_inset
-
-If the pilot executes a pullout with constant 
-\begin_inset Formula $perceived$
-\end_inset
-
- g's (acceleration), then 
+, rather than constant lift, then 
 \begin_inset Formula $L$
 \end_inset
 
@@ -1870,19 +1745,28 @@ If the pilot executes a pullout with constant
 \begin_inset Formula $L-mgcos\gamma=n_{p}mg$
 \end_inset
 
- .
- This is not a bad approximation because with a constant angle of attack,
- as v increases more lift is generated toward the bottom of the pullout,
- where it is needed.
- Drag is written as a dimensionless constant 
-\begin_inset Formula $D=L/Q$
+ , a constant.
+ This has the advantage that the pilot feels the turning acceleration directly
+ as an additional seat forceThis is similar to the constant angle of attack
+ pullout modeled by Moore
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2011MooreRecoveryASK21"
+
 \end_inset
 
- where 
-\begin_inset Formula $Q$
+, because in a constant AoA pullup, as v increases more lift is generated
+ toward the bottom of the pullout, where it is needed.
+ Here, 
+\begin_inset Formula $L=n_{p}mg+mgcos\gamma$
 \end_inset
 
- the lift/drag ratio, higher during the pullout than at best glide.
+, which also increases toward the bottom of the dive (low 
+\begin_inset Formula $\gamma$
+\end_inset
+
+).
+ The rotation rate slows as v increases in the dive.
  
 \end_layout
 
@@ -1892,29 +1776,21 @@ During a time
 \end_inset
 
  the dive angle changes from 
-\begin_inset Formula $\gamma_{1}$
+\begin_inset Formula $\gamma_{d}$
 \end_inset
 
  to zero, and the average flight angle is approximately 
-\begin_inset Formula $\bar{\gamma}=\frac{\gamma_{1}}{2}$
+\begin_inset Formula $\bar{\gamma}=\frac{\gamma_{d}}{2}$
 \end_inset
 
  below the horizon (a bar over a variable means average).
  Then
-\begin_inset Formula 
-\[
-t_{p}\approx\frac{\gamma_{1}}{\bar{\dot{\gamma}}}\approx\frac{\gamma_{1}m\bar{v}}{n_{p}mg}
-\]
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-t_{p}\approx\frac{\gamma_{1}\bar{v}}{n_{p}g}\label{eq: pullup time-1}
+t_{p}\approx\frac{\gamma_{d}}{\bar{\dot{\gamma}}}\approx\approx\frac{\gamma_{d}m\bar{v}}{n_{p}mg}=\frac{\gamma_{d}\bar{v}}{n_{p}g}\label{eq: pullup time-1}
 \end{equation}
 
 \end_inset
@@ -1935,38 +1811,25 @@ The height lost will be approximately
 \end_layout
 
 \begin_layout Standard
-Finally we estimate the average lift and speed during the pull-up.
+Finally we estimate the average speed during the pull-up.
  The final speed (after the pullout) is from the average acceleration along
- the path:
-\begin_inset Formula 
-\[
-v_{f}\approx V_{r}+\left(gsin\bar{\gamma}-D/m\right)\,t_{p}=V_{r}+\left(gsin\bar{\gamma}-g\left(n_{p}+cos\bar{\gamma}\right)/Q\right)\,t_{p}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-If the speed increased linearly during the pullup then the average speed
- would be 
-\begin_inset Formula $\bar{v}=V_{r}+\frac{1}{2}g\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right)\,t_{p}$
+ the path: 
+\begin_inset Formula $v_{f}\approx V_{r}+gsin\bar{\gamma}\,t_{p}$
 \end_inset
 
 .
- But the speed is not linear, so we replace the 
-\begin_inset Formula $\frac{1}{2}$
+\end_layout
+
+\begin_layout Standard
+Assuming a linear speed increase during the pullout 
+\begin_inset Formula $ $
 \end_inset
 
- with an adjustable constant 
-\begin_inset Formula $a_{p}$
-\end_inset
-
-
+.
+ 
 \begin_inset Formula 
 \begin{equation}
-\bar{v}\approx V_{r}+a_{p}g\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right)\,t_{p}\label{eq:avg speed 1-1}
+\bar{v}\approx V_{r}+\frac{1}{2}g\left(sin\bar{\gamma}\right)\,t_{p}\label{eq:avg speed 1-1}
 \end{equation}
 
 \end_inset
@@ -1978,19 +1841,7 @@ reference "eq: pullup time-1"
 
 \end_inset
 
- :
-\begin_inset Formula 
-\[
-t_{p}\approx\frac{\gamma_{1}\left(V_{r}+a_{p}g\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right)\,t_{p}\right)}{n_{p}g}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-and solve for 
+ and solve for 
 \begin_inset Formula $t_{p}:$
 \end_inset
 
@@ -2000,7 +1851,7 @@ and solve for
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-t_{p}=\frac{\gamma_{1}V_{r}}{g\left[n_{p}-a_{p}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right)\right]}\label{eq: pull up time finished-1}
+t_{p}=\frac{\gamma_{d}V_{r}}{g\left[n_{p}-\frac{1}{2}\gamma_{d}sin\bar{\gamma}\right]}\label{eq: pull up time finished-1}
 \end{equation}
 
 \end_inset
@@ -2025,7 +1876,7 @@ reference "eq: pull up time finished-1"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\bar{v}\approx V_{r}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{n_{p}-a_{p}\gamma_{1}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right)}\right)
+\bar{v}\approx V_{r}\left(1+\frac{\gamma_{d}sin\bar{\gamma}}{n_{p}-\frac{1}{2}\gamma_{d}sin\bar{\gamma}}\right)
 \]
 
 \end_inset
@@ -2058,18 +1909,7 @@ reference "eq: height lost 1-1"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\Delta y_{2}\approx V_{r}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-a_{p}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right))}\right)sin\bar{\gamma}\frac{\gamma_{1}V_{r}}{g(n_{p}-a_{p}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\bar{\gamma}}{Q}\right))}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\Delta y_{2}\approx\frac{V_{r}^{2}}{g}\left(1+\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-a_{p}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\gamma}{Q}\right))}\right)sin\bar{\gamma}\frac{\gamma_{1}}{(n_{p}-a_{p}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\gamma}{Q}\right))}
+\Delta y_{2}\approx\frac{V_{r}^{2}}{g}\left(1+\frac{\gamma_{d}sin\bar{\gamma}}{(n_{p}-\frac{1}{2}\gamma_{d}sin\bar{\gamma})}\right)sin\bar{\gamma}\frac{\gamma_{1}}{(n_{p}-\frac{1}{2}\gamma_{d}sin\bar{\gamma})}
 \]
 
 \end_inset
@@ -2097,22 +1937,9 @@ to get the total height change for the entire recovery after rope break:
 \end_layout
 
 \begin_layout Standard
-Then the recovery safety margin 
-\emph on
-expressed in height
-\emph default
- 
-\emph on
-above the ground
-\emph default
- is 
-\begin_inset Newline linebreak
-\end_inset
-
-
 \begin_inset Formula 
 \[
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]
+\Delta y=\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma'+2\Gamma'^{2})\right]
 \]
 
 \end_inset
@@ -2124,7 +1951,7 @@ above the ground
 where 
 \begin_inset Formula 
 \begin{equation}
-\Gamma=\frac{\gamma_{1}sin\frac{\gamma_{1}}{2}}{(n_{p}-a_{p}\gamma_{1}\left(sin\bar{\gamma}-\frac{n_{p}+cos\gamma}{Q}\right))}\label{eq: big Gamma-1}
+\Gamma'=\frac{\gamma_{d}sin\frac{\gamma_{d}}{2}}{n_{p}-\frac{1}{2}\gamma_{d}sin\bar{\gamma}}\label{eq: big Gamma-1}
 \end{equation}
 
 \end_inset
@@ -2133,346 +1960,31 @@ where
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $ $
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive-2}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection*
-Recovery with dive: 
-\begin_inset Formula $V_{x}<V_{r}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-CIRCULAR approx
-\end_layout
-
-\begin_layout Standard
-In this case the ballistic arc must continue until the glider has reached
- speed 
-\begin_inset Formula $V_{r}$
-\end_inset
-
- (a slower speed could be chosen, but we can choose 
-\begin_inset Formula $V_{r}$
-\end_inset
-
- for simplicity and to be conservative).
- Then the pilot must pullout to level flight.
- 
-\end_layout
-
-\begin_layout Standard
-At this point the flight angle is below the horizon at an angle
-\begin_inset Formula 
-\begin{equation}
-\gamma_{1}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)\label{eq: gamma 1-1}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The height loss during the pullout to level flight is more complicated.
- The differential equations can be written in terms of speed and the climb
- angle, from Newton's laws written for directions along the path and perpendicul
-ar to it.
- 
-\begin_inset Formula 
-\[
-m\dot{v}=mgsin\gamma
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-ma_{\bot}=L-mgcos\gamma
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-We approximate this with a constant anglular acceleration, which gives a
- circular path of radius 
-\begin_inset Formula $R,$
-\end_inset
-
- and the glider moves with an average speed 
-\begin_inset Formula $\bar{v}$
-\end_inset
-
- and generates average lift 
-\begin_inset Formula $\bar{L}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-ma_{\bot}=\frac{m\bar{v}^{2}}{R}=\bar{L}-mgcos\bar{\gamma}
-\]
-
-\end_inset
-
-During the time for the pullout 
-\begin_inset Formula $t_{p}$
-\end_inset
-
- the flight angles change from 
+Finally we include a parameter to help account for the neglect of drag and
+ the other approximations we have made compared to a detailed simultion.
+ We raise 
 \begin_inset Formula $\gamma_{1}$
 \end_inset
 
- to zero, and the average flight angle is approximately 
-\begin_inset Formula $\bar{\gamma}=\frac{\gamma_{1}}{2}$
+ to an adjustable power 
+\begin_inset Formula $p$
 \end_inset
 
- below the horizon (a bar over a variable means average).
- Then the time for the pullout is the arc length divided by the speed: 
-\begin_inset Formula 
-\[
-t_{p}\approx\frac{R\gamma_{1}}{\bar{v}}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-We fix the average lift and average speed during the pull-up.
- The speed increases during the pullout (from approximate energy conservation)
- and the final speed is 
-\begin_inset Formula $v_{f}=\sqrt{V_{r}^{2}+2g\Delta y_{2}}$
-\end_inset
-
-.
- The final speed (after the pullout) is from the average acceleration along
- the path:
-\begin_inset Formula 
-\[
-v_{f}\approx V_{r}+gsin\bar{\gamma}\,t_{p}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-If the speed increased linearly during the pullup then average speed would
- be 
-\begin_inset Formula $\bar{v}=V_{r}+\frac{1}{2}gsin\bar{\gamma}\,t_{p}$
-\end_inset
-
-.
- But the speed is not linear, so we replace the 
-\begin_inset Formula $\frac{1}{2}$
-\end_inset
-
- with an adjustable constant 
-\begin_inset Formula $a_{p}$
-\end_inset
-
-
-\begin_inset Formula 
-\begin{equation}
-\bar{v}\approx V_{r}+a_{p}gsin\bar{\gamma}\,t_{p}=V_{r}+a_{p}gsin\bar{\gamma}\,\frac{R\gamma_{1}}{\bar{v}}\label{eq: avg v relation 1}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-We write the average lift as an n-factor 
-\begin_inset Formula $\bar{L}=n_{p}mg$
-\end_inset
-
-: 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\frac{m\bar{v}^{2}}{R}=\bar{L}-mgcos\bar{\gamma}=\frac{m\bar{v}^{2}}{R}=n_{p}mg-mgcos\bar{\gamma}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Then
-\begin_inset Formula 
-\begin{equation}
-R=\frac{\bar{v}^{2}}{g(n_{p}-cos\bar{\gamma})}\label{eq: R vs v and np}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Combining this relation for 
-\begin_inset Formula $R$
-\end_inset
-
- with eqn :
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\bar{v}\approx V_{r}+a_{p}gsin\bar{\gamma}\,\frac{\gamma_{1}}{\bar{v}}\frac{\bar{v}^{2}}{g(n_{p}-cos\bar{\gamma})}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\bar{v}=V_{r}+a_{p}\frac{\bar{v}\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma})}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Solving for 
-\begin_inset Formula $\bar{v}:$
-\end_inset
-
-
-\begin_inset Formula 
-\[
-\bar{v}\left(1-a_{p}\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma})}\right)=V_{r}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-\bar{v}=\frac{V_{r}}{\left(1-a_{p}\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma})}\right)}\label{eq: vavg finished}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Then the height lost will be approximately
-\begin_inset Formula 
-\begin{equation}
-\Delta y_{2}\approx\bar{v_{y}}t_{p}=\bar{v}sin\bar{\gamma}\frac{R\gamma_{1}}{\bar{v}}=\gamma_{1}sin\bar{\gamma}R\label{eq: height lost 1-1-1}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Using eqns 
+ in eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "eq: height lost 1-1-1"
+reference "eq: big Gamma-1"
 
 \end_inset
 
-,
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: R vs v and np"
-
-\end_inset
-
-,
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: vavg finished"
-
-\end_inset
-
-:
-\begin_inset Formula 
-\[
-\Delta y_{2}\approx\gamma_{1}sin\bar{\gamma}\frac{\bar{v}^{2}}{g(n_{p}-cos\bar{\gamma})}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\Delta y_{2}\approx\frac{V_{r}^{2}}{g(n_{p}-cos\bar{\gamma})}\frac{\gamma_{1}sin\bar{\gamma}}{\left(1-a_{p}\frac{\gamma_{1}sin\bar{\gamma}}{(n_{p}-cos\bar{\gamma})}\right)^{2}}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Define 
-\begin_inset Formula 
-\[
-\Gamma=\frac{\gamma_{1}sin\frac{\gamma_{1}}{2}}{(n_{p}-cos\frac{\gamma_{1}}{2})}
-\]
-
-\end_inset
-
-
+, and fit the height gains/losses to a detailed simulation.
+ 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\Delta y_{2}\approx\frac{V_{r}^{2}}{g}\frac{\Gamma}{\left(1-a_{p}\Gamma\right)^{2}}\label{eq: height lost finished-1}
+\Gamma=\frac{\gamma_{d}^{p}sin\frac{\gamma_{d}^{p}}{2}}{n_{p}-\frac{1}{2}\gamma_{d}^{p}sin\frac{\gamma_{d}^{p}}{2}}\label{eq: big Gamma-1-1}
 \end{equation}
 
 \end_inset
@@ -2481,16 +1993,7 @@ Define
 \end_layout
 
 \begin_layout Standard
-We add 
-\begin_inset Formula $\Delta y_{1}$
-\end_inset
-
-and 
-\begin_inset Formula $\Delta y_{2}$
-\end_inset
-
- to get the total height change for the entire recovery after rope break.
- Then the recovery safety margin 
+Then the recovery safety margin 
 \emph on
 expressed in height
 \emph default
@@ -2504,8 +2007,169 @@ above the ground
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-\left(1+\frac{2\Gamma}{\left(1-a_{p}\Gamma\right)^{2}}\right)\right]\label{eq: recovery SM with dive-1}
+\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive-2}
 \end{equation}
+
+\end_inset
+
+Having defined 
+\begin_inset Formula $\Gamma,$
+\end_inset
+
+we can write the speeds in terms of it: the average speed used in the pullout
+ calculations is
+\begin_inset Formula $\bar{v}\approx V_{r}\left(1+\Gamma\right)$
+\end_inset
+
+.
+ The final speed at the bottom of the pullout is 
+\begin_inset Formula $v_{f}\approx V_{r}\left(1+2\Gamma\right)$
+\end_inset
+
+.
+ Unlike 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+ we have not included a time delay between the rope break and the zero-g
+ pushover.
+ Any delay reduces the safety margin.
+\end_layout
+
+\begin_layout Standard
+We adopt's Moore's conservative suggestion
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2011MooreRecoveryASK21"
+
+\end_inset
+
+ of recovery speed (beginning of the dive) 
+\begin_inset Formula $V_{r}=1.5V_{S},$
+\end_inset
+
+ which is typically about the best-glide speed, and use Browning's value
+ of the pullup g's (turning acceleration) as 
+\begin_inset Formula $n_{p}=1.5$
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+.
+ At the bottom of the dive the lift factor required is 
+\begin_inset Formula $n_{L}=1+n_{p}=2.5$
+\end_inset
+
+.
+ We have checked that the speed at the bottom of the dive is sufficent for
+ all cases to generate this lift.
+ In fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: approx vs GSM recovery height change"
+
+\end_inset
+
+ we show the height losses calculated from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: recovery SM with dive-2"
+
+\end_inset
+
+ plotted against the height losses calculated by Moore for each recovery
+ that required dives.
+ The fitting parameter is 
+\begin_inset Formula $p=0.53$
+\end_inset
+
+.
+ Moore did a full simulation of the differential equations using a constant
+ angle of attack pullup.
+ This plot uses 
+\begin_inset Formula $V_{r}=1.5V_{S},$
+\end_inset
+
+ for three speeds: 50, 60 and 70 kts, and angles from 10 to 60 deg.
+ The agreement is very good.
+ The differences between our approximation and Moore's full solution are
+ less than 2m over the entire range except the upper right point (which
+ is a height 
+\emph on
+gain
+\emph default
+, so not critical).
+ We conclude that our approximation eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: recovery SM with dive-2"
+
+\end_inset
+
+ serves very well for a rope break safety margin.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename approxvsGSM.png
+	scale 35
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig: approx vs GSM recovery height change"
+
+\end_inset
+
+Height changes during recovery for speeds 50,60,70 kts and angles 10 to
+ 60 deg, as calculated by the approximation eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: recovery SM without dive"
+
+\end_inset
+
+ vs the height changes calculated by Moore by a full simulation.
+ The pullout g's was 
+\begin_inset Formula $n_{p}=$
+\end_inset
+
+1.5, recovery dive started at speed 1.5
+\begin_inset Formula $V_{S}$
+\end_inset
+
+ and the stall speed was 36 kts.
+  For the approximation the fitting parameter was 
+\begin_inset Formula $p=0.53$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 
@@ -2874,227 +2538,6 @@ full elevator deflection
 \begin_layout Paragraph
 Have to include elevator flying separately from wind during stall to get
  pitching
-\end_layout
-
-\begin_layout Section
-Stall and rope break risks 
-\end_layout
-
-\begin_layout Standard
-With the wings protected by flying below our defined 
-\begin_inset Formula $V_{Aw}$
-\end_inset
-
- , we ask if 
-\begin_inset Formula $V_{W}$
-\end_inset
-
- should be any lower than 
-\begin_inset Formula $V_{Aw}$
-\end_inset
-
- to prevent rope breaks and stalls.
- 
-\end_layout
-
-\begin_layout Standard
-We could attempt a detailed analysis of the inertial and tension loads that
- the glider could experience at different speeds, and probably not come
- to a definitive conclusion.
- But an important concept is that the tension and inertial stresses are
- the same (when scaled by glider weight and 
-\begin_inset Formula $V_{A}$
-\end_inset
-
-) for all gliders unless they have very different control authority.
- If a glider had exceptionally large elevator authority, there might be
- justification for a smaller 
-\begin_inset Formula $V_{w}$
-\end_inset
-
- to prevent the pilot from breaking the rope or stalling the glider by over-use
- of the elevator.
- So we ask if the ASW-27 at the bottom of the 
-\begin_inset Formula $V_{w}/V_{A}$
-\end_inset
-
- chart (Fig 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig: VW over VA"
-
-\end_inset
-
-) has much larger elevator authority than the Ventus 2c at the top.
- The plan view drawings of the two gliders show essentially identical relative
- areas.
- All the composite gliders flying today likely have similar elevator (and
- other controls) authority, and hence the same risk of stall or rope break
- with variation of pilot maneuvers, which would justify having very similar
- ratios of 
-\begin_inset Formula $V_{w}/V_{A}$
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-Empirically we can simply look at gliders at the top of the existing 
-\begin_inset Formula $V_{w}/V_{A}$
-\end_inset
-
- chart to see that some have been certified and tested to fly with winch
- speeds up to 
-\begin_inset Formula $V_{w}/V_{A}=0.84$
-\end_inset
-
-.
- If all common gliders have similar control authority, and hence similar
- risk of stall or rope break, is there any reason why 
-\begin_inset Formula $V_{W}$
-\end_inset
-
- for each composite glider flying today should not be the lower of 
-\begin_inset Formula $V_{Aw}$
-\end_inset
-
- or 0.84 
-\begin_inset Formula $V_{A}?$
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset Graphics
-	filename Vw2 Vw vs VA.png
-	scale 80
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-\begin_inset CommandInset label
-LatexCommand label
-name "fig: VW2, Vw vs VA"
-
-\end_inset
-
-Manufacturers' max winch speed 
-\begin_inset Formula $V_{W}$
-\end_inset
-
- (blue) and proposed 
-\begin_inset Formula $V_{w2}$
-\end_inset
-
-(red) vs maneuvering speed 
-\begin_inset Formula $V_{A}$
-\end_inset
-
-.
- Here 
-\begin_inset Formula $\frac{y_{G}}{y_{L}}=0.7$
-\end_inset
-
- is used, though this should be determined for each glider by wing CG measuremen
-t and wing lift distribution modeling.
- Note that the Grob point covers the Cirrus point; the Duo points cover
- the Ventus 
-\begin_inset Formula $V_{w}$
-\end_inset
-
-point.
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-In Fig 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig: VW2, Vw vs VA"
-
-\end_inset
-
-we plot the same data in Fig 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig: VW over VA"
-
-\end_inset
-
- along with a new proposed maximum speed which we label
-\begin_inset Formula $V_{W2}$
-\end_inset
-
- : it is the lower of
-\begin_inset Formula $V_{Aw}$
-\end_inset
-
- or 0.84 
-\begin_inset Formula $V_{A}$
-\end_inset
-
-.
- For the figure we have simply assumed 
-\begin_inset Formula $\frac{y_{G}}{y_{L}}=0.7$
-\end_inset
-
-, though this should be determined for each glider by wing CG measurement
- and simple wing lift distribution modeling, and have used 
-\begin_inset Formula $m$
-\end_inset
-
- as the manuals' maximum gross mass, and 
-\begin_inset Formula $m_{w}$
-\end_inset
-
-as the difference between 
-\begin_inset Formula $m$
-\end_inset
-
- and the maximum non-lifting mass.
- For the Ventus 2c, 
-\begin_inset Formula $V_{W2}$
-\end_inset
-
- is lower than the present 
-\begin_inset Formula $V_{w,}$
-\end_inset
-
-because it is calculated with maximum water load, and the wing weight ratio
- is large.
- For all the others, 
-\begin_inset Formula $V_{W2}$
-\end_inset
-
- is the same or larger.
- Note that the Grob point covers the Cirrus point and the Duo points cover
- the Ventus 
-\begin_inset Formula $V_{w}$
-\end_inset
-
-(blue) point.
- 
 \end_layout
 
 \begin_layout Bibliography

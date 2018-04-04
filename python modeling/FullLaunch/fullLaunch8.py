@@ -247,7 +247,7 @@ class glider:
         self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
         self.Q = 36             #   L/D
-        self.n1 = 5.3           # max wing loading before danger of structural failure        
+        self.n1 = 5.3           # max wing lift factor before danger of structural failure        
         self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
         self.CLalpha = 5.2    # CL slope: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
@@ -906,7 +906,7 @@ if 'dip' in throttleType: print 'dipT',dipT
 #--- rope
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
-ropeBreakTime = 100#sec
+ropeBreakTime = 100 #sec
 #ropeBreakAngle = None
 if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.format(ropeBreakAngle)  #
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
