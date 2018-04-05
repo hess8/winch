@@ -223,14 +223,14 @@ class logger:
         self.log.write(message)          
     
 class timeinfo:
-    def __init__(self,tStart,tEnd,N):
+    def __init__(self,tStart,tEnd,ntime):
         '''The way to do persistent variables in python is with class variables
         
         The solver does not keep a constant time step, and evaluates the stateDer 
         function usually two or more steps per time step'''
         self.oldt = -1.0
         self.i = -1   #counter for time step.  Must start at -1 because we want to increment it in stateDer, not pl.control.
-        self.dt = (tEnd -tStart)/float((N-1))
+        self.dt = (tEnd -tStart)/float((ntime-1))
         self.tEnd = tEnd
         #data
         self.data = zeros(ntime,dtype = [('t', float)])
@@ -673,7 +673,7 @@ class pilot:
                 x = -xmax
             return x
         tint = self.humanT #sec
-        Nint = ceil(tint/ti.dt)   
+        Nint = int(ceil(tint/ti.dt))  
         time = ti.data['t']
         L = gl.data[ti.i]['L']
         alpha = gl.data[ti.i]['alpha']
@@ -876,7 +876,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 #--- time
 tStart = 0
 tEnd = 20 # end time for simulation
-ntime = (tEnd - tStart)/dt + 1  # number of time steps to allow for data points saved
+ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
 vhead = 0   #headwind

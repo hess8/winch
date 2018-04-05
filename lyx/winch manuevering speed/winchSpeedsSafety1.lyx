@@ -144,7 +144,7 @@ cavalier
 \begin_inset Quotes erd
 \end_inset
 
- launches where the pilot uses the elevator agressively in the rotation
+ launches where the pilot uses the elevator aggressively in the rotation
  and initial climb.
  This lowers the speed which reduced the stall margin, but with only a gain
  of 10 m (30 ft) of height.
@@ -187,8 +187,8 @@ key "Browning2007SafetyBGA"
 
 \end_inset
 
- for safer winch launching which were adoped by the British Gliding Association,
- which and are included in training materials 
+ for safer winch launching which were adopted by the British Gliding Association
+, which and are included in training materials 
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2010DanielsBGAWinchTraining"
@@ -215,7 +215,7 @@ power loss
 
 \begin_layout Standard
 The relationship between speed and risk is complex because: 1) high speed
- makes the glider more susceptible to wing failure during manuevering (rotation)
+ makes the glider more susceptible to wing failure during maneuvering (rotation)
  and wind gusts; 2) high speed increases the risk of accelerated stall for
  a given pitch rate during the rotation phase; and 3) low speed makes stall
  and spin more likely and in some cases inevitable after a rope break.
@@ -329,10 +329,6 @@ rope break probability: tension, rotation rate and wind gusts
 stall: tension, rotation rate and wind gusts
 \end_layout
 
-\begin_layout Itemize
-A safe method of starting the rotation.
-\end_layout
-
 \begin_layout Standard
 Even though our study of safe target speeds is mostly concerned with flight
  after rotation, the 
@@ -431,7 +427,7 @@ The design maneuvering speed
  by
 \begin_inset Formula 
 \[
-\frac{1}{2}\rho SC_{L.max}V_{A}^{2}=n_{1}mg=L_{max}
+\frac{1}{2}\rho SC_{L.max}V_{A}^{2}=n_{1}mg=L_{max.design}
 \]
 
 \end_inset
@@ -439,7 +435,7 @@ The design maneuvering speed
 
 \begin_inset Formula 
 \[
-V_{A}=V_{S}\sqrt{n_{1}}
+V_{A}=\sqrt{n_{1}}V_{S}
 \]
 
 \end_inset
@@ -462,7 +458,7 @@ V_{A}=V_{S}\sqrt{n_{1}}
 \end_layout
 
 \begin_layout Subsection
-Winch launchingAerotow vs winch launching speeds
+Winch launching maximum speeds
 \end_layout
 
 \begin_layout Standard
@@ -635,11 +631,11 @@ Below we determine safe winch launch speeds which we term
 \end_layout
 
 \begin_layout Subsection
-Wing bending under inertial vs noninertial loads
+Wing bending under inertial vs non-inertial loads
 \end_layout
 
 \begin_layout Standard
-For the lift needed, it doesn't matter if the load is noninertial (like
+For the lift needed, it doesn't matter if the load is non-inertial (like
  weight or constant rope tension), or inertial (
 \begin_inset Formula $ma).$
 \end_inset
@@ -693,10 +689,10 @@ is the mass of the wings (including water ballast), and
 
 \begin_layout Standard
 Note that rope tension does not appear in calculating this winch maneuvering
- speed, below which the noninertial loads cannot create a bending moment
+ speed, below which the non-inertial loads cannot create a bending moment
  capable of breaking the glider wings.
- The tension does contribute to the stall speed (see below), but not the
- winch maneuvering speed.
+ The tension and other factors will affect the choice of speed from other
+ safety perspectives, but not due to structural concerns.
  
 \end_layout
 
@@ -819,7 +815,7 @@ We could begin a detailed analysis of the inertial and tension loads that
 \begin_inset Formula $V_{A}$
 \end_inset
 
-) for all gliders in winch launc unless they have very different control
+) for all gliders in winch launch unless they have very different control
  authority.
  If a glider had exceptionally large elevator authority, there might be
  justification for a smaller 
@@ -844,7 +840,7 @@ reference "fig: VW over VA"
  areas.
  All the composite gliders flying today likely have similar elevator (and
  other controls) authority, and hence the same risk of stall or rope break
- with variation of pilot maneuvers.
+ during winch launch.
  This suggests they should have very similar ratios of 
 \begin_inset Formula $V_{w}/V_{A}$
 \end_inset
@@ -1031,9 +1027,9 @@ Safety margins in winch launching
 \end_layout
 
 \begin_layout Standard
-There are four safety margins that could apply to all phases of winch launching
+There are three safety margins that could apply to all phases of winch launching
  .
- To give them similar form, we write them in terms of load factors (g's).
+ To give them similar form, we write them in terms of load factors (gas).
  First a 
 \emph on
 structural
@@ -1127,8 +1123,8 @@ Rope break recovery safety margin
 \begin_layout Standard
 The last safety margin applies during the rotation and initial climb, and
  is more difficult to write.
- It is having more than sufficient speed and height after a rope break or
- power failure to recover to level flight.
+ The margin is to have more than sufficient speed and height after a rope
+ break or power failure to recover to level flight.
  Browning
 \begin_inset CommandInset citation
 LatexCommand citep
@@ -1155,8 +1151,10 @@ key "2011MooreRecoveryASK21"
 \end_layout
 
 \begin_layout Standard
-We wish to define a safety margin that doesn't require a separate simultation,
- so we solve the differential equations approximately.
+We wish to define a safety margin in closed form that we can apply at each
+ time during the climb without doing an additional simulation, so we solve
+ the differential equations approximately for a zero-g pushover and recovery
+ dive.
  At the time of the break, the glider has speed 
 \begin_inset Formula $V_{br}$
 \end_inset
@@ -1188,7 +1186,7 @@ Recovery without dive:
 \end_layout
 
 \begin_layout Standard
-If the initial horizontal spead is greater than the safe recovery speed
+If the initial horizontal speed is greater than the safe recovery speed
  
 \begin_inset Formula $V_{r}$
 \end_inset
@@ -1242,7 +1240,7 @@ above the ground
  We could subtract a small drag term, but the drag will be much less than
  seen in normal flight because no lift is being generated during the zero-g
  push over, and the average speed is much less than in normal flight, so
- we neglect it in the safety margin.
+ we can neglect it in this case of recovery without dive.
  
 \end_layout
 
@@ -1334,7 +1332,7 @@ reference "fig: approx vs GSM recovery height change"
 \begin_inset Formula $p=0.53.$
 \end_inset
 
- We adopt's Moore's conservative suggestion
+ We adopt Moore's conservative suggestion
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2011MooreRecoveryASK21"
@@ -1362,226 +1360,58 @@ key "Browning2007SafetyBGA"
 \end_layout
 
 \begin_layout Section
-Gusts
+Simulations of winch launches
 \end_layout
 
 \begin_layout Standard
-Gusts do not appear in 
-\begin_inset Formula $V_{Aw},$
-\end_inset
-
- just as they don't appear in the specification of 
-\begin_inset Formula $V_{A}$
-\end_inset
-
-.
- But for winch launching we should consider them because a lot of elevator
- deflection is used in the rotation, initial climb, and during the main
- climb to balance the negative pitching moment of the rope on the glider.
- So the chance of having a large elevator deflection and strong gusts at
- the same time is more likely.
- JAR-22 doesn't require this analysis for determining 
-\begin_inset Formula $V_{A}$
-\end_inset
-
- or 
-\begin_inset Formula $V_{w}$
-\end_inset
-
-, but the maximum gusts it considers in any case is
-\begin_inset Formula $v_{g}=15$
-\end_inset
-
- m/s (30 kts) upward and downward relative to the flight path.
- They give a 
-\begin_inset Quotes eld
-\end_inset
-
-gust mediation
-\begin_inset Quotes erd
-\end_inset
-
- method that includes the glider's gradual entrance into a typical gust,
- and the glider's rotational response to it: 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-n_{g}=\frac{1}{2}\frac{\rho S_{w}v_{wy}v_{o}}{W}kC_{L,\alpha}
-\]
-
-\end_inset
-
-, where 
-\begin_inset Formula $k=\frac{0.88\mu_{r}}{5.3+\mu_{r}},$
-\end_inset
-
- is the gust alleviation factor, and 
-\begin_inset Formula $\mu_{r}=\frac{2m}{\rho S_{w}C_{L,\alpha}(1\,meter)}$
-\end_inset
-
- is a mass ratio.
-\end_layout
-
-\begin_layout Subsubsection
-Gust probability distribution
-\end_layout
-
-\begin_layout Standard
-The choice of the specific design gust (
-\emph on
-perpendicular to the flight path
-\begin_inset Formula $)$
-\end_inset
-
- 
-\emph default
-of 15 m/s (30 kts) is derived by civial aviation authorities from the chance
- of gusts greater than this ocurring 
-\begin_inset Quotes eld
-\end_inset
-
-once in 70,000 flight hours
-\begin_inset Quotes erd
-\end_inset
-
-
+We now explore these safety margins using a new glider winch launch simulation
+ program
 \begin_inset CommandInset citation
 LatexCommand citep
-key "FAAGustAdvisory2014"
+key "HessSimulation"
 
 \end_inset
 
-.
- Assuming an average winch launch time of 60 seconds, and expressing the
- probability per launch, 
-\begin_inset Formula $Prob(15m/s)=\frac{60sec/launch}{70,000hrs\times3600sec/hr}=2\times10^{-7}$
-\end_inset
-
- per launch.
- In other words, it would take on average about 5 million launches for one
- to even 
-\emph on
-experience
-\emph default
- a 30 knot gust perpendicular to the glider.
- This is more than the number of winch launches that have ever ocurred,
- so it's not surprising that the statistics don't show a glider breaking
- up due to gusts!
-\end_layout
-
-\begin_layout Standard
-The probability distributions for extreme vertical gust speeds are well
- approximated (order of magnitude) 
+ written in python.
+ The level of detail is similar to the simulation of Santel and Gap
 \begin_inset CommandInset citation
 LatexCommand citep
-key "1999RevMehodsExtremeWinds"
+key "Santel2008LaunchSims,2011Santel&GabTS.NumerSim"
 
 \end_inset
 
- with the Gumbel distribution, which is of a double-exponential decay form.
- The probability during a launch that any gust observed is greater than
- some speed 
-\begin_inset Formula $v$
-\end_inset
+, as it includes:
+\end_layout
 
- is (a cumulative distribution function): 
+\begin_layout Enumerate
+solving the translational and rotational differential equations, but limited
+ here to the longitudinal variables
+\end_layout
+
+\begin_layout Enumerate
+ground roll and rotation
+\end_layout
+
+\begin_layout Enumerate
+dynamically changing glider drag
+\end_layout
+
+\begin_layout Enumerate
+rope elasticity, mass, drag and sag
+\end_layout
+
+\begin_layout Enumerate
+pilot elevator control models, and we add winch operator control models
+\end_layout
+
+\begin_layout Enumerate
+engine power and torque modeling, and we add a torque converter model
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-Prob(v)=1-exp\left(-exp\left(-\frac{v}{v_{d}}\right)\right)\label{eq:Gumbel probability distribution-1}
-\end{equation}
-
-\end_inset
-
-where 
-\begin_inset Formula $v_{d}$
-\end_inset
-
- is a speed that characterizes the distribution.
- For very low probabilities, 
-\begin_inset Formula $Prob(v)\approx exp\left(-\frac{v}{v_{d}}\right)$
-\end_inset
-
-.
- Setting this equal to the probability of 
-\begin_inset Formula $2\times10^{-7}$
-\end_inset
-
-per launch we get 
-\begin_inset Formula $v_{d}=\frac{15m/s}{-ln(2\times10^{-7})}$
-\end_inset
-
-= 1 m/s.
- We can now use eqn.
- A to find that the chance (in this distribution) of vertical gusts of 
-\begin_inset Formula $10$
-\end_inset
-
-m/s (20 kts) or more or more is about once in every 30,000 launches.
- Similarly gusts of 5m/s or more (in this distribution) occur about once
- in every 200 launches.
- 
-\end_layout
-
-\begin_layout Subsubsection
-Gust time correlations and our choice to launch
-\end_layout
-
-\begin_layout Standard
-The gust statistics used to establish a 15 m/s (30 kt) come from data amassed
- from many thousands of hours of flight data and have no information about
- the time-correlations of extreme gusts with weaker gusts.
- We all know that it's more likely to experience a very strong gust soon
- after we've experienced other gusts rather than other times.
- So there are really many different distributions of gust probabilities
- that change in time and the information we have about the recent past.
- The winch launch (or aerotow ) extreme gust probabilities are 
-\emph on
-less
-\emph default
- than the probabilities averaged over the life of the glider or pilot simply
- because when we experience poor weather, we stop launching.
- We shut down launching in about 60 sec on learning of poor weather, reducing
- exposure to very extreme gusts in nastier weather.
- On the other hand during a typical soaring flight when we discover bad
- weather the time it takes to escape reduce our risk by changing route or
- landing is closer to an hour, or 60 times longer.
- This means during launch we use our knowledge of current bad weather to
- reduce risk much more effectively than during typical flight..
- It's the 
-\emph on
-extreme 
-\emph default
-gusts (probability distribution tails) that are the most time-correlated
-\begin_inset CommandInset citation
-LatexCommand citep
-key "StatWindGustsBoettcher2003"
-
-\end_inset
-
- (see the strong dependence of the tails on sampling time in this reference,
- fig 2).
- Hence during launching extreme gusts are much less likely than the FAA
- statistics for general flight.
- In other words, we are warned away from the very infrequent most extreme
- gusts by experiencing a few less extreme gusts; and during launching we
- (as a group) act on the warning, reducing our risk.
- 
-\end_layout
-
-\begin_layout Subsubsection
-Gust probabilities vs serious or fatal accident probabilities
-\end_layout
-
-\begin_layout Standard
-From Browning's work, the fatal or serious accident rate per launch is 1.1
- per 100,000.
- The chance of gusts causing these accidents is related to the time spent
- in the phases most sensitive to gusts.
+In these results we model a fully loaded two-seat 17m glider, in particular
+ the Grob Twin Astir, but our results should not depend much on the particular
+ glider.
  
 \end_layout
 
@@ -1819,7 +1649,7 @@ and
 \end_layout
 
 \begin_layout Subsubsection
-Wing bending under noninertial loads at top of winch launch
+Wing bending under non-inertial loads at top of winch launch
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:Wing-bending- top of launch"
@@ -1865,7 +1695,7 @@ where
 \begin_inset Formula $F_{ni}$
 \end_inset
 
- is the sum of the noninertial loads, which are 
+ is the sum of the non-inertial loads, which are 
 \begin_inset Formula $F_{ni}=mg+T$
 \end_inset
 
@@ -1886,7 +1716,7 @@ M_{st}=F_{ni}gy_{L}-m_{w}gy_{G}\label{eq:Static bending Fst}
 \end_layout
 
 \begin_layout Standard
-We write the noninertial forces in terms of a load factor: 
+We write the non-inertial forces in terms of a load factor: 
 \begin_inset Formula $F_{ni}=n_{ni}mg$
 \end_inset
 
@@ -1905,14 +1735,14 @@ M_{st}=n_{ni}Wy_{L}-m_{w}gy_{G}\label{eq:static load bending}
 \end_layout
 
 \begin_layout Standard
-The difference in wing bending between the inertial load case equ 
+The difference in wing bending between the inertial load case eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq: inertial load bending-1"
 
 \end_inset
 
- vs the noninertial load case equ 
+ vs the non-inertial load case eqn 
 \begin_inset Formula $\ref{eq:static load bending}$
 \end_inset
 
@@ -1921,8 +1751,8 @@ reference "eq: inertial load bending-1"
 \end_inset
 
  is in both terms in the inertial case, but only in the first term in the
- noninertial one.
- So for equal loads, the noninertial case bends the wing 
+ non-inertial one.
+ So for equal loads, the non-inertial case bends the wing 
 \begin_inset Formula $more$
 \end_inset
 
@@ -1938,7 +1768,7 @@ Maximum bending moment
 \end_layout
 
 \begin_layout Standard
-If the glider load was certified as purely inertial, from equ 
+If the glider load was certified as purely inertial, from eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq: inertial load bending-1"
@@ -1961,7 +1791,7 @@ M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)\label{eq: Max bending mome
 
 \begin_layout Standard
 If the glider load was certified as inertial in addition to the glider's
- weight then we would subtract a term , from equ 
+ weight then we would subtract a term , from eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq: inertial load bending-1"
@@ -2014,8 +1844,8 @@ Winch maneuvering speed:
 \end_layout
 
 \begin_layout Standard
-In the winch launch the case with the greatest ratio of noninertial to inertial
- loading is at the top of the launch, as treated in section 
+In the winch launch the case with the greatest ratio of non-inertial to
+ inertial loading is at the top of the launch, as treated in section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Wing-bending- top of launch"
@@ -2030,7 +1860,7 @@ reference "subsec:Wing-bending- top of launch"
 \end_layout
 
 \begin_layout Standard
-From equ 
+From eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:Static bending Fst"
@@ -2135,8 +1965,8 @@ key "Browning2007SafetyBGA"
 
  , a constant.
  This has the advantage that the pilot feels the turning acceleration directly
- as an additional seat forceThis is similar to the constant angle of attack
- pullout modeled by Moore
+ as an additional seat force.
+ This is similar to the constant angle of attack pullout modeled by Moore
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2011MooreRecoveryASK21"
@@ -2349,7 +2179,7 @@ where
 
 \begin_layout Standard
 Finally we include a parameter to help account for the neglect of drag and
- the other approximations we have made compared to a detailed simultion.
+ the other approximations we have made compared to a detailed simulation.
  We raise 
 \begin_inset Formula $\gamma_{1}$
 \end_inset
@@ -2428,7 +2258,7 @@ key "Browning2007SafetyBGA"
 \end_layout
 
 \begin_layout Standard
-We adopt's Moore's conservative suggestion
+We adopt Moore's conservative suggestion
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2011MooreRecoveryASK21"
@@ -2457,8 +2287,8 @@ key "Browning2007SafetyBGA"
 \end_inset
 
 .
- We have checked that the speed at the bottom of the dive is sufficent for
- all cases to generate this lift.
+ We have checked that the speed at the bottom of the dive is sufficient
+ for all cases to generate this lift.
  In fig 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2502,7 +2332,7 @@ reference "eq: recovery SM with dive-2"
 
 \end_inset
 
- serves very well for a rope break safety margin.
+ serves very well for a recovery safety margin.
  
 \end_layout
 
@@ -2564,81 +2394,6 @@ reference "eq: recovery SM without dive"
 
 \end_layout
 
-\begin_layout Section
-Scheme
-\end_layout
-
-\begin_layout Standard
-Define a 
-\begin_inset Quotes eld
-\end_inset
-
-safety margin
-\begin_inset Quotes erd
-\end_inset
-
- that includes risks of accelerated stall, gust stall, rope break, and inability
- to recover from rope break.
- LOGARITHMIC SCALE????
-\end_layout
-
-\begin_layout Standard
-Risks at top of launch:
-\end_layout
-
-\begin_layout Itemize
-Stall from vertical gust: : not dangerous
-\end_layout
-
-\begin_layout Itemize
-Wing breaking from vertical gust: L>Lmax
-\end_layout
-
-\begin_layout Itemize
-Rope break: not dangerous
-\end_layout
-
-\begin_layout Standard
-Risks during rotation:
-\end_layout
-
-\begin_layout Itemize
-stall from acceleration:
-\end_layout
-
-\begin_layout Itemize
-stall from gust
-\end_layout
-
-\begin_layout Itemize
-rope break
-\end_layout
-
-\begin_layout Standard
-Define a human maneuvering fluctuation from accident data
-\end_layout
-
-\begin_layout Standard
-Loss of control due to wing stalling before elevator stalls: spin
-\end_layout
-
-\begin_layout Paragraph
-Test STEP RESPONSE of system (T and en.v) to 
-\end_layout
-
-\begin_layout Itemize
-upward gust
-\end_layout
-
-\begin_layout Itemize
-full elevator deflection
-\end_layout
-
-\begin_layout Paragraph
-Have to include elevator flying separately from wind during stall to get
- pitching
-\end_layout
-
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
@@ -2649,7 +2404,7 @@ key "key-4"
 
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,D:/Winch launch physics/winchrep/bibtex/gustDistribModels"
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,D:/Winch launch physics/winchrep/bibtex/gustDistribModels,D:/Winch launch physics/winchrep/bibtex/georgeMoore"
 options "plain"
 
 \end_inset
