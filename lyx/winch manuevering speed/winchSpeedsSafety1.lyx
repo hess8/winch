@@ -1268,10 +1268,10 @@ In the case where a dive is needed before level flight, the ballistic arc
 \end_layout
 
 \begin_layout Standard
-At this point the dive angle is below the horizon at
+At the beginning of the dive the angle is below the horizon at
 \begin_inset Formula 
 \begin{equation}
-\gamma_{d}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)\label{eq: gamma 1-2}
+\gamma_{d}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)\label{eq: gamma dive}
 \end{equation}
 
 \end_inset
@@ -1923,8 +1923,27 @@ name "subsec: Recovery height change"
 \end_layout
 
 \begin_layout Standard
-The height loss during the pullout to level flight is more complicated.
- The differential equations can be written in terms of speed and the climb
+At the beginning of the dive the angle is below the horizon at (reproducing
+ eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: gamma dive"
+
+\end_inset
+
+):
+\begin_inset Formula 
+\[
+\gamma_{d}=tan^{-1}\left(\frac{v_{y}}{V_{x}}\right)=tan^{-1}\left(\frac{\sqrt{V_{r}^{2}-V_{x}^{2}}}{V_{x}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The differential equations can be written in terms of speed and the climb
  angle, from Newton's laws written for directions along the path and perpendicul
 ar to it.
  We neglect drag for now.
@@ -2269,26 +2288,7 @@ key "2011MooreRecoveryASK21"
 \begin_inset Formula $V_{r}=1.5V_{S},$
 \end_inset
 
- which is typically about the best-glide speed, and use Browning's value
- of the pullup g's (turning acceleration) as 
-\begin_inset Formula $n_{p}=1.5$
-\end_inset
-
- 
-\begin_inset CommandInset citation
-LatexCommand citep
-key "Browning2007SafetyBGA"
-
-\end_inset
-
-.
- At the bottom of the dive the lift factor required is 
-\begin_inset Formula $n_{L}=1+n_{p}=2.5$
-\end_inset
-
-.
- We have checked that the speed at the bottom of the dive is sufficient
- for all cases to generate this lift.
+ which is typically about the best-glide speed.
  In fig 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2305,18 +2305,38 @@ reference "eq: recovery SM with dive-2"
 
  plotted against the height losses calculated by Moore for each recovery
  that required dives.
- The fitting parameter is 
+ In the approximation the best fit to Moore's data used pullout g's s 
+\begin_inset Formula $n_{p}=$
+\end_inset
+
+1.5 and adjustable parameter 
 \begin_inset Formula $p=0.53$
 \end_inset
 
 .
+ , This fitted value of 1.5 is that same as Browning's
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+ chosen value of the pullup g's (turning acceleration).
+ At the bottom of the dive the lift factor required is 
+\begin_inset Formula $n_{L}=1+n_{p}=2.5$
+\end_inset
+
+.
+ We have checked that the speed at the bottom of the dive is sufficient
+ for all cases to generate this lift.
  Moore did a full simulation of the differential equations using a constant
- angle of attack pullup.
+ angle of attack pullout.
  This plot uses 
 \begin_inset Formula $V_{r}=1.5V_{S},$
 \end_inset
 
- for three speeds: 50, 60 and 70 kts, and angles from 10 to 60 deg.
+ for three speeds at ropebreak: 50, 60 and 70 kts, and angles from 10 to
+ 60 deg.
  The agreement is very good.
  The differences between our approximation and Moore's full solution are
  less than 2m over the entire range except the upper right point (which
@@ -2325,6 +2345,9 @@ reference "eq: recovery SM with dive-2"
 gain
 \emph default
 , so not critical).
+ This is within variations expected for different assumptions and methods
+ in any two valid simulations of a recovery, for example choosing constant
+ angle of attack vs another reasonable method to determine the lift.
  We conclude that our approximation eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2340,7 +2363,7 @@ reference "eq: recovery SM with dive-2"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
@@ -2368,16 +2391,16 @@ reference "eq: recovery SM without dive"
 \end_inset
 
  vs the height changes calculated by Moore by a full simulation.
- The pullout g's was 
-\begin_inset Formula $n_{p}=$
-\end_inset
-
-1.5, recovery dive started at speed 1.5
+ The recovery dive started at speed 1.5
 \begin_inset Formula $V_{S}$
 \end_inset
 
  and the stall speed was 36 kts.
- For the approximation the fitting parameter was 
+ For the approximation the best fit was for pullout g's was 
+\begin_inset Formula $n_{p}=$
+\end_inset
+
+1.5 and adjustable parameter 
 \begin_inset Formula $p=0.53$
 \end_inset
 

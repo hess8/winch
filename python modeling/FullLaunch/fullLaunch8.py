@@ -366,10 +366,10 @@ class glider:
             ygainSlow = sqrt(Vx**2 - Vr**2)/2/g  #slowing from Vx to Vr.
             sm = self.y + ygainBallistic + ygainSlow
         else:
-            gammad = atan(sqrt(Vr**2 - Vx**2)/Vx)
+            gammad = arctan(sqrt(Vr**2 - Vx**2)/Vx)
             gp = gammad**p
-            Gamma = gp * sin(gp/2)/(np - 0.5 * gd * sin(gp/2))
-            sm = self.y + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma^2)
+            Gamma = gp * sin(gp/2)/(np - 0.5 * gp * sin(gp/2))
+            sm = self.y + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma**2)
         return sm
         
 class air:
