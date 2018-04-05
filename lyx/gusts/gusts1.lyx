@@ -1,0 +1,354 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass achemso
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine natbib
+\cite_engine_type numerical
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Gust and windshear risks
+\end_layout
+
+\begin_layout Author
+Bret Hess
+\end_layout
+
+\begin_layout Affiliation
+Physics Department, Brigham Young University, Provo, Utah
+\end_layout
+
+\begin_layout Email
+bret_hess@byu.edu
+\end_layout
+
+\begin_layout Abstract
+Gusts!
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+.
+ 
+\end_layout
+
+\begin_layout Section
+Gusts
+\end_layout
+
+\begin_layout Standard
+Gusts do not appear in 
+\begin_inset Formula $V_{Aw},$
+\end_inset
+
+ just as they don't appear in the specification of 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+.
+ But for winch launching we should consider them because a lot of elevator
+ deflection is used in the rotation, initial climb, and during the main
+ climb to balance the negative pitching moment of the rope on the glider.
+ So the chance of having a large elevator deflection and strong gusts at
+ the same time is more likely.
+ JAR-22 doesn't require this analysis for determining 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+ or 
+\begin_inset Formula $V_{w}$
+\end_inset
+
+, but the maximum gusts it considers in any case is
+\begin_inset Formula $v_{g}=15$
+\end_inset
+
+ m/s (30 kts) upward and downward relative to the flight path.
+ They give a 
+\begin_inset Quotes eld
+\end_inset
+
+gust mediation
+\begin_inset Quotes erd
+\end_inset
+
+ method that includes the glider's gradual entrance into a typical gust,
+ and the glider's rotational response to it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+n_{g}=\frac{1}{2}\frac{\rho S_{w}v_{wy}v_{o}}{W}kC_{L,\alpha}
+\]
+
+\end_inset
+
+, where 
+\begin_inset Formula $k=\frac{0.88\mu_{r}}{5.3+\mu_{r}},$
+\end_inset
+
+ is the gust alleviation factor, and 
+\begin_inset Formula $\mu_{r}=\frac{2m}{\rho S_{w}C_{L,\alpha}(1\,meter)}$
+\end_inset
+
+ is a mass ratio.
+\end_layout
+
+\begin_layout Subsubsection
+Gust probability distribution
+\end_layout
+
+\begin_layout Standard
+The choice of the specific design gust (
+\emph on
+perpendicular to the flight path
+\begin_inset Formula $)$
+\end_inset
+
+ 
+\emph default
+of 15 m/s (30 kts) is derived by civial aviation authorities from the chance
+ of gusts greater than this ocurring 
+\begin_inset Quotes eld
+\end_inset
+
+once in 70,000 flight hours
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "FAAGustAdvisory2014"
+
+\end_inset
+
+.
+ Assuming an average winch launch time of 60 seconds, and expressing the
+ probability per launch, 
+\begin_inset Formula $Prob(15m/s)=\frac{60sec/launch}{70,000hrs\times3600sec/hr}=2\times10^{-7}$
+\end_inset
+
+ per launch.
+ In other words, it would take on average about 5 million launches for one
+ to even 
+\emph on
+experience
+\emph default
+ a 30 knot gust perpendicular to the glider.
+ This is more than the number of winch launches that have ever ocurred,
+ so it's not surprising that the statistics don't show a glider breaking
+ up due to gusts!
+\end_layout
+
+\begin_layout Standard
+The probability distributions for extreme vertical gust speeds are well
+ approximated (order of magnitude) 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "1999RevMehodsExtremeWinds"
+
+\end_inset
+
+ with the Gumbel distribution, which is of a double-exponential decay form.
+ The probability during a launch that any gust observed is greater than
+ some speed 
+\begin_inset Formula $v$
+\end_inset
+
+ is (a cumulative distribution function): 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+Prob(v)=1-exp\left(-exp\left(-\frac{v}{v_{d}}\right)\right)\label{eq:Gumbel probability distribution-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $v_{d}$
+\end_inset
+
+ is a speed that characterizes the distribution.
+ For very low probabilities, 
+\begin_inset Formula $Prob(v)\approx exp\left(-\frac{v}{v_{d}}\right)$
+\end_inset
+
+.
+ Setting this equal to the probability of 
+\begin_inset Formula $2\times10^{-7}$
+\end_inset
+
+per launch we get 
+\begin_inset Formula $v_{d}=\frac{15m/s}{-ln(2\times10^{-7})}$
+\end_inset
+
+= 1 m/s.
+ We can now use eqn.
+ A to find that the chance (in this distribution) of vertical gusts of 
+\begin_inset Formula $10$
+\end_inset
+
+m/s (20 kts) or more or more is about once in every 30,000 launches.
+ Similarly gusts of 5m/s or more (in this distribution) occur about once
+ in every 200 launches.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Gust time correlations and our choice to launch
+\end_layout
+
+\begin_layout Standard
+The gust statistics used to establish a 15 m/s (30 kt) come from data amassed
+ from many thousands of hours of flight data and have no information about
+ the time-correlations of extreme gusts with weaker gusts.
+ We all know that it's more likely to experience a very strong gust soon
+ after we've experienced other gusts rather than other times.
+ So there are really many different distributions of gust probabilities
+ that change in time and the information we have about the recent past.
+ The winch launch (or aerotow ) extreme gust probabilities are 
+\emph on
+less
+\emph default
+ than the probabilities averaged over the life of the glider or pilot simply
+ because when we experience poor weather, we stop launching.
+ We shut down launching in about 60 sec on learning of poor weather, reducing
+ exposure to very extreme gusts in nastier weather.
+ On the other hand during a typical soaring flight when we discover bad
+ weather the time it takes to escape reduce our risk by changing route or
+ landing is closer to an hour, or 60 times longer.
+ This means during launch we use our knowledge of current bad weather to
+ reduce risk much more effectively than during typical flight..
+ It's the 
+\emph on
+extreme 
+\emph default
+gusts (probability distribution tails) that are the most time-correlated
+\begin_inset CommandInset citation
+LatexCommand citep
+key "StatWindGustsBoettcher2003"
+
+\end_inset
+
+ (see the strong dependence of the tails on sampling time in this reference,
+ fig 2).
+ Hence during launching extreme gusts are much less likely than the FAA
+ statistics for general flight.
+ In other words, we are warned away from the very infrequent most extreme
+ gusts by experiencing a few less extreme gusts; and during launching we
+ (as a group) act on the warning, reducing our risk.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Gust probabilities vs serious or fatal accident probabilities
+\end_layout
+
+\begin_layout Standard
+From Browning's work, the fatal or serious accident rate per launch is 1.1
+ per 100,000.
+ The chance of gusts causing these accidents is related to the time spent
+ in the phases most sensitive to gusts.
+ 
+\end_layout
+
+\begin_layout Section
+Appendices
+\end_layout
+
+\begin_layout Subsection
+Appendix: 
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-4"
+
+\end_inset
+
+
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "../../bibtex/winchAccidents,../../bibtex/wingStressesLiftCG,../../bibtex/regulations,../../bibtex/fullPhysSims,../../bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,../../bibtex/gustDistribModels"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

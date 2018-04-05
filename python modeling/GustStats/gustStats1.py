@@ -21,7 +21,7 @@ def writefile(lines,filepath): #need to have \n's inserted already
     file1.close()
     return
 
-class extractToFile:
+class readData:
     '''Reads data from files downloaded from https://mesonet.agron.iastate.edu/request/awos/1min.php.  Collates them into one file with 
     the format: day (starting from first datapoint), time, wind(m/s), gust(m/s)
     '''
@@ -29,12 +29,13 @@ class extractToFile:
     def __init__(self):
         return 
     
-    def readVar(self,inPath):
+    def readVar(self,inPath,type):
         '''Reads date, time and wind or gust speed into an array
         Format BNW BOONE MUNI 1995-01-01 01:34 15'''
         dtFormat = "%Y-%m-%d %H:%M"
         out = []
         lines = readfile(inPath)
+        print 'Reading {}s from raw data'.format(type)
         for i,line in enumerate(lines[1:]):
             if mod(i,10000)==0:
                 print '{} '.format(i),
@@ -49,12 +50,12 @@ class extractToFile:
                     var = info[5]
                 else:
                     var = ''
-                    print 'Line {} has a length of only '.format(len(info) )
+                    print 'Line {} in type {} has a length of only {}.'.format(i,type,len(info))
                 d = datetime.strptime(date+' '+hrmin, dtFormat)
                 secs = int(time.mktime(d.timetuple()))
                 out.append([date,hrmin,secs,var])
             else:
-                print 'Line {} does not have complete time and date '.format(len(info)),info
+                print 'Line {} in type {} does not have complete time and date:'.format(len(info),type),info
                 sys.exit('Stop!')
         print
         return out
@@ -91,7 +92,41 @@ class extractToFile:
             else:
                 print 'Line {} the date or times do not match:'.format(i+2,),item[:2],gustList[i][:2]  
             idata += 1              
-        writefile(out,outPath)
+        if not outPath is None: writefile(out,outPath)
+        
+    def readCollatedData(self,inPath):
+        '''Reads my saved data into structured array'''
+        print 'Reading from collated data file',inPath
+        if len(windList) != len(gustList):
+            sys.exit('Stop: the two lengths are not equal!')
+        data = zeros(len(windList),dtype = [('year', int),('month', int),('day', int),('hour', int),('min', int),('totsecs', int32),('wind',int),('gust', int)])
+        out = []
+        zeroSecs =  int(windList[0][2])
+        idata = 0
+        for i,item in enumerate(windList):
+            if item[:2] == gustList[i][:2] and len(item[:2])>0 and len(gustList[i][:2]):
+                date = item[0]
+                hrmin = item[1] 
+                secs = int(item[2]) - zeroSecs
+                wind = item[3] 
+                gust = gustList[i][3]
+                dateInfo = date.split('-')
+                data[idata]['year'] = dateInfo[0]
+                data[idata]['month'] = dateInfo[1]
+                data[idata]['day'] = dateInfo[2]
+                timeInfo = hrmin.split(':')
+                data[idata]['hour'] = timeInfo[0]
+                data[idata]['min'] = timeInfo[1]
+                data[idata]['totsecs'] = secs
+                data[idata]['wind'] = wind
+                data[idata]['gust'] = gust
+                if not outPath is None:   
+                    out.append('{}  {}  {}  {:4s}  {:4s}\n'.format(date,hrmin,secs,wind.rjust(4),gust.rjust(4)))  
+            else:
+                print 'Line {} the date or times do not match:'.format(i+2,),item[:2],gustList[i][:2]  
+            idata += 1              
+        if not outPath is None: writefile(out,outPath)
+
 
 class correlate:
     '''Reads data from files downloaded from https://mesonet.agron.iastate.edu/request/awos/1min.php.  Collates them into one file with 
@@ -102,7 +137,7 @@ class correlate:
         return 
 
 
-exToFile = extractToFile()
+rdData = readData()
 windPath = 'C:\\Users\\owner\\Downloads\\BooneWind1995-2011minute.txt'
 gustPath = 'C:\\Users\\owner\\Downloads\\BooneGust1995-2011minute.txt'
 outPath = 'C:\\Users\\owner\\Downloads\\BooneWindGust1995-2011minute.dat'
@@ -110,11 +145,9 @@ outPath = 'C:\\Users\\owner\\Downloads\\BooneWindGust1995-2011minute.dat'
 # gustPath = 'C:\\Users\\owner\\Downloads\\gust10days.txt'
 # outPath = 'C:\\Users\\owner\\Downloads\\out10days.dat'
 
-windList = exToFile.readVar(windPath)
-gustList = exToFile.readVar(gustPath)
-exToFile.collateData(windList,gustList,outPath)
-
-
+windList = rdData.readVar(windPath,'wind')
+gustList = rdData.readVar(gustPath, 'gust')
+rdData.collateData(windList,gustList,outPath)
 
 print 'Done'
         
