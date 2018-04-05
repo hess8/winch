@@ -1,5 +1,7 @@
-# from IPython import get_ipython  
-# get_ipython().magic('reset -sf') #comment out this line if not running in Ipython; resets all variables to zero
+import IPython
+
+# from IPython import magic
+# magic('reset -sf') #comment out this line if not running in Ipython; resets all variables to zero
 
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 Solves for the motion of a glider launched by a winch with a springy rope. 
@@ -18,14 +20,23 @@ ve, effective engine speed (m/s)
 Sth, throttle setting
 elev, pilot controlled elevator deflection
 '''
+import matplotlib
+# matplotlib.use("GTKAgg")
 import os,sys
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,where,\
     amin,amax,argmin,argmax,exp,mean 
 from numpy import degrees as deg
 from numpy import radians as rad
-from matplotlib.pyplot import figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title,grid
+
+from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title,grid
 from scipy.integrate import odeint
+import logging
+logging.basicConfig()
+# ion() #turn on interactive mode 
+print 'Backend {}, interactive {}'.format(matplotlib.get_backend(),matplotlib.is_interactive())
 g = 9.8
+
+
  
 def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     '''Splits the formal state matrix S (each row a different time) into the various state variables'''
@@ -132,39 +143,39 @@ class plots:
         u'#CC79A7',  u'#0072B2', u'#30a2da',u'#009E73','peru','slateblue'] # u'#F0E442',u'#467821','slateblue'      u'#56B4E9',
         return 
     
-    def xy(self,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
+    def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
         '''To allow different time (x) arrays, we require the xs to be a list'''
+        fig, ax0 = subplots(figsize=(14, 7))
         if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
             xs = [xs[0] for y in ys] 
         if len(legendLabels) != len(ys):
             sys.exit('Stop: number of legend labels and curves do not match for curve {}'.format(titlestr))
-        figure(figsize=(20, 10))
         for iy,y in enumerate(ys):
             if len(xs[iy]) != len(y):
                 sys.exit('Stop: curve {} on plot {} has x with dimensions different from y.'.format(iy+1,titlestr))            
-            plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
+            ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
             self.i += 1
             if self.i > len(self.colorsList)-1:
                 self.i = 0
-        xlabel(xlbl)
-        ylabel(ylbl)
-        grid(color='k', linestyle='--', linewidth=1)
-        legend(loc ='lower right',framealpha=0.5)
+        ax0.set_xlabel(xlbl)
+        ax0.set_ylabel(ylbl)
+        ax0.grid(color='k', linestyle='--', linewidth=1)
+        ax0.legend(loc ='lower right',framealpha=0.5)
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
-        ylim([ymin,ymax])
+        ax0.set_ylim([ymin,ymax])
         #Set x limits
         if not xmin is None or not xmax is None:
-            xlim([xmin,xmax])
+            ax0.set_xlim([xmin,xmax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        show(block = False)
+        show(block = holdOpen)
 #         show()
         
-    def xyy(self,xs,ys,yscalesMap,xlbl,ylbls,legendLabels,titlestr,xmin=None,xmax=None):
+    def xyy(self,holdOpen,xs,ys,yscalesMap,xlbl,ylbls,legendLabels,titlestr,xmin=None,xmax=None):
         '''Allows plotting with two yscales, left (0) and right (1).  
         So yscalesMap is e.g. [0,0,1,0] for 4 datasets'''
-        fig, ax0 = subplots(figsize=(20, 10))        
+        fig, ax0 = subplots(figsize=(14, 7))        
         ax1 = ax0.twinx()
         if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
             xs = [xs[0] for y in ys] 
@@ -204,13 +215,12 @@ class plots:
             ax0.set_xlim([xmin,xmax])
         ax0.legend(loc ='upper left',framealpha=0.5)
         ax1.legend(loc ='upper right',framealpha=0.5)
-        set
 #        legend(loc ='upper left')
 #        ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        show(block = False)   
+        show(block = holdOpen)  
 #         show()  
 
 class logger:
@@ -283,7 +293,7 @@ class glider:
         self.data = zeros(ntime,dtype = [('x', float),('xD', float),('y', float),('yD', float),('v', float),('vD', float),('yDD', float),('theta', float),('thetaD', float),\
                                     ('gamma', float),('alpha', float),('alphaStall', float),('vgw', float),('L', float),('D', float),('L/D',float),\
                                     ('gndTorq',float),('Fmain',float),('Ftail',float),('Malpha',float),\
-                                    ('Pdeliv',float),('Edeliv',float),('Emech',float),('smStruct', float),('smStall', float)])
+                                    ('Pdeliv',float),('Edeliv',float),('Emech',float),('smRecov', float),('smStruct', float),('smStall', float)])
                     
     def findState(self,t,ti,rp):
         '''Determine where in the launch the glider is'''
@@ -344,6 +354,24 @@ class glider:
 #         L = gl.W*(tanh(self.Lalpha/self.W * alpha) + A*exp(self.alphaStall**2/s**2) * exp(-(alpha - self.alphaStall)**2 / s**2)) * (v/self.vb)**2
 #         return L
 
+    def smRecov(self,Vbr,gammaBreak): 
+        '''Height change after recovery from rope break or power failure'''
+        g = 9.8
+        Vr = 1.5*self.vStall   #recovery speed
+        np = 1.5               #recovery pullout g's (constant, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
+        p = 0.53
+        Vx = cos(gammaBreak)*Vbr
+        ygainBallistic = Vr**2/9.8/2 * (Vbr/Vr)**2 -1
+        if Vx > Vr:  #recovery without dive
+            ygainSlow = sqrt(Vx**2 - Vr**2)/2/g  #slowing from Vx to Vr.
+            sm = self.y + ygainBallistic + ygainSlow
+        else:
+            gammad = atan(sqrt(Vr**2 - Vx**2)/Vx)
+            gp = gammad**p
+            Gamma = gp * sin(gp/2)/(np - 0.5 * gd * sin(gp/2))
+            sm = self.y + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma^2)
+        return sm
+        
 class air:
     def __init__(self,vhead,vupdr,hupdr):
         # wind parameters 
@@ -804,8 +832,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             # store data from this time step for use /in controls or plotting.
 #             if 9<t<10:
 #                 print 't',t,thetarope,vtrans,Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG)
-            if 10<t<15:
-                print 't',t, ropetorq, M  
+#             if 10<t<15:
+#                 print 't',t, ropetorq, M  
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
             gl.data[ti.i]['xD'] = gl.xD
@@ -819,6 +847,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
+            gl.data[ti.i]['smRecov']  = gl.smRecov(v,gamma) 
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1 - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
@@ -862,7 +891,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 ##########################################################################                        
 #--- plotting
 smoothed = False
-path = 'D:\\Winch launch physics\\results\\testSpy'
+path = 'D:\\Winch launch physics\\results\\test'
+# path = 'D:\\Winch launch physics\\results\\testSpy'
 if not os.path.exists(path): os.mkdir(path)
 
 #--- logging
@@ -1157,7 +1187,7 @@ torq = zeros(len(engvel),dtype = float)
 for i in range(1,len(engvel)):
     torq[i] = en.Pavail(engvel[i])/omegaEng[i]*0.74 #leave zero speed at zero torque
 torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero speed torq calculation by extrapolating
-plts.xy([rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
+plts.xy(False,[rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
 
 ##plot lift curve vs alpha at v_best
 #alphaList = linspace(-10,15,100)
@@ -1166,55 +1196,55 @@ plts.xy([rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pis
 #        'Angle of attack (deg)','Lift/Weight',[''],'Lift vs angle of attack')
 
 #glider position vs time
-plts.xy([t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
-plts.xy([x],[y],'x (m)','y (m)',[''],'Glider y vs x')
+plts.xy(False,[t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+plts.xy(False,[x],[y],'x (m)','y (m)',[''],'Glider y vs x')
 #glider speed and angles
 #plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[xD,yD,v,deg(alpha,deg(theta,deg(gamma,deg(pl.elev[:itr],deg(theta,gData['L/D']],\
 #        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
-plts.xy([t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
+plts.xy(False,[t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 
 plts.i = 0 #restart color cycle
-plts.xyy([tData,t,t,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
+plts.xyy(False,[tData,t,t,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
         [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
 #Forces
-plts.xy([tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
+plts.xy(False,[tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
         'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
 #torques
-plts.xy([tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
+plts.xy(False,[tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
 #Engine, rope and winch
-plts.xy([t,t,tData,tData,tData],[env,wiv,vgw,deg(ropeTheta),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
+plts.xy(False,[t,t,tData,tData,tData],[env,wiv,vgw,deg(ropeTheta),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
 #-British units-
-plts.xy([t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTorq*0.74,wiv*1.94,vgw*1.94,100*Sth],\
+plts.xy(False,[t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTorq*0.74,wiv*1.94,vgw*1.94,100*Sth],\
     'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/10', 'pistons HP', 'pistons torque (ftlbs)','rope speed','glider radial speed','throttle'],'Engine British units')        
 #Energy,Power
-plts.xy([tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
-plts.xy([tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
+plts.xy(False,[tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
+plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
 #Specialty plots for presentations
 plts.i = 0 #restart color cycle
 #plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
 #        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
 #        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
-plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
-#plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+#plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
 #        [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
 #        ['v (glider)','T/W', 'L/W'],'Glider and safety margins')
 
 #zoom in on a time range same plot as above
-zoom = True
+zoom = False
 if zoom:
     t1 = 9; t2 = 10
-    plts.xyy([tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+    plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
-
+# plot loop results
 if len(loopParams) > 1:
-    # plot loop results
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
     plts.i = 0 #restart color cycle
-    plts.xyy([data['alpha1']],[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+    plts.xyy(False,[data['alpha1']],[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec %',"Relative forces,g's"],\
             ['x gnd roll', 't gnd roll x 10','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight vs initial AoA (2nd Aoa 3.0)')
+# os.system("pause") #to view plots
 print 'Done'
