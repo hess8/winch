@@ -1465,7 +1465,7 @@ key "Hills2007SafetyBGA"
 \end_layout
 
 \begin_layout Section
-Simulations of winch launches
+Simulations of winch launches and safety factors
 \end_layout
 
 \begin_layout Standard
@@ -1525,7 +1525,7 @@ Appendices
 \end_layout
 
 \begin_layout Subsection
-Appendix: Wing bending in winch launch
+Appendix A: Wing bending in winch launch
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:Wing-bending appendix"
@@ -1540,7 +1540,7 @@ Wing bending under inertial loads
 \end_layout
 
 \begin_layout Standard
-For the moment we ignore gravity, the pilot, the fuselage and the tail.
+For now we ignore gravity, the pilot, the fuselage and the tail.
  We just consider a flying wing under 
 \emph on
 turning
@@ -2017,7 +2017,7 @@ V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}\label{eq: VAw}
 \end_layout
 
 \begin_layout Subsection
-Appendix: Height change during dive
+Appendix B: Height change during dive
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec: Recovery height change"
@@ -2051,7 +2051,6 @@ reference "eq: gamma dive"
 The differential equations can be written in terms of speed and the climb
  angle, from Newton's laws written for directions along the path and perpendicul
 ar to it.
- We neglect drag for now.
  
 \begin_inset Formula 
 \[
@@ -2071,7 +2070,8 @@ ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
 
 \end_inset
 
-If the pilot executes a pullout with 
+We neglect drag for now, and we don't directly model the angle of attack.
+ If the pilot executes a pullout with 
 \emph on
 constant turning g's
 \emph default
@@ -2092,7 +2092,7 @@ key "Browning2007SafetyBGA"
 
  , a constant.
  This choice of maneuver has the advantage that the pilot feels the turning
- acceleration directly as an additional seat force and can keep that roughly
+ acceleration directly as an additional seat force and could keep that roughly
  constant.
  It is similar to the constant angle of attack pullout modeled by Moore
 \begin_inset CommandInset citation
@@ -2469,7 +2469,8 @@ key "Hills2007SafetyBGA"
  The agreement between this approximation and Moore's full simulation is
  very good.
  The differences are less than 2m over the entire range except the upper
- right point (where the error is 3m, and this is an error on a height 
+ right point (where the error is 3m, and this is a difference on a height
+ 
 \emph on
 gain
 \emph default
@@ -2547,12 +2548,395 @@ reference "eq: recovery SM without dive"
 \end_layout
 
 \begin_layout Subsection
-Appendix: Time needed to rotate in zero-g or to recover from a stall
+Appendix C: Time delays before start of recovery
+\end_layout
+
+\begin_layout Subsubsection
+Stall recovery
 \end_layout
 
 \begin_layout Standard
-The danger in waiting to recover after a rope break or stall is not an issue
- of speed: the problem is that it takes time to rotate the glider to 
+After a stall we must apply downward elevator quickly so that the glider
+ points downward to gain speed.
+ If the wing loses lift due to a stall the horizontal stabilizer is usually
+ still producing negative lift and that will cause the glider to pitch up
+ further.
+ The air over the elevator slows and if we wait too long to use the elevator,
+ we lose elevator authority.
+ We could continue to wait until the glider is falling (vertical velocity
+ is negative)...the horizontal stabilizer will eventually orient the glider
+ along our velocity vector unless we strike the ground or go into a spin
+ first
+\end_layout
+
+\begin_layout Subsubsection
+Rope break recovery
+\end_layout
+
+\begin_layout Standard
+Right after a rope break, the lift is just as strong.
+ If the glider 
+\emph on
+kept the same climb angle
+\emph default
+ (went in a straight line) right after the break, a delay wouldn't be serious...the
+ glider would be gaining height, but the horizontal velocity wouldn't change,
+ giving plenty of elevator authority.
+ The real problem is that 
+\emph on
+any
+\emph default
+ 
+\emph on
+up-elevator
+\emph default
+ after rope break pitches the glider up, decreasing 
+\emph on
+both
+\emph default
+ the vertical and horizontal velocities.
+ So the delay's effect on the recovery height loss and stall danger increases
+ greatly with the amount of elevator the pilot is using in the first place.
+\end_layout
+
+\begin_layout Standard
+We now need to model both the climb angle (
+\begin_inset Formula $\gamma)$
+\end_inset
+
+ and glider orientation (
+\begin_inset Formula $\theta)$
+\end_inset
+
+.
+ Their difference is the angle of attack 
+\begin_inset Formula $\alpha=\theta-\gamma$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+m\dot{v}=mgsin\gamma
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+I_{g}\ddot{\theta}=M_{wing}+M_{stab}+M_{elev}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The last equation is the rotational differential equation that is determined
+ by the glider moment of inertia and the moments (torques) of air on the
+ surfaces.
+ The glider is trimmed so that 
+\begin_inset Formula $M_{wing}\text{ and }M_{stab}$
+\end_inset
+
+ cancel except when the angle of attack is 
+\emph on
+different
+\emph default
+ from normal trimmed flight, so we take the zero of 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ to be that of normal glider flight (not the wing chord).
+ In terms of 
+\begin_inset Formula $\delta_{e}$
+\end_inset
+
+, the elevator deflection
+\begin_inset Formula $,$
+\end_inset
+
+ the moment from the elevator is
+\begin_inset Formula $M_{elev}=Lp_{e}\delta_{e}$
+\end_inset
+
+, so 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+I_{g}\ddot{\theta}=L(p_{e}\delta_{e}-p_{\alpha}\alpha)
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $p_{e}\approx\frac{1.4m/rad}{C_{Lw}}$
+\end_inset
+
+ is due to the elevator surface, 
+\begin_inset Formula $p_{\alpha}\approx\frac{1.9m/rad}{C_{Lw}}$
+\end_inset
+
+ is due to the horizontal stabilizer surface, and 
+\begin_inset Formula $C_{L}$
+\end_inset
+
+ is the wing lift coefficient (which also depends on 
+\begin_inset Formula $\alpha).$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The elevator deflection at the time of the rope break is
+\begin_inset Formula $\delta_{br}$
+\end_inset
+
+.
+ We will have two delay times: 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+ for the pilot to realize there is a rope break and that the nose must be
+ lowered, and 
+\begin_inset Formula $t_{move}$
+\end_inset
+
+ the time it takes to move the elevator from 
+\begin_inset Formula $\delta_{br}$
+\end_inset
+
+ to the zero-g pushover deflection.
+ 
+\end_layout
+
+\begin_layout Paragraph
+First-order approximation
+\end_layout
+
+\begin_layout Standard
+The first-order approximation is labeled by the superscript 
+\begin_inset Formula $^{(1)}$
+\end_inset
+
+.
+ The lift is 
+\begin_inset Formula $L^{(1)}=L_{br}$
+\end_inset
+
+, the lift right when the rope breaks, and the angle of attack is 
+\begin_inset Formula $\alpha^{(1)}=\alpha_{br}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The speed at the end of the decision delay is 
+\begin_inset Formula $v_{dec}{}^{(1)}=v_{br}-gsin\gamma_{br}\,t_{decide},$
+\end_inset
+
+ so the average speed is 
+\begin_inset Formula 
+\[
+\bar{v}^{(1)}=v_{br}-\frac{1}{2}gsin\gamma_{br}\,t_{decide}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+During 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+we have a constant deflection 
+\begin_inset Formula $\delta_{br}$
+\end_inset
+
+, so 
+\begin_inset Formula $I_{g}\dot{\theta}=L(p_{e}\delta_{br}-p_{\alpha}\alpha_{br})$
+\end_inset
+
+t.
+ The average rotation rate of the glider is (integrating and dividing by
+ 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{equation}
+\bar{\dot{\theta}}\approx\frac{1}{2I_{g}}L_{br}\left(p\delta_{br}-p_{\alpha}\alpha_{br}\right)t_{decide}\label{eq:avg theta rate}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To get the average increase in glider angle during this time we integrate
+ again and divide by 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+: 
+\begin_inset Formula 
+\begin{equation}
+\Delta\theta^{(1)}\approx\frac{1}{2}L_{br}\left(p\delta_{br}-p_{\alpha}\alpha_{br}\right)t_{decide}^{2}\label{eq:avg theta rate-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+.
+ The average climb angle change is approximated from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:avg theta rate"
+
+\end_inset
+
+ as 
+\begin_inset Formula $\bar{\dot{\gamma}}^{(1)}\approx(L_{br}-mgcos\gamma_{br})/(m\bar{v)}$
+\end_inset
+
+.
+ So the average climb angle increase during 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+ is 
+\begin_inset Formula 
+\[
+\Delta\bar{\gamma}^{(1)}\approx\frac{1}{2}\frac{(L_{br}-mgcos\gamma_{br})}{m\bar{v}^{(1)}}t_{decide}=\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{\bar{v_{br}-\frac{1}{2}gsin\gamma_{br}\,t_{decide}}}t_{decide}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Now we can get an approximation for the increase in angle of attack: 
+\begin_inset Formula 
+\[
+\Delta\alpha^{(1)}=\Delta\theta^{(1)}-\Delta\gamma^{(1)}=\frac{1}{2}L_{br}\left(p\delta_{br}-p_{\alpha}\alpha_{br}\right)t_{decide}^{2}-\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{decide}}t_{decide}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The lift is 
+\begin_inset Formula 
+\[
+L=(W+L_{\alpha}\alpha)\left(\frac{v}{v_{b}}\right)^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+.
+ So the average lift during this time is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+L^{(1)}=(W+L_{\alpha}(\alpha_{br}+\Delta\alpha^{(1)})\left(\frac{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{decide}}{v_{b}}\right)^{2}\label{eq: Lift first order}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This makes sense because the increase in alpha will increase lift, but the
+ slowing will compete to decrease lift.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Second-order approximation
+\end_layout
+
+\begin_layout Standard
+The second-order speed at time 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+is
+\begin_inset Formula 
+\[
+\bar{v}^{(2)}=v_{br}-gsin\left(\gamma_{br}+\Delta\bar{\gamma}^{(1)}\right)\,t_{decide}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The updated climb angle at time 
+\begin_inset Formula $t_{decide}$
+\end_inset
+
+ is 
+\begin_inset Formula 
+\[
+\bar{\gamma}_{t_{decide}}^{(2)}\approx\frac{(L^{(1)}-mgcos(\gamma_{br}+\Delta\bar{\gamma}^{(1)})}{m\bar{v}^{(2)}}t_{decide}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+There are no factors of 
+\begin_inset Formula $\frac{1}{2}$
+\end_inset
+
+ here because we want the values at the end of the time, not the average.
+\end_layout
+
+\begin_layout Paragraph
+SO DO WE MODEL THE MOVEMENT TIME OF ELEVATOR, OR JUST USE ONE DELAY TIME???????
 \end_layout
 
 \begin_layout Bibliography
