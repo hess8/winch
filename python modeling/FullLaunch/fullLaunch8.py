@@ -277,9 +277,13 @@ class glider:
         self.d_m = 0.25  # distance main wheel to CG (m) 
         self.d_t = 3.3  # distance tail wheel to CG (m) 
         self.theta0 = rad(theta0)
-        self.oldState = None
-        #logic
+        self.mw = 0.3*self.m
+        self.yG = 0.35
+        self.yL = 0.45
+        
+        #variables
 #        self.lastvy = 0
+        self.oldState = None
         self.vypeaked = False
         self.state = 'onGnd'
         # state variables 
@@ -354,14 +358,19 @@ class glider:
 #         L = gl.W*(tanh(self.Lalpha/self.W * alpha) + A*exp(self.alphaStall**2/s**2) * exp(-(alpha - self.alphaStall)**2 / s**2)) * (v/self.vb)**2
 #         return L
 
-    def smRecov(self,Vbr,gammaBreak): 
+    def smRecov(self,Vbr,gammaBreak,pl): 
         '''Height change after recovery from rope break or power failure'''
         g = 9.8
         Vr = 1.5*self.vStall   #recovery speed
         np = 1.5               #recovery pullout g's (constant, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
         p = 0.53
-        Vx = cos(gammaBreak)*Vbr
-        ygainBallistic = Vr**2/9.8/2 * (Vbr/Vr)**2 -1
+        Vx = cos(gammaBreak)*Vbr; Vy = sin(gammaBreak)*Vbr
+        Vball = sqrt(Vx**2 + (Vy-g*pl.recovDelay)**2)
+        Vyrecov = sqrt(Vr**2-Vx**2)
+        if Vr>Vx:
+            tball = (Vy-g*pl.recovDelay)/g + Vyrecov/g 
+            print 'tball',tball, Vball,deg(gammaBreak)
+        ygainBallistic = Vy*pl.recovDelay +  Vr**2/9.8/2 * ((Vball/Vr)**2 -1)
         if Vx > Vr:  #recovery without dive
             ygainSlow = sqrt(Vx**2 - Vr**2)/2/g  #slowing from Vx to Vr.
             sm = self.y + ygainBallistic + ygainSlow
@@ -405,6 +414,7 @@ class rope:
 
         self.b = 0.3            #  vertical distance (m) of rope attachment below CG  
         self.lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
+        self.Twl = 8500           #Newtons strength of weak link (Brown)
 #        self.lo = 1000 
         self.Cdr = 1.0           # rope drag coefficient
         self.mu = 0.015          # rope linear mass density (kg/meter)
@@ -625,7 +635,7 @@ class operator:
                 else:
                     self.Sth =  self.thrmax
 class pilot:
-    def __init__(self,pilotType,ntime,ctrltype,setpoint):
+    def __init__(self,pilotType,ntime,ctrltype,setpoint,recovDelay):
         self.Me = 0
         self.MeTarget = 0
         self.err = 0
@@ -639,6 +649,7 @@ class pilot:
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
         self.humanT = 1.0 #sec
         self.cOld = None #previous PID coefficiens
+        self.recovDelay = recovDelay
         #algebraic function
         self.elevTarget = 0   
         #state variable
@@ -847,9 +858,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            gl.data[ti.i]['smRecov']  = gl.smRecov(v,gamma) 
+            if gl.y>0.2: gl.data[ti.i]['smRecov']  = gl.smRecov(v,gamma,pl) 
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
-            gl.data[ti.i]['smStruct']  = gl.n1 - L/gl.W #safety margin vs structural damage (g's)            
+            gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
             gl.data[ti.i]['L']  = L
             gl.data[ti.i]['D']  = D
@@ -868,7 +879,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             rp.data[ti.i]['Tglider'] = Tg            
             rp.data[ti.i]['torq'] = ropetorq
             rp.data[ti.i]['theta'] = thetarope
-            rp.data[ti.i]['sm']
+            rp.data[ti.i]['sm'] = (rp.Twl - Tg)/gl.W
             wi.data[ti.i]['v'] = wi.v
             wi.data[ti.i]['Pdeliv'] = Few * wi.v
             wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
@@ -922,12 +933,12 @@ tRampUp = 2
 tHold = 0.5
 targetT = 1.0
 dipT = 0.7
-thrmax =  0.5
+thrmax =  1.0
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-#throttleType = 'constT'
-#throttleType = 'constTdip'
-throttleType = 'constThr'
+throttleType = 'constT'
+# throttleType = 'constTdip'
+# throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
@@ -942,11 +953,12 @@ if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
 
 #--- pilot controls
+recovDelay = 0
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
 control = ['alpha','alpha']  # Use '' for none
-setpoint = [1 ,1 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['alpha','v']
@@ -988,7 +1000,7 @@ for iloop,param in enumerate(loopParams):
     tc = torqconv()
     en = engine(tcUsed,wi.rdrum)
     op = operator(throttleType,targetT,dipT,thrmax,tRampUp,tHold,ntime)
-    pl = pilot(pilotType,ntime,control,setpoint)
+    pl = pilot(pilotType,ntime,control,setpoint,recovDelay)
     # nonzero initial conditions
     gl.xD = 1e-6  #to avoid div/zero
     gl.yD = 1e-6  #to avoid div/zero
@@ -1070,6 +1082,7 @@ for iloop,param in enumerate(loopParams):
         smRope = smooth(rData['sm'],tData,1)
         smStall = smooth(gData['smStall'],tData,1)
         smStruct = smooth(gData['smStruct'],tData,1)
+        smRecov = smooth(gData['smRecov'],tData,1)
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]
@@ -1104,6 +1117,7 @@ for iloop,param in enumerate(loopParams):
         smRope = rData['sm'] 
         smStall = gData['smStall'] 
         smStruct = gData['smStruct'] 
+        smRecov = gData['smRecov']
     #ground roll
     if max(gl.y) >gl.deltar:
         iEndRoll = where(gl.y > gl.deltar)[0][0]
@@ -1222,21 +1236,19 @@ plts.xy(False,[tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1
 plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
 #Specialty plots for presentations
 plts.i = 0 #restart color cycle
-#plts.xyy([tData,t,t,t,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,T/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
-#        [0,0,0,1,1,0,0,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-#        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Normal rope torque')
-plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
-#plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-#        [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-#        ['v (glider)','T/W', 'L/W'],'Glider and safety margins')
+plts.i = 0 #restart color cycle
+plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
+        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+        ['v','height/10','Climb angle','L/W','Struct Margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
 
 #zoom in on a time range same plot as above
-zoom = False
+zoom = True
 if zoom:
     t1 = 9; t2 = 10
-    plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+    plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
 # plot loop results

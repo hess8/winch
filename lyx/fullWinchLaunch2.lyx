@@ -4,9 +4,14 @@
 \begin_header
 \save_transient_properties true
 \origin unavailable
-\textclass achemso
+\textclass revtex4
 \options aps,preprint
 \use_default_options false
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
 \maintain_unincluded_children false
 \language english
 \language_package default
@@ -82,7 +87,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -2902,7 +2906,7 @@ So
 \end_layout
 
 \begin_layout Subsubsection
-Rope drap effect alone on angle at glider
+Rope drag effect alone on angle at glider
 \end_layout
 
 \begin_layout Standard
@@ -2910,7 +2914,7 @@ For a very light rope,
 \begin_inset Formula $\mu\approx0$
 \end_inset
 
-, T will be constant, and we can solve for the 
+, T will be constant, and we can solve for the sag or 
 \begin_inset Quotes eld
 \end_inset
 

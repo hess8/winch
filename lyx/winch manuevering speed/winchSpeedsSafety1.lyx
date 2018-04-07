@@ -636,7 +636,7 @@ Wing bending under inertial vs non-inertial loads
 
 \begin_layout Standard
 For the lift needed, it doesn't matter if the load is non-inertial (like
- weight or constant rope tension), or inertial (
+ weight or rope tension), or inertial (
 \begin_inset Formula $ma).$
 \end_inset
 
@@ -980,7 +980,7 @@ reference "fig: VW over VA"
 \begin_inset Formula $m$
 \end_inset
 
- as the manuals' maximum gross mass, and 
+ as the maximum gross mass, and 
 \begin_inset Formula $m_{w}$
 \end_inset
 
@@ -1038,7 +1038,7 @@ structural
  the wing.
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{struct}=\frac{L_{max.design}-L(t)}{W}=n_{1}-\frac{L(t)}{W}\label{eq: structural SM}
+\overline{sm}_{struct}=\frac{L_{max.design}-L(t)}{W}=n_{1}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)-\frac{L(t)}{W}\label{eq: structural SM}
 \end{equation}
 
 \end_inset
@@ -1078,7 +1078,11 @@ accelerated
 \end_inset
 
  stall effects are in the magnitude of 
-\begin_inset Formula $L(t).$
+\begin_inset Formula $L(t)$
+\end_inset
+
+ vs a maximum 
+\begin_inset Formula $L.$
 \end_inset
 
  We can write rewrite 
@@ -1160,21 +1164,45 @@ We wish to define a safety margin in closed form that we can apply at each
 \end_inset
 
  and climb angle 
-\begin_inset Formula $\gamma_{br}.$
+\begin_inset Formula $\gamma_{br},$
+\end_inset
+
+and the horizontal velocity is 
+\begin_inset Formula $V_{x}\approx V_{br}cos\gamma_{br}$
+\end_inset
+
+, and the vertical velocity 
+\begin_inset Formula $V_{y}\approx V_{br}sin\gamma_{br}$
 \end_inset
 
  The pilot puts the glider in a ballistic (zero lift) pushover right after
- the rope break.
- During the ballistic pushover the horizontal speed is approximately conserved,
- so at the peak the speed is 
-\begin_inset Formula 
-\[
-V_{x}\approx V_{br}cos\gamma_{br}
-\]
-
+ a time 
+\begin_inset Formula $t_{delay}$
 \end_inset
 
+ after the rope break.
+ By then the glider has slowed to 
+\begin_inset Formula $V_{ball}=\sqrt{V_{x}^{2}+(V_{y}-gt_{delay})^{2}}$
+\end_inset
 
+ and has risen a distance 
+\begin_inset Formula $\Delta y_{0}=V_{y}t_{delay}$
+\end_inset
+
+.
+ We assume the pilot maintains the same glider attitude, and the horizontal
+ stabilizer keeps the glider very close to the initial climb angle.
+ 
+\end_layout
+
+\begin_layout Standard
+During the ballistic pushover the horizontal speed is approximately conserved,
+ so at the peak the speed is 
+\begin_inset Formula $V_{x}\approx V_{br}cos\gamma_{br}$
+\end_inset
+
+.
+ 
 \end_layout
 
 \begin_layout Subsection*
@@ -1208,7 +1236,7 @@ The height gain during the ballistic pushover is obtained by energy conservation
 ; 
 \begin_inset Formula 
 \begin{equation}
-\Delta y_{1}\approx\frac{V_{br}^{2}-V_{r}^{2}}{2g}=\frac{V_{r}^{2}}{2g}\left(\left(\frac{V_{br}}{V_{r}}\right)^{2}-1\right)\label{eq:height change in ballistic}
+\Delta y_{1}\approx\frac{V_{ball}^{2}-V_{r}^{2}}{2g}=\frac{V_{r}^{2}}{2g}\left(\left(\frac{V_{ball}}{V_{r}}\right)^{2}-1\right)\label{eq:height change in ballistic}
 \end{equation}
 
 \end_inset
@@ -1231,7 +1259,7 @@ above the ground
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left(\left(\frac{V_{br}}{V_{r}}\right)^{2}-1\right)+\frac{\sqrt{V_{x}^{2}-V_{R}^{2}}}{2g}\label{eq: recovery SM without dive}
+\overline{sm}_{recov}=y_{br}+V_{y}t_{delay}+\frac{V_{r}^{2}}{2g}\left(\left(\frac{V_{ball}}{V_{r}}\right)^{2}-1\right)+\frac{\sqrt{V_{x}^{2}-V_{R}^{2}}}{2g}\label{eq: recovery SM without dive}
 \end{equation}
 
 \end_inset
@@ -1293,7 +1321,7 @@ reference "subsec: Recovery height change"
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive-2-1}
+\overline{sm}_{recov}=y_{br}+V_{y}t_{delay}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{ball}}{V_{r}}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive-2-1}
 \end{equation}
 
 \end_inset
@@ -1328,34 +1356,111 @@ reference "fig: approx vs GSM recovery height change"
 \end_inset
 
  that shows this method is validated by full simulations of the recovery
- dive with 
+ dive if 
 \begin_inset Formula $p=0.53.$
 \end_inset
 
- We adopt Moore's conservative suggestion
-\begin_inset CommandInset citation
-LatexCommand citep
-key "2011MooreRecoveryASK21"
-
-\end_inset
-
- of recovery speed (beginning of the dive) 
+ Also in the best fit to the simulation we find 
 \begin_inset Formula $V_{r}=1.5V_{S},$
 \end_inset
 
- which is typically about the best-glide speed, and use Browning's value
- of the pullup g's (turning acceleration) as 
-\begin_inset Formula $n_{p}=1.5$
+ the same conservative but realistic speed Moore proposed for the recovery
+ speed (beginning of the dive), which is typically about the best-glide
+ speed, which may not be surprising because this corresponds to the angle
+ of attack Moore chose.
+ The best fit to Moore's data also gives 
+\begin_inset Formula $n_{p}=1.5,$
 \end_inset
 
- 
+ Browning's
 \begin_inset CommandInset citation
 LatexCommand citep
 key "Browning2007SafetyBGA"
 
 \end_inset
 
+ value chosen for the pullout constant g's.
+\end_layout
+
+\begin_layout Section
+Comment on 
+\begin_inset Quotes eld
+\end_inset
+
+pilot-perceived g's vs glider g's
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+There is a saying in the winch community that 
+\begin_inset Quotes eld
+\end_inset
+
+the pilot does not feel all the g's the glider does
+\begin_inset Quotes erd
+\end_inset
+
 .
+ This can be true depending on what you mean by g's.
+ Here are several specific true statements that make this more clear:
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Quotes eld
+\end_inset
+
+The pilot feels the same inertial (maneuvering or acceleration) g's the
+ glider experiences
+\begin_inset Quotes erd
+\end_inset
+
+ (thank goodness for the seat and belts!)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Quotes eld
+\end_inset
+
+In a pullout or rotation maneuver, the pilot doesn't feel the extra wing
+ load due to rope tension.
+ 
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Quotes eld
+\end_inset
+
+A g-meter never gives the wing load
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Quotes eld
+\end_inset
+
+A g-meter sensitive only to acceleration in the direction of lift will underesti
+mate g's if the acceleration vector is not in the direction of lift
+\begin_inset Quotes erd
+\end_inset
+
+ (this point was made by Hills
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+).
  
 \end_layout
 
@@ -1707,7 +1812,7 @@ where
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-M_{st}=F_{ni}gy_{L}-m_{w}gy_{G}\label{eq:Static bending Fst}
+M_{st}=F_{ni}gy_{L}-m_{w}gy_{G}\label{eq:Static bending first}
 \end{equation}
 
 \end_inset
@@ -1863,7 +1968,7 @@ reference "subsec:Wing-bending- top of launch"
 From eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "eq:Static bending Fst"
+reference "eq:Static bending first"
 
 \end_inset
 
@@ -1912,7 +2017,7 @@ V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}\label{eq: VAw}
 \end_layout
 
 \begin_layout Subsection
-Appendix: Height change during recovery
+Appendix: Height change during dive
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec: Recovery height change"
@@ -1966,8 +2071,11 @@ ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
 
 \end_inset
 
-If the pilot executes a pullout with constant turning g's (turning acceleration)
- as suggested by Browning
+If the pilot executes a pullout with 
+\emph on
+constant turning g's
+\emph default
+ (constant turning acceleration) as suggested by Browning
 \begin_inset CommandInset citation
 LatexCommand citep
 key "Browning2007SafetyBGA"
@@ -1983,22 +2091,24 @@ key "Browning2007SafetyBGA"
 \end_inset
 
  , a constant.
- This has the advantage that the pilot feels the turning acceleration directly
- as an additional seat force.
- This is similar to the constant angle of attack pullout modeled by Moore
+ This choice of maneuver has the advantage that the pilot feels the turning
+ acceleration directly as an additional seat force and can keep that roughly
+ constant.
+ It is similar to the constant angle of attack pullout modeled by Moore
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2011MooreRecoveryASK21"
 
 \end_inset
 
-, because in a constant AoA pullup, as v increases more lift is generated
+, because in a constant AoA pullout more lift is generated as v increases
  toward the bottom of the pullout, where it is needed.
- Here, 
+ So this keeps the glider away from stall danger.
+ In terms of symbols: 
 \begin_inset Formula $L=n_{p}mg+mgcos\gamma$
 \end_inset
 
-, which also increases toward the bottom of the dive (low 
+, which increases toward the bottom of the dive (low 
 \begin_inset Formula $\gamma$
 \end_inset
 
@@ -2176,7 +2286,7 @@ to get the total height change for the entire recovery after rope break:
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\Delta y=\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma'+2\Gamma'^{2})\right]
+\Delta y=\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{ball}}{Vr}\right)^{2}-(1+2\Gamma'+2\Gamma'^{2})\right]
 \]
 
 \end_inset
@@ -2244,7 +2354,7 @@ above the ground
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{br}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive-2}
+\overline{sm}_{recov}=y_{br}+\frac{V_{r}^{2}}{2g}\left[\left(\frac{V_{ball}}{Vr}\right)^{2}-(1+2\Gamma+2\Gamma^{2})\right]\label{eq: recovery SM with dive-2}
 \end{equation}
 
 \end_inset
@@ -2264,16 +2374,7 @@ we can write the speeds in terms of it: the average speed used in the pullout
 \end_inset
 
 .
- Unlike 
-\begin_inset CommandInset citation
-LatexCommand citep
-key "Browning2007SafetyBGA"
-
-\end_inset
-
- we have not included a time delay between the rope break and the zero-g
- pushover.
- Any delay reduces the safety margin.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -2284,11 +2385,7 @@ key "2011MooreRecoveryASK21"
 
 \end_inset
 
- of recovery speed (beginning of the dive) 
-\begin_inset Formula $V_{r}=1.5V_{S},$
-\end_inset
-
- which is typically about the best-glide speed.
+ of which is typically about the best-glide speed.
  In fig 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2304,8 +2401,15 @@ reference "eq: recovery SM with dive-2"
 \end_inset
 
  plotted against the height losses calculated by Moore for each recovery
- that required dives.
- In the approximation the best fit to Moore's data used pullout g's s 
+ that required a dive.
+ When the approximation is fitted (using zero pilot delay) to Moore's data
+ it yields the same recovery speed he suggested as a realistic recovery
+ speed: 
+\begin_inset Formula $V_{r}=1.5V_{S}$
+\end_inset
+
+ .
+ The other results of the fit were 
 \begin_inset Formula $n_{p}=$
 \end_inset
 
@@ -2314,33 +2418,58 @@ reference "eq: recovery SM with dive-2"
 \end_inset
 
 .
- , This fitted value of 1.5 is that same as Browning's
+ Including 
+\begin_inset Formula $p$
+\end_inset
+
+ lowered the rms error from 9% to 2% of the full range of heights.
+ The best-fit g-factor value 
+\begin_inset Formula $n_{p}=$
+\end_inset
+
+1.5 is what Browning
 \begin_inset CommandInset citation
 LatexCommand citep
 key "Browning2007SafetyBGA"
 
 \end_inset
 
- chosen value of the pullup g's (turning acceleration).
- At the bottom of the dive the lift factor required is 
+ and Hills
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+ chose in their recovery simulations.
+  At the bottom of the dive the lift factor required is 
 \begin_inset Formula $n_{L}=1+n_{p}=2.5$
 \end_inset
 
 .
  We have checked that the speed at the bottom of the dive is sufficient
  for all cases to generate this lift.
- Moore did a full simulation of the differential equations using a constant
- angle of attack pullout.
- This plot uses 
-\begin_inset Formula $V_{r}=1.5V_{S},$
+ Moore's data and this plot use three speeds 
+\begin_inset Formula $V_{br}$
 \end_inset
 
- for three speeds at ropebreak: 50, 60 and 70 kts, and angles from 10 to
- 60 deg.
- The agreement is very good.
- The differences between our approximation and Moore's full solution are
- less than 2m over the entire range except the upper right point (which
- is a height 
+ at rope break: 50, 60 and 70 kts, and initial climb angles from 10 to 60
+ deg and 
+\begin_inset Formula $V_{r}=1.5V_{S}$
+\end_inset
+
+.
+ The agreement between this approximation and Moore's full simulation is
+ very good.
+ The differences are less than 2m over the entire range except the upper
+ right point (where the error is 3m, and this is an error on a height 
 \emph on
 gain
 \emph default
@@ -2363,7 +2492,7 @@ reference "eq: recovery SM with dive-2"
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Graphics
@@ -2415,6 +2544,15 @@ reference "eq: recovery SM without dive"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Appendix: Time needed to rotate in zero-g or to recover from a stall
+\end_layout
+
+\begin_layout Standard
+The danger in waiting to recover after a rope break or stall is not an issue
+ of speed: the problem is that it takes time to rotate the glider to 
 \end_layout
 
 \begin_layout Bibliography
