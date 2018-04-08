@@ -2053,9 +2053,9 @@ The differential equations can be written in terms of speed and the climb
 ar to it.
  
 \begin_inset Formula 
-\[
-m\dot{v}=mgsin\gamma
-\]
+\begin{equation}
+m\dot{v}=mgsin\gamma\label{eq: speed diffeq}
+\end{equation}
 
 \end_inset
 
@@ -2064,9 +2064,9 @@ m\dot{v}=mgsin\gamma
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
-ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
-\]
+\begin{equation}
+ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma\label{eq: gamma diffeq}
+\end{equation}
 
 \end_inset
 
@@ -2441,13 +2441,6 @@ key "Hills2007SafetyBGA"
 
 \end_inset
 
-
-\begin_inset CommandInset citation
-LatexCommand citep
-key "Hills2007SafetyBGA"
-
-\end_inset
-
  chose in their recovery simulations.
   At the bottom of the dive the lift factor required is 
 \begin_inset Formula $n_{L}=1+n_{p}=2.5$
@@ -2565,7 +2558,7 @@ After a stall we must apply downward elevator quickly so that the glider
  we lose elevator authority.
  We could continue to wait until the glider is falling (vertical velocity
  is negative)...the horizontal stabilizer will eventually orient the glider
- along our velocity vector unless we strike the ground or go into a spin
+ along our velocity vector but we might strike the ground or go into a spin
  first
 \end_layout
 
@@ -2574,33 +2567,66 @@ Rope break recovery
 \end_layout
 
 \begin_layout Standard
-Right after a rope break, the lift is just as strong.
- If the glider 
-\emph on
-kept the same climb angle
-\emph default
- (went in a straight line) right after the break, a delay wouldn't be serious...the
- glider would be gaining height, but the horizontal velocity wouldn't change,
- giving plenty of elevator authority.
- The real problem is that 
-\emph on
-any
-\emph default
+There will always be some 
+\begin_inset Formula $t_{delay}$
+\end_inset
+
+ between the rope break and when the pilot begins the pushover.
+ If the glider elevator were neutral at the rope break the delay would not
+ be so serious.
+ The horizontal stabilizer would decrease the angle of attack, help rotate
+ the glider toward recovery and turn vertical velocity into horizontal.
+ The big danger is that the stick is usually pulled back during the climb,
+ so this the condition during the delay.
+ Browning
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+ and Hills
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+ assumed a straight-line (constant 
+\begin_inset Formula $\gamma)$
+\end_inset
+
+ path during the delay.
+ This is a good starting approximation because the path requires up-elevator
+ (and pitching up).
+ From eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: gamma diffeq"
+
+\end_inset
+
+, when 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ is constant then the lift is fixed at 
+\begin_inset Formula $L=mgcos\gamma$
+\end_inset
+
+, To keep a constant lift as the speed decreases requires up-elevator so
+ the angle of attack to increases as the speed falls, until the glider stalls.
  
-\emph on
-up-elevator
-\emph default
- after rope break pitches the glider up, decreasing 
-\emph on
-both
-\emph default
- the vertical and horizontal velocities.
- So the delay's effect on the recovery height loss and stall danger increases
- greatly with the amount of elevator the pilot is using in the first place.
 \end_layout
 
 \begin_layout Standard
-We now need to model both the climb angle (
+We want to use an improved approximation of the effect of delay and have
+ it explicitly depend on the elevator deflection at the rope break, 
+\begin_inset Formula $\delta_{br}$
+\end_inset
+
+.
+ We now need to model both the climb angle (
 \begin_inset Formula $\gamma)$
 \end_inset
 
@@ -2614,29 +2640,23 @@ We now need to model both the climb angle (
 \end_inset
 
 .
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-m\dot{v}=mgsin\gamma
-\]
+ In addition to eqns 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: speed diffeq"
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
-\]
+,
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: gamma diffeq"
 
 \end_inset
 
-
+, we have a differential equation for the glider pitch that is determined
+ by the glider moment of inertia and the moments (torques) of air on the
+ surfaces:
 \end_layout
 
 \begin_layout Standard
@@ -2647,14 +2667,7 @@ I_{g}\ddot{\theta}=M_{wing}+M_{stab}+M_{elev}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-The last equation is the rotational differential equation that is determined
- by the glider moment of inertia and the moments (torques) of air on the
- surfaces.
- The glider is trimmed so that 
+The glider is trimmed so that 
 \begin_inset Formula $M_{wing}\text{ and }M_{stab}$
 \end_inset
 
@@ -2706,29 +2719,6 @@ where
 \begin_inset Formula $\alpha).$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-The elevator deflection at the time of the rope break is
-\begin_inset Formula $\delta_{br}$
-\end_inset
-
-.
- We will have two delay times: 
-\begin_inset Formula $t_{decide}$
-\end_inset
-
- for the pilot to realize there is a rope break and that the nose must be
- lowered, and 
-\begin_inset Formula $t_{move}$
-\end_inset
-
- the time it takes to move the elevator from 
-\begin_inset Formula $\delta_{br}$
-\end_inset
-
- to the zero-g pushover deflection.
  
 \end_layout
 
@@ -2746,22 +2736,35 @@ The first-order approximation is labeled by the superscript
 \begin_inset Formula $L^{(1)}=L_{br}$
 \end_inset
 
-, the lift right when the rope breaks, and the angle of attack is 
+, the lift when the rope breaks, and the angle of attack is 
 \begin_inset Formula $\alpha^{(1)}=\alpha_{br}$
 \end_inset
 
+.
+ The pitching constants 
+\begin_inset Formula $p_{e}^{(1)}$
+\end_inset
 
+and 
+\begin_inset Formula $p_{\alpha}^{(1)}$
+\end_inset
+
+ are calculated using 
+\begin_inset Formula $C_{L}(\alpha_{br})$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
 The speed at the end of the decision delay is 
-\begin_inset Formula $v_{dec}{}^{(1)}=v_{br}-gsin\gamma_{br}\,t_{decide},$
+\begin_inset Formula $v_{dec}{}^{(1)}=v_{br}-gsin\gamma_{br}\,t_{delay},$
 \end_inset
 
  so the average speed is 
 \begin_inset Formula 
 \[
-\bar{v}^{(1)}=v_{br}-\frac{1}{2}gsin\gamma_{br}\,t_{decide}
+\bar{v}^{(1)}=v_{br}-\frac{1}{2}gsin\gamma_{br}\,t_{delay}
 \]
 
 \end_inset
@@ -2771,7 +2774,7 @@ The speed at the end of the decision delay is
 
 \begin_layout Standard
 During 
-\begin_inset Formula $t_{decide}$
+\begin_inset Formula $t_{delay}$
 \end_inset
 
 we have a constant deflection 
@@ -2779,19 +2782,19 @@ we have a constant deflection
 \end_inset
 
 , so 
-\begin_inset Formula $I_{g}\dot{\theta}=L(p_{e}\delta_{br}-p_{\alpha}\alpha_{br})$
+\begin_inset Formula $I_{g}\dot{\theta}=L(p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br})$
 \end_inset
 
 t.
  The average rotation rate of the glider is (integrating and dividing by
  
-\begin_inset Formula $t_{decide}$
+\begin_inset Formula $t_{delay}$
 \end_inset
 
 :
 \begin_inset Formula 
 \begin{equation}
-\bar{\dot{\theta}}\approx\frac{1}{2I_{g}}L_{br}\left(p\delta_{br}-p_{\alpha}\alpha_{br}\right)t_{decide}\label{eq:avg theta rate}
+\bar{\dot{\theta}}\approx\frac{1}{2I_{g}}L_{br}\left((p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br}\right)t_{delay}\label{eq:avg theta rate}
 \end{equation}
 
 \end_inset
@@ -2808,7 +2811,7 @@ To get the average increase in glider angle during this time we integrate
 : 
 \begin_inset Formula 
 \begin{equation}
-\Delta\theta^{(1)}\approx\frac{1}{2}L_{br}\left(p\delta_{br}-p_{\alpha}\alpha_{br}\right)t_{decide}^{2}\label{eq:avg theta rate-1}
+\Delta\theta^{(1)}\approx\frac{1}{2I_{g}}L_{br}\left((p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br}\right)t_{delay}^{2}\label{eq:avg theta rate-1}
 \end{equation}
 
 \end_inset
@@ -2837,7 +2840,7 @@ reference "eq:avg theta rate"
  is 
 \begin_inset Formula 
 \[
-\Delta\bar{\gamma}^{(1)}\approx\frac{1}{2}\frac{(L_{br}-mgcos\gamma_{br})}{m\bar{v}^{(1)}}t_{decide}=\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{\bar{v_{br}-\frac{1}{2}gsin\gamma_{br}\,t_{decide}}}t_{decide}
+\Delta\bar{\gamma}^{(1)}\approx\frac{1}{2}\frac{(L_{br}-mgcos\gamma_{br})}{m\bar{v}^{(1)}}t_{delay}=\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{\bar{v_{br}-\frac{1}{2}gsin\gamma_{br}\,t_{delay}}}t_{delay}
 \]
 
 \end_inset
@@ -2846,10 +2849,11 @@ reference "eq:avg theta rate"
 \end_layout
 
 \begin_layout Standard
-Now we can get an approximation for the increase in angle of attack: 
+Now we can get an approximation for the average change in angle of attack:
+ 
 \begin_inset Formula 
 \[
-\Delta\alpha^{(1)}=\Delta\theta^{(1)}-\Delta\gamma^{(1)}=\frac{1}{2}L_{br}\left(p\delta_{br}-p_{\alpha}\alpha_{br}\right)t_{decide}^{2}-\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{decide}}t_{decide}
+\Delta\alpha^{(1)}=\Delta\theta^{(1)}-\Delta\gamma^{(1)}=\frac{1}{2}L_{br}\left((p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br}\right)t_{decide}^{2}-\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{delay}}t_{delay}
 \]
 
 \end_inset
@@ -2857,27 +2861,32 @@ Now we can get an approximation for the increase in angle of attack:
 
 \end_layout
 
-\begin_layout Standard
-The lift is 
-\begin_inset Formula 
-\[
-L=(W+L_{\alpha}\alpha)\left(\frac{v}{v_{b}}\right)^{2}
-\]
-
-\end_inset
-
-
+\begin_layout Paragraph
+Second-order approximation
 \end_layout
 
 \begin_layout Standard
-.
- So the average lift during this time is 
+The lift can be written as 
+\begin_inset Formula $L=(W+L_{\alpha}\alpha)\left(\frac{v}{v_{b}}\right)^{2}$
+\end_inset
+
+,
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+give background
+\end_layout
+
+\end_inset
+
+ so the average lift during this time is 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-L^{(1)}=(W+L_{\alpha}(\alpha_{br}+\Delta\alpha^{(1)})\left(\frac{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{decide}}{v_{b}}\right)^{2}\label{eq: Lift first order}
+L^{(2)}=(W+L_{\alpha}(\alpha_{br}+\Delta\alpha^{(1)})\left(\frac{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{delay}}{v_{b}}\right)^{2}\label{eq: Lift first order}
 \end{equation}
 
 \end_inset
@@ -2886,24 +2895,19 @@ L^{(1)}=(W+L_{\alpha}(\alpha_{br}+\Delta\alpha^{(1)})\left(\frac{v_{br}-\frac{1}
 \end_layout
 
 \begin_layout Standard
-This makes sense because the increase in alpha will increase lift, but the
- slowing will compete to decrease lift.
- 
-\end_layout
-
-\begin_layout Paragraph
-Second-order approximation
+This makes sense because the increase in alpha will be opposed by the glider
+ slowing down.
 \end_layout
 
 \begin_layout Standard
 The second-order speed at time 
-\begin_inset Formula $t_{decide}$
+\begin_inset Formula $t_{delay}$
 \end_inset
 
 is
 \begin_inset Formula 
 \[
-\bar{v}^{(2)}=v_{br}-gsin\left(\gamma_{br}+\Delta\bar{\gamma}^{(1)}\right)\,t_{decide}
+v^{(2)}=v_{br}-gsin\left(\gamma_{br}+\Delta\bar{\gamma}^{(1)}\right)\,t_{delay}
 \]
 
 \end_inset
@@ -2913,13 +2917,13 @@ is
 
 \begin_layout Standard
 The updated climb angle at time 
-\begin_inset Formula $t_{decide}$
+\begin_inset Formula $t_{delay}$
 \end_inset
 
  is 
 \begin_inset Formula 
 \[
-\bar{\gamma}_{t_{decide}}^{(2)}\approx\frac{(L^{(1)}-mgcos(\gamma_{br}+\Delta\bar{\gamma}^{(1)})}{m\bar{v}^{(2)}}t_{decide}
+\gamma_{t_{decide}}^{(2)}\approx\frac{(L^{(2)}-mgcos(\gamma_{br}+\Delta\bar{\gamma}^{(1)})}{m\bar{v}^{(2)}}t_{delay}
 \]
 
 \end_inset
@@ -2932,11 +2936,7 @@ There are no factors of
 \begin_inset Formula $\frac{1}{2}$
 \end_inset
 
- here because we want the values at the end of the time, not the average.
-\end_layout
-
-\begin_layout Paragraph
-SO DO WE MODEL THE MOVEMENT TIME OF ELEVATOR, OR JUST USE ONE DELAY TIME???????
+ here because we need the values at the end of the delay time, not the average.
 \end_layout
 
 \begin_layout Bibliography
