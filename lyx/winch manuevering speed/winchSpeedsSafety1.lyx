@@ -2051,6 +2051,19 @@ reference "eq: gamma dive"
 The differential equations can be written in terms of speed and the climb
  angle, from Newton's laws written for directions along the path and perpendicul
 ar to it.
+ Note that the 
+\begin_inset Quotes eld
+\end_inset
+
+dot
+\begin_inset Quotes erd
+\end_inset
+
+ notation means the change with time: 
+\begin_inset Formula $\dot{v}=\frac{dv}{dt},$
+\end_inset
+
+ and similar for other symbols.
  
 \begin_inset Formula 
 \begin{equation}
@@ -2563,7 +2576,406 @@ After a stall we must apply downward elevator quickly so that the glider
 \end_layout
 
 \begin_layout Subsubsection
-Rope break recovery
+Rope break recovery quadratic gamma
+\end_layout
+
+\begin_layout Standard
+There will always be some 
+\begin_inset Formula $t_{delay}$
+\end_inset
+
+ between the rope break and when the pilot begins the pushover.
+ If the glider elevator were neutral at the rope break the delay would not
+ be so serious.
+ The horizontal stabilizer would decrease the angle of attack, help rotate
+ the glider toward recovery and turn vertical velocity into horizontal.
+ The big danger is that the stick is usually pulled back during the climb,
+ so this the condition during the delay.
+ Browning
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Browning2007SafetyBGA"
+
+\end_inset
+
+ and Hills
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Hills2007SafetyBGA"
+
+\end_inset
+
+ assumed a straight-line (constant 
+\begin_inset Formula $\gamma)$
+\end_inset
+
+ path during the delay.
+ This is a good starting approximation because the path requires up-elevator
+ (and pitching up).
+ From eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: gamma diffeq"
+
+\end_inset
+
+, when 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ is constant then the lift is fixed at 
+\begin_inset Formula $L=mgcos\gamma$
+\end_inset
+
+.
+ To keep a constant lift as the speed decreases requires up-elevator so
+ the angle of attack to increases as the speed falls, until the glider stalls.
+ 
+\end_layout
+
+\begin_layout Standard
+We want to use an improved approximation of the effect of delay and allow
+ the climb angle to change quadratically with time during the delay.
+ 
+\begin_inset Formula 
+\begin{equation}
+\gamma(t)=\gamma_{br}+at+bt^{2}\label{eq:gamma quadratic}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We have the same differential equations as before except we change the first
+ below because the glider is in climb rather than dive: 
+\begin_inset Formula 
+\begin{equation}
+m\dot{v}=-mgsin\gamma\label{eq: speed diffeq-climb}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ma_{\bot}=mv\dot{\gamma}=L-mgcos\gamma
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The constant 
+\begin_inset Formula $a$
+\end_inset
+
+ is determined by the differential equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: speed diffeq-climb"
+
+\end_inset
+
+ evaluated at 
+\begin_inset Formula $t=0,$
+\end_inset
+
+ right when the rope breaks.
+ 
+\begin_inset Formula 
+\begin{equation}
+\dot{\gamma}(0)=a=\frac{L_{br}-mgcos\gamma_{br}}{mv_{br}}\label{eq:gamma dot at zero}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If we take the derivative of 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:gamma quadratic"
+
+\end_inset
+
+ and evaluate at 
+\begin_inset Formula $t=0,$
+\end_inset
+
+ we get 
+\begin_inset Formula 
+\[
+\ddot{\gamma}(0)=2b=\frac{\dot{L}(0)+mgsin\gamma_{br}\dot{\gamma}(0)}{mv_{br}}-\frac{L_{br}-mgcos\gamma_{br}}{mv_{br}^{2}}\dot{v}(0)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:gamma dot at zero"
+
+\end_inset
+
+ in the last term and :
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+2b=\frac{\dot{L}(0)+mgsin\gamma_{br}\dot{\gamma}(0)}{mv_{br}}-\frac{gsin\gamma_{br}}{v_{br}}\dot{\gamma}(0)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+b=\frac{\dot{L}(0)}{2mv_{br}}\label{eq: b equation-first}
+\end{equation}
+
+\end_inset
+
+To find 
+\begin_inset Formula $b,$
+\end_inset
+
+ we need to evaluate
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Formula $\dot{L}(0)$
+\end_inset
+
+.
+ To model the lift in detail, we need both the climb angle (
+\begin_inset Formula $\gamma)$
+\end_inset
+
+ and glider orientation (
+\begin_inset Formula $\theta)$
+\end_inset
+
+.
+ Their difference is the angle of attack 
+\begin_inset Formula $\alpha=\theta-\gamma$
+\end_inset
+
+.
+ The lift can be written as 
+\begin_inset Formula $L=(L_{br}+L_{\alpha}\alpha')\left(\frac{v}{v_{br}}\right)^{2}$
+\end_inset
+
+, where
+\begin_inset Formula $\alpha'=\alpha-\alpha_{br}$
+\end_inset
+
+ is the 
+\emph on
+change
+\emph default
+ of angle of attack during the delay, and 
+\begin_inset Formula $L_{\alpha}$
+\end_inset
+
+ is the lift slope.
+ Taking the derivative
+\begin_inset Formula 
+\[
+\dot{L}=L_{\alpha}\left(\frac{v}{v_{br}}\right)^{2}\frac{d\alpha'}{dt}+(L_{br}+L_{\alpha}\alpha')\left(\frac{2v}{v_{br}^{2}}\right)\frac{dv}{dt}
+\]
+
+\end_inset
+
+we evaluate this at 
+\begin_inset Formula $t$
+\end_inset
+
+= 0 where 
+\begin_inset Formula $v=v_{br}$
+\end_inset
+
+, and use eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: speed diffeq"
+
+\end_inset
+
+ for 
+\begin_inset Formula $\frac{dv}{dt}$
+\end_inset
+
+: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{L}(0)=L_{\alpha}\dot{\alpha}(0)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}
+\]
+
+\end_inset
+
+Finally, 
+\begin_inset Formula 
+\[
+\dot{\alpha}(0)=\dot{\theta}(0)-\dot{\gamma}(0)
+\]
+
+\end_inset
+
+The glider pitch 
+\begin_inset Formula $\theta$
+\end_inset
+
+ obeys a rotation differential equation that is determined by the glider
+ moment of inertia and the moments (torques) of air on the surfaces:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+I_{g}\ddot{\theta}=M_{wing}+M_{stab}+M_{elev}
+\]
+
+\end_inset
+
+ All we need to observe here is that just before and after the rope break
+ these quantities are the same and so 
+\begin_inset Formula $\dot{\theta}(0)=\dot{\theta}_{br}$
+\end_inset
+
+ is just whatever rotational rate the glider had at the rope break.
+ So we can solve for b from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: b equation-first"
+
+\end_inset
+
+ : 
+\begin_inset Formula 
+\[
+b=\frac{\dot{L}(0)}{2mv_{br}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+b=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}(0)-\dot{\gamma}(0)\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+b=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}_{br}-a\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)\label{eq: b eqn final}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So
+\begin_inset Formula 
+\begin{equation}
+\gamma(t_{delay})\approx\gamma_{br}+at_{delay}+bt_{delay}^{2}\label{eq:gamma after delay}
+\end{equation}
+
+\end_inset
+
+, with 
+\begin_inset Formula $a$
+\end_inset
+
+ and 
+\begin_inset Formula $b$
+\end_inset
+
+ given above which involve flight quantities right at the rope break.
+ 
+\end_layout
+
+\begin_layout Standard
+To find the speed after the delay, we use an average climb angle, so we
+ integrate eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:gamma quadratic"
+
+\end_inset
+
+ and divide by 
+\begin_inset Formula $t_{delay}$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+\bar{\gamma}=\gamma_{br}+\frac{1}{2}at_{delay}+\frac{1}{3}bt_{delay}^{2}
+\]
+
+\end_inset
+
+Then our estimate of the speed after the delay is from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: speed diffeq-climb"
+
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{equation}
+v(t_{delay})=v_{br}-gsin\bar{\gamma}\,t_{delay}\label{eq: v after delay}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The elevator deflection at rope break doesn't appear in this; it would enter
+ in a 
+\begin_inset Formula $t^{3}$
+\end_inset
+
+term.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Rope break recovery Method 2
 \end_layout
 
 \begin_layout Standard
@@ -2620,12 +3032,13 @@ reference "eq: gamma diffeq"
 \end_layout
 
 \begin_layout Standard
-We want to use an improved approximation of the effect of delay and have
- it explicitly depend on the elevator deflection at the rope break, 
+We want to use an improved approximation of the effect of delay to have
+ the flight explicitly depend on the elevator deflection at the rope break,
+ 
 \begin_inset Formula $\delta_{br}$
 \end_inset
 
-.
+ as well as other flight variables in our simulation.
  We now need to model both the climb angle (
 \begin_inset Formula $\gamma)$
 \end_inset
@@ -2727,6 +3140,18 @@ First-order approximation
 \end_layout
 
 \begin_layout Standard
+Biggest effects are:
+\end_layout
+
+\begin_layout Itemize
+L>mgcos(theta), so gamma increases
+\end_layout
+
+\begin_layout Itemize
+theta increases 
+\end_layout
+
+\begin_layout Standard
 The first-order approximation is labeled by the superscript 
 \begin_inset Formula $^{(1)}$
 \end_inset
@@ -2757,7 +3182,7 @@ and
 \end_layout
 
 \begin_layout Standard
-The speed at the end of the decision delay is 
+The speed at the end of the delay is 
 \begin_inset Formula $v_{dec}{}^{(1)}=v_{br}-gsin\gamma_{br}\,t_{delay},$
 \end_inset
 
@@ -2782,16 +3207,25 @@ we have a constant deflection
 \end_inset
 
 , so 
-\begin_inset Formula $I_{g}\dot{\theta}=L(p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br})$
+\begin_inset Formula $I_{g}\ddot{\theta}^{(1)}=L_{br}(p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br})$
 \end_inset
 
-t.
- The average rotation rate of the glider is (integrating and dividing by
- 
-\begin_inset Formula $t_{delay}$
+, and 
+\begin_inset Formula $I_{g}\dot{\theta}^{(1)}(t)=L_{br}(p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br})t$
 \end_inset
 
-:
+, and 
+\begin_inset Formula $I_{g}\theta^{(1)}(t)=L_{br}(p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br})t^{2}$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+???begin
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
 \bar{\dot{\theta}}\approx\frac{1}{2I_{g}}L_{br}\left((p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br}\right)t_{delay}\label{eq:avg theta rate}
@@ -2805,7 +3239,7 @@ t.
 \begin_layout Standard
 To get the average increase in glider angle during this time we integrate
  again and divide by 
-\begin_inset Formula $t_{decide}$
+\begin_inset Formula $t_{delay}$
 \end_inset
 
 : 
@@ -2817,6 +3251,10 @@ To get the average increase in glider angle during this time we integrate
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+???end
 \end_layout
 
 \begin_layout Standard
@@ -2853,7 +3291,7 @@ Now we can get an approximation for the average change in angle of attack:
  
 \begin_inset Formula 
 \[
-\Delta\alpha^{(1)}=\Delta\theta^{(1)}-\Delta\gamma^{(1)}=\frac{1}{2}L_{br}\left((p_{e}^{(1)}\delta_{br}-p_{\alpha}^{(1)}\alpha_{br}\right)t_{decide}^{2}-\frac{1}{2}\frac{g(n_{L.br}-cos\gamma_{br})}{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{delay}}t_{delay}
+\Delta\alpha^{(1)}=\Delta\theta^{(1)}-\Delta\gamma^{(1)}
 \]
 
 \end_inset
@@ -2886,20 +3324,11 @@ give background
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-L^{(2)}=(W+L_{\alpha}(\alpha_{br}+\Delta\alpha^{(1)})\left(\frac{v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{delay}}{v_{b}}\right)^{2}\label{eq: Lift first order}
+L^{(2)}=(W+L_{\alpha}(\alpha_{br}+\Delta\alpha^{(1)}))\left(\frac{\bar{v}^{(1)}}{v_{b}}\right)^{2}\label{eq: Lift first order}
 \end{equation}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-This makes sense because the increase in alpha will be opposed by the glider
- slowing down.
-\end_layout
-
-\begin_layout Standard
 The second-order speed at time 
 \begin_inset Formula $t_{delay}$
 \end_inset
@@ -2912,10 +3341,6 @@ v^{(2)}=v_{br}-gsin\left(\gamma_{br}+\Delta\bar{\gamma}^{(1)}\right)\,t_{delay}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 The updated climb angle at time 
 \begin_inset Formula $t_{delay}$
 \end_inset
@@ -2923,7 +3348,27 @@ The updated climb angle at time
  is 
 \begin_inset Formula 
 \[
-\gamma_{t_{decide}}^{(2)}\approx\frac{(L^{(2)}-mgcos(\gamma_{br}+\Delta\bar{\gamma}^{(1)})}{m\bar{v}^{(2)}}t_{delay}
+\gamma^{(2)}\approx\frac{(L^{(2)}-mgcos(\gamma_{br}+\Delta\bar{\gamma}^{(1)})}{m\bar{v}^{(2)}}t_{delay}
+\]
+
+\end_inset
+
+There are no factors of 
+\begin_inset Formula $\frac{1}{2}$
+\end_inset
+
+ here because we need the values at the end of the delay time, not the average.
+\end_layout
+
+\begin_layout Standard
+Finally we find the height change during the delay.
+ We use an updated average vertical velocity:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\bar{v}_{y}^{(2)}\approx\frac{v^{(2)}+V_{br}}{2}sin\gamma^{(2)}
 \]
 
 \end_inset
@@ -2932,11 +3377,14 @@ The updated climb angle at time
 \end_layout
 
 \begin_layout Standard
-There are no factors of 
-\begin_inset Formula $\frac{1}{2}$
+\begin_inset Formula 
+\[
+\Delta y_{delay}\approx\frac{v^{(2)}+V_{br}}{2}sin\gamma^{(2)}t_{delay}
+\]
+
 \end_inset
 
- here because we need the values at the end of the delay time, not the average.
+
 \end_layout
 
 \begin_layout Bibliography

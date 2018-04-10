@@ -358,28 +358,40 @@ class glider:
 #         L = gl.W*(tanh(self.Lalpha/self.W * alpha) + A*exp(self.alphaStall**2/s**2) * exp(-(alpha - self.alphaStall)**2 / s**2)) * (v/self.vb)**2
 #         return L
 
-    def smRecov(self,Vbr,gammaBreak,pl): 
+    def smRecov(self,Vbr,Lbr,alphabr,gammabr,pl): 
         '''Height change after recovery from rope break or power failure'''
         g = 9.8
         Vr = 1.5*self.vStall   #recovery speed
         np = 1.5               #recovery pullout g's (constant, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
         p = 0.53
-        Vx = cos(gammaBreak)*Vbr; Vy = sin(gammaBreak)*Vbr
-        Vball = sqrt(Vx**2 + (Vy-g*pl.recovDelay)**2)
-        Vyrecov = sqrt(Vr**2-Vx**2)
-        if Vr>Vx:
-            tball = (Vy-g*pl.recovDelay)/g + Vyrecov/g 
-            print 'tball',tball, Vball,deg(gammaBreak)
-        ygainBallistic = Vy*pl.recovDelay +  Vr**2/9.8/2 * ((Vball/Vr)**2 -1)
+        Vball,gammaBall,ygainDelay = self.delayOutcomes(Vbr,Lbr,alphabr,gammabr,pl) # quantities after delay, beginning of ballistic recovery  
+        ygainBallistic = Vr**2/9.8/2 * ((Vball/Vr)**2 -1)
+        Vx = cos(gammaBall)*Vball; Vy = sin(gammaBall)*Vball
         if Vx > Vr:  #recovery without dive
             ygainSlow = sqrt(Vx**2 - Vr**2)/2/g  #slowing from Vx to Vr.
             sm = self.y + ygainBallistic + ygainSlow
         else:
-            gammad = arctan(sqrt(Vr**2 - Vx**2)/Vx)
-            gp = gammad**p
-            Gamma = gp * sin(gp/2)/(np - 0.5 * gp * sin(gp/2))
-            sm = self.y + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma**2)
+            gammadive = arctan(sqrt(Vr**2 - Vx**2)/Vx)
+            gp = gammadive**p
+            Gamma = gp * sin(gp/2)/(np - 0.5 * gp * sin(gp/2)) #big Gamma, see paper
+            sm = self.y + ygainDelay + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma**2)
         return sm
+    
+    def delayOutcomes(self,Vbr,Lbr,alphabr,gammabr,pl):
+        g = 9.8
+        tdelay = pl.recovDelay
+        elevbr = pl.elev
+        v1 = Vbr -0.5*g*sin(gammbr)*tdelay
+        
+
+        delTheta1 = 0.5/self.I * Lbr * (self.pelev * pl.elev - self.palpha * alphabr)/(self.Co + self.CLalpha*alphabr) * tdelay**2
+        delgamma1 = 0.5 * (Lbr - self.m*g*cos(gammabr))/gl.m/v1
+        delAlpha1 = delTheta1 - delgamma1
+        L2 = (self.W + self.Lalpha *(alphabr + delAlpha1))*(v1/self.vb)**2
+        Vball = vbr - g*sin(gammabr + delgamma1) * tdelay
+        gammaBall = (L2 - self.m*g*cos(gammabr + delgamma1))/gl.m/Vball * tdelay
+        return Vball,gammaBall,ygainDelay         
+        
         
 class air:
     def __init__(self,vhead,vupdr,hupdr):
@@ -858,7 +870,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            if gl.y>0.2: gl.data[ti.i]['smRecov']  = gl.smRecov(v,gamma,pl) 
+            if gl.y>0.2: gl.data[ti.i]['smRecov']  = gl.smRecov(v,L,alphabr,gamma,pl)
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
