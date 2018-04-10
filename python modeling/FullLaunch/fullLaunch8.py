@@ -256,7 +256,7 @@ class glider:
         self.alphaStall = rad(8.5)         #  stall angle vs glider zero
         self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
 #        self.wStall = rad(.5)      #transition width for post-stall loss
-        self.m = 600             # kg Grob, 2 pilots vs 400 for PIK20
+        self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
         self.Q = 36             #   L/D
         self.n1 = 5.3           # max wing lift factor before danger of structural failure        
@@ -363,21 +363,32 @@ class glider:
     def smRecov(self,Vbr,Lbr,alphabr,gammabr,pl): 
         '''Height change after recovery from rope break or power failure'''
         g = 9.8
-        Vr = 1.5*self.vStall   #recovery speed
-        np = 1.5               #recovery pullout g's (constant, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
+        Vr = 1.3*self.vStall   #recovery speed
+        np0 = 1.5              #recovery pullout g's (constant, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
         p = 0.53
+        #Vball is velocity after delay, entering ballistic pushover 
         Vball,gammaBall,ygainDelay = self.delayOutcomes(Vbr,Lbr,alphabr,gammabr,pl) # quantities after delay, beginning of ballistic recovery  
         ygainBallistic = Vr**2/9.8/2 * ((Vball/Vr)**2 -1)
         Vx = cos(gammaBall)*Vball; Vy = sin(gammaBall)*Vball
         if Vx > Vr:  #recovery without dive
+            type = 'noDive'
             ygainSlow = sqrt(Vx**2 - Vr**2)/2/g  #slowing from Vx to Vr.
             sm = self.y + ygainBallistic + ygainSlow
         else:
-            gammadive = arctan(sqrt(Vr**2 - Vx**2)/Vx)
-            gp = gammadive**p
-            Gamma = gp * sin(gp/2)/(np - 0.5 * gp * sin(gp/2)) #big Gamma, see paper
-            sm = self.y + ygainDelay + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma**2)
-        return sm
+            np = np0
+            stall = True
+            while stall:
+                type = 'Dive'
+                gammadive = arctan(sqrt(Vr**2 - Vx**2)/Vx)
+                gp = gammadive**p
+                Gamma = gp * sin(gp/2)/(np - 0.5 * gp * sin(gp/2)) #big Gamma, see paper
+                sm = self.y + ygainDelay + ygainBallistic - Vr**2/9.8 * (Gamma + Gamma**2)
+                Vf = Vr + g*gammadive*Vr*sin(gammadive/2)/(np-gammadive/2*sin(gammadive/2))
+                if (Vf/self.vStall)**2 >= np + 1:
+                    stall = False
+                else:
+                    np -= 0.1
+        return sm,Vball,gammaBall,ygainDelay,type
     
     def delayOutcomes(self,Vbr,Lbr,alphabr,gammabr,pl):
         '''Assumes a quadratic gamma(t) during delay.  I trust this more than the 12 version below '''
@@ -390,6 +401,9 @@ class glider:
         Vball = Vbr - g*sin(gammaAvg) * tdelay
         gammaBall = gammabr + c1*tdelay + c2*tdelay**2
         ygainDelay = (Vbr - 0.5*g*sin(gammaAvg) * tdelay) * sin(gammaAvg)*tdelay
+        print 'Vbr',Vbr,Vbr/self.vStall
+        if self.y>0.2:
+            print'pause'
         return Vball,gammaBall,ygainDelay   
         
     def delayOutcomes12(self,Vbr,Lbr,alphabr,gammabr,pl):
@@ -886,7 +900,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            if gl.y>0.2: gl.data[ti.i]['smRecov']  = gl.smRecov(v,L,alpha,gamma,pl)
+            sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
+            print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
+            if gl.y>0.2 or sm>0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
@@ -944,7 +960,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 20 # end time for simulation
+tEnd = 15 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
@@ -981,16 +997,18 @@ if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
 
 #--- pilot controls
-recovDelay = 2
+pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
+#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+recovDelay = 0
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
-control = ['alpha','alpha']  # Use '' for none
-setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['alpha','alpha']  # Use '' for none
+# setpoint = [5 ,5 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['alpha','v']
-#setpoint = [3,35, 30]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','v']
+setpoint = [5,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 #control = ['v','v']
@@ -1004,8 +1022,6 @@ setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition t
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 
 # Loop over parameters for study, optimization
 
@@ -1268,12 +1284,15 @@ plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.
         [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
 plts.i = 0 #restart color cycle
-plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
+# plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
+#         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+#         ['v','height/10','Climb angle','L/W','Struct Margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
+plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-        ['v','height/10','Climb angle','L/W','Struct Margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
+        ['v','height','Climb angle','L/W','Struct Margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
 
 #zoom in on a time range same plot as above
-zoom = True
+zoom = False
 if zoom:
     t1 = 9; t2 = 10
     plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\

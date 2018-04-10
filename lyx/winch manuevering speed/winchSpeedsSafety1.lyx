@@ -1355,31 +1355,57 @@ reference "fig: approx vs GSM recovery height change"
 
 \end_inset
 
- that shows this method is validated by full simulations of the recovery
- dive if 
-\begin_inset Formula $p=0.53.$
-\end_inset
-
- Also in the best fit to the simulation we find 
-\begin_inset Formula $V_{r}=1.5V_{S},$
-\end_inset
-
- the same conservative but realistic speed Moore proposed for the recovery
- speed (beginning of the dive), which is typically about the best-glide
- speed, which may not be surprising because this corresponds to the angle
- of attack Moore chose.
- The best fit to Moore's data also gives 
-\begin_inset Formula $n_{p}=1.5,$
-\end_inset
-
- Browning's
+ that shows this method is validated by a fit to the full simulations by
+ Moore
 \begin_inset CommandInset citation
 LatexCommand citep
-key "Browning2007SafetyBGA"
+key "2011MooreRecoveryASK21"
 
 \end_inset
 
- value chosen for the pullout constant g's.
+.
+ For our safety margin, we use 
+\begin_inset Formula $V_{r}=1.3V_{S}$
+\end_inset
+
+, because 
+\begin_inset Formula $V_{r}$
+\end_inset
+
+ greater than this gives unrealistic results near the ground such as a glider
+ just lifting off at 1 ft above the ground at a climb angle of 2 degrees
+ needing 60 feet height loss to recover.
+ 
+\begin_inset Formula $V_{r}=1.3V_{S}$
+\end_inset
+
+ in the model predicts this case is recoverable.
+ At the bottom of the dive the lift factor required is the turning load
+ plus the full weight, so 
+\begin_inset Formula $n_{L}=n_{p}+1$
+\end_inset
+
+.
+ We start with 
+\begin_inset Formula $n_{p}=1.5$
+\end_inset
+
+ turning g's; for consistency, we check that 
+\begin_inset Formula $\left(\frac{v_{f}}{V_{S}}\right)^{2}\geq n_{p}+1$
+\end_inset
+
+, so that the glider does not stall at the bottom of the recovery dive,
+ where 
+\begin_inset Formula $v_{f}\approx V_{r}+gsin\bar{\gamma}\,t_{p}=V_{r}+\,\frac{\gamma_{d}V_{r}sin\bar{\gamma}}{\left[n_{p}-\frac{1}{2}\gamma_{d}sin\bar{\gamma}\right]}$
+\end_inset
+
+ .
+ If this inequality is not true, we lower 
+\begin_inset Formula $n_{p}$
+\end_inset
+
+by 0.1 (less turning g's) until the glider will not stall.
+ 
 \end_layout
 
 \begin_layout Section
@@ -1448,8 +1474,9 @@ A g-meter never gives the wing load
 \begin_inset Quotes eld
 \end_inset
 
-A g-meter sensitive only to acceleration in the direction of lift will underesti
-mate g's if the acceleration vector is not in the direction of lift
+A g-meter that is sensitive only to acceleration in the direction of lift
+ will underestimate g's when the acceleration vector is not in the direction
+ of lift
 \begin_inset Quotes erd
 \end_inset
 
@@ -2320,8 +2347,9 @@ where
 \end_layout
 
 \begin_layout Standard
-Finally we include a parameter to help account for the neglect of drag and
- the other approximations we have made compared to a detailed simulation.
+Finally we include a fitting parameter to help account for the neglect of
+ drag and the other approximations we have made compared to a detailed simulatio
+n.
  We raise 
 \begin_inset Formula $\gamma_{1}$
 \end_inset
@@ -2391,14 +2419,21 @@ we can write the speeds in terms of it: the average speed used in the pullout
 \end_layout
 
 \begin_layout Standard
-We adopt Moore's conservative suggestion
+We fit the height change eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: recovery SM with dive-2"
+
+\end_inset
+
+ to the the height losses calculated by Moore
 \begin_inset CommandInset citation
 LatexCommand citep
 key "2011MooreRecoveryASK21"
 
 \end_inset
 
- of which is typically about the best-glide speed.
+ for each recovery that required a dive .
  In fig 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2413,11 +2448,9 @@ reference "eq: recovery SM with dive-2"
 
 \end_inset
 
- plotted against the height losses calculated by Moore for each recovery
- that required a dive.
- When the approximation is fitted (using zero pilot delay) to Moore's data
- it yields the same recovery speed he suggested as a realistic recovery
- speed: 
+ plotted against Moore's data.
+ The fit (using zero pilot delay) to Moore's data yields the same recovery
+ speed he used for the data shown: 
 \begin_inset Formula $V_{r}=1.5V_{S}$
 \end_inset
 
@@ -2427,7 +2460,7 @@ reference "eq: recovery SM with dive-2"
 \end_inset
 
 1.5 and adjustable parameter 
-\begin_inset Formula $p=0.53$
+\begin_inset Formula $p=0.5$
 \end_inset
 
 .
@@ -2455,14 +2488,7 @@ key "Hills2007SafetyBGA"
 \end_inset
 
  chose in their recovery simulations.
-  At the bottom of the dive the lift factor required is 
-\begin_inset Formula $n_{L}=1+n_{p}=2.5$
-\end_inset
-
-.
- We have checked that the speed at the bottom of the dive is sufficient
- for all cases to generate this lift.
- Moore's data and this plot use three speeds 
+  Moore's data and this plot use three speeds 
 \begin_inset Formula $V_{br}$
 \end_inset
 
@@ -2484,6 +2510,19 @@ gain
  This is within variations expected for different assumptions and methods
  in any two valid simulations of a recovery, for example choosing constant
  angle of attack vs another reasonable method to determine the lift.
+ A similar fit to Moore's data with 
+\begin_inset Formula $V_{r}=1.3V_{S}$
+\end_inset
+
+ again yields the same recovery speed as he used, 
+\begin_inset Formula $n_{p}=$
+\end_inset
+
+1.5 and adjustable parameter 
+\begin_inset Formula $p=0.5$
+\end_inset
+
+, with even smaller differences between our approximation and his data.
  We conclude that our approximation eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2900,7 +2939,7 @@ c_{2}=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}(0)-\dot{\gamma}(0)\ri
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-c_{2}=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}_{br}-a\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)\label{eq: b eqn final}
+c_{2}=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}_{br}-c_{1}\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)\label{eq: b eqn final}
 \end{equation}
 
 \end_inset
