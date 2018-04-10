@@ -169,6 +169,7 @@ class plots:
             ax0.set_xlim([xmin,xmax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
+        if holdOpen: print 'Graphs ready'
         show(block = holdOpen)
 #         show()
         
@@ -220,6 +221,7 @@ class plots:
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
+        if holdOpen: print 'Graphs ready'
         show(block = holdOpen)  
 #         show()  
 
@@ -378,6 +380,20 @@ class glider:
         return sm
     
     def delayOutcomes(self,Vbr,Lbr,alphabr,gammabr,pl):
+        '''Assumes a quadratic gamma(t) during delay.  I trust this more than the 12 version below '''
+        g = 9.8
+        m = self.m
+        tdelay = pl.recovDelay
+        c1 = (Lbr - m*g*cos(gammabr))/m/Vbr
+        c2 = 0.5/m/Vbr * (self.Lalpha * (self.thetaD - c1) - 2*Lbr * g*sin(gammabr)/Vbr)
+        gammaAvg = gammabr + 0.5*c1*tdelay + 1/3.0 * c2*tdelay**2
+        Vball = Vbr - g*sin(gammaAvg) * tdelay
+        gammaBall = gammabr + c1*tdelay + c2*tdelay**2
+        ygainDelay = (Vbr - 0.5*g*sin(gammaAvg) * tdelay) * sin(gammaAvg)*tdelay
+        return Vball,gammaBall,ygainDelay   
+        
+    def delayOutcomes12(self,Vbr,Lbr,alphabr,gammabr,pl):
+        '''Uses  first and second order approximations'''
         g = 9.8
         tdelay = pl.recovDelay
         elevbr = pl.elev
@@ -870,7 +886,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            if gl.y>0.2: gl.data[ti.i]['smRecov']  = gl.smRecov(v,L,alphabr,gamma,pl)
+            if gl.y>0.2: gl.data[ti.i]['smRecov']  = gl.smRecov(v,L,alpha,gamma,pl)
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
@@ -965,7 +981,7 @@ if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
 
 #--- pilot controls
-recovDelay = 0
+recovDelay = 2
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha

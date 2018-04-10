@@ -2639,7 +2639,7 @@ We want to use an improved approximation of the effect of delay and allow
  
 \begin_inset Formula 
 \begin{equation}
-\gamma(t)=\gamma_{br}+at+bt^{2}\label{eq:gamma quadratic}
+\gamma(t)=\gamma_{br}+c_{1}t+c_{2}t^{2}\label{eq:gamma quadratic}
 \end{equation}
 
 \end_inset
@@ -2691,7 +2691,7 @@ reference "eq: speed diffeq-climb"
  
 \begin_inset Formula 
 \begin{equation}
-\dot{\gamma}(0)=a=\frac{L_{br}-mgcos\gamma_{br}}{mv_{br}}\label{eq:gamma dot at zero}
+\dot{\gamma}(0)=c_{1}=\frac{L_{br}-mgcos\gamma_{br}}{mv_{br}}\label{eq:gamma dot at zero}
 \end{equation}
 
 \end_inset
@@ -2714,7 +2714,7 @@ reference "eq:gamma quadratic"
  we get 
 \begin_inset Formula 
 \[
-\ddot{\gamma}(0)=2b=\frac{\dot{L}(0)+mgsin\gamma_{br}\dot{\gamma}(0)}{mv_{br}}-\frac{L_{br}-mgcos\gamma_{br}}{mv_{br}^{2}}\dot{v}(0)
+\ddot{\gamma}(0)=2c_{2}=\frac{\dot{L}(0)+mgsin\gamma_{br}\dot{\gamma}(0)}{mv_{br}}-\frac{L_{br}-mgcos\gamma_{br}}{mv_{br}^{2}}\dot{v}(0)
 \]
 
 \end_inset
@@ -2736,7 +2736,7 @@ reference "eq:gamma dot at zero"
 \begin_layout Standard
 \begin_inset Formula 
 \[
-2b=\frac{\dot{L}(0)+mgsin\gamma_{br}\dot{\gamma}(0)}{mv_{br}}-\frac{gsin\gamma_{br}}{v_{br}}\dot{\gamma}(0)
+2c_{2}=\frac{\dot{L}(0)+mgsin\gamma_{br}\dot{\gamma}(0)}{mv_{br}}-\frac{gsin\gamma_{br}}{v_{br}}\dot{\gamma}(0)
 \]
 
 \end_inset
@@ -2747,13 +2747,13 @@ reference "eq:gamma dot at zero"
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-b=\frac{\dot{L}(0)}{2mv_{br}}\label{eq: b equation-first}
+c_{2}=\frac{\dot{L}(0)}{2mv_{br}}\label{eq: b equation-first}
 \end{equation}
 
 \end_inset
 
 To find 
-\begin_inset Formula $b,$
+\begin_inset Formula $c_{2},$
 \end_inset
 
  we need to evaluate
@@ -2765,7 +2765,7 @@ To find
 \end_inset
 
 .
- To model the lift in detail, we need both the climb angle (
+ To model the lift in detail, we need to consider both the climb angle (
 \begin_inset Formula $\gamma)$
 \end_inset
 
@@ -2834,7 +2834,7 @@ reference "eq: speed diffeq"
 
 \end_inset
 
-Finally, 
+The derivative of the angle of attack is, 
 \begin_inset Formula 
 \[
 \dot{\alpha}(0)=\dot{\theta}(0)-\dot{\gamma}(0)
@@ -2864,7 +2864,11 @@ I_{g}\ddot{\theta}=M_{wing}+M_{stab}+M_{elev}
 \end_inset
 
  is just whatever rotational rate the glider had at the rope break.
- So we can solve for b from eqn 
+ So we can solve for 
+\begin_inset Formula $c_{2}$
+\end_inset
+
+ from eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq: b equation-first"
@@ -2874,7 +2878,7 @@ reference "eq: b equation-first"
  : 
 \begin_inset Formula 
 \[
-b=\frac{\dot{L}(0)}{2mv_{br}}
+c_{2}=\frac{\dot{L}(0)}{2mv_{br}}
 \]
 
 \end_inset
@@ -2885,7 +2889,7 @@ b=\frac{\dot{L}(0)}{2mv_{br}}
 \begin_layout Standard
 \begin_inset Formula 
 \[
-b=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}(0)-\dot{\gamma}(0)\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)
+c_{2}=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}(0)-\dot{\gamma}(0)\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)
 \]
 
 \end_inset
@@ -2896,7 +2900,7 @@ b=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}(0)-\dot{\gamma}(0)\right)
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-b=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}_{br}-a\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)\label{eq: b eqn final}
+c_{2}=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}_{br}-a\right)-\frac{2L_{br}gsin\gamma_{br}}{v_{br}}\right)\label{eq: b eqn final}
 \end{equation}
 
 \end_inset
@@ -2908,20 +2912,20 @@ b=\frac{1}{2mv_{br}}\left(L_{\alpha}\left(\dot{\theta}_{br}-a\right)-\frac{2L_{b
 So
 \begin_inset Formula 
 \begin{equation}
-\gamma(t_{delay})\approx\gamma_{br}+at_{delay}+bt_{delay}^{2}\label{eq:gamma after delay}
+\gamma(t_{delay})\approx\gamma_{br}+c_{1}t_{delay}+c_{2}t_{delay}^{2}\label{eq:gamma after delay}
 \end{equation}
 
 \end_inset
 
 , with 
-\begin_inset Formula $a$
+\begin_inset Formula $c_{1}$
 \end_inset
 
  and 
-\begin_inset Formula $b$
+\begin_inset Formula $c_{2}$
 \end_inset
 
- given above which involve flight quantities right at the rope break.
+ given above in terms of flight quantities right at the rope break.
  
 \end_layout
 
@@ -2941,7 +2945,7 @@ reference "eq:gamma quadratic"
 :
 \begin_inset Formula 
 \[
-\bar{\gamma}=\gamma_{br}+\frac{1}{2}at_{delay}+\frac{1}{3}bt_{delay}^{2}
+\bar{\gamma}=\gamma_{br}+\frac{1}{2}c_{1}t_{delay}+\frac{1}{3}c_{2}t_{delay}^{2}
 \]
 
 \end_inset
@@ -2956,7 +2960,30 @@ reference "eq: speed diffeq-climb"
 :
 \begin_inset Formula 
 \begin{equation}
-v(t_{delay})=v_{br}-gsin\bar{\gamma}\,t_{delay}\label{eq: v after delay}
+v(t_{delay})\approx v_{br}-gsin\bar{\gamma}\,t_{delay}\label{eq: v after delay}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The change in height after the rope break is 
+\begin_inset Formula 
+\[
+\Delta y_{delay}\approx\bar{v}sin\bar{\gamma}\,t_{delay}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\Delta y_{delay}\approx(v_{br}-\frac{1}{2}gsin\bar{\gamma}\,t_{delay})sin\bar{\gamma}\,t_{delay}\label{eq: y change in delay}
 \end{equation}
 
 \end_inset
@@ -3384,7 +3411,7 @@ Finally we find the height change during the delay.
 
 \end_inset
 
-
+WHY NOT SOME average gamma instead of gamma2 above? 
 \end_layout
 
 \begin_layout Bibliography
