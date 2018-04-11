@@ -1364,6 +1364,15 @@ key "2011MooreRecoveryASK21"
 \end_inset
 
 .
+ Moore explored both 
+\begin_inset Formula $V_{r}=1.5V_{S}$
+\end_inset
+
+, and 
+\begin_inset Formula $V_{r}=1.3V_{S}$
+\end_inset
+
+.
  For our safety margin, we use 
 \begin_inset Formula $V_{r}=1.3V_{S}$
 \end_inset
@@ -1379,7 +1388,7 @@ key "2011MooreRecoveryASK21"
 \begin_inset Formula $V_{r}=1.3V_{S}$
 \end_inset
 
- in the model predicts this case is recoverable.
+ in the model predicts this case is recoverable with a couple feet to spare.
  At the bottom of the dive the lift factor required is the turning load
  plus the full weight, so 
 \begin_inset Formula $n_{L}=n_{p}+1$
@@ -1390,7 +1399,7 @@ key "2011MooreRecoveryASK21"
 \begin_inset Formula $n_{p}=1.5$
 \end_inset
 
- turning g's; for consistency, we check that 
+ as the turning g's; for consistency, we check that 
 \begin_inset Formula $\left(\frac{v_{f}}{V_{S}}\right)^{2}\geq n_{p}+1$
 \end_inset
 

@@ -176,6 +176,7 @@ class plots:
     def xyy(self,holdOpen,xs,ys,yscalesMap,xlbl,ylbls,legendLabels,titlestr,xmin=None,xmax=None):
         '''Allows plotting with two yscales, left (0) and right (1).  
         So yscalesMap is e.g. [0,0,1,0] for 4 datasets'''
+        linestyles = ['-', '--', '-.', ':']
         fig, ax0 = subplots(figsize=(14, 7))        
         ax1 = ax0.twinx()
         if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
@@ -184,12 +185,16 @@ class plots:
             sys.exit('Stop: number of entries in the 0/1 map, legend labels and curves do not match for curve {}'.format(titlestr))
         ymaxs = [[],[]]; ymins = [[],[]]       
         for iy,y in enumerate(ys):
+            if 'margin' in legendLabels[iy]:
+                lstyle = '--'
+            else:
+                lstyle = '-'
             if len(xs[iy]) != len(y):
                 sys.exit('Stop: curve {} on plot {} has x with dimensions different from y.'.format(iy+1,titlestr))
             if yscalesMap[iy] == 0:
-                ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])  
+                ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])  
             else:
-                ax1.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
+                ax1.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])
             ymaxs[yscalesMap[iy]].append(max(y))
             ymins[yscalesMap[iy]].append(min(y))
             self.i += 1 
@@ -364,7 +369,7 @@ class glider:
         '''Height change after recovery from rope break or power failure'''
         g = 9.8
         Vr = 1.3*self.vStall   #recovery speed
-        np0 = 1.5              #recovery pullout g's (constant, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
+        np0 = 1.5              #recovery pullout g's (constant during pullout, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
         p = 0.53
         #Vball is velocity after delay, entering ballistic pushover 
         Vball,gammaBall,ygainDelay = self.delayOutcomes(Vbr,Lbr,alphabr,gammabr,pl) # quantities after delay, beginning of ballistic recovery  
@@ -387,7 +392,7 @@ class glider:
                 if (Vf/self.vStall)**2 >= np + 1:
                     stall = False
                 else:
-                    np -= 0.1
+                    np -= 0.1 
         return sm,Vball,gammaBall,ygainDelay,type
     
     def delayOutcomes(self,Vbr,Lbr,alphabr,gammabr,pl):
@@ -401,9 +406,9 @@ class glider:
         Vball = Vbr - g*sin(gammaAvg) * tdelay
         gammaBall = gammabr + c1*tdelay + c2*tdelay**2
         ygainDelay = (Vbr - 0.5*g*sin(gammaAvg) * tdelay) * sin(gammaAvg)*tdelay
-        print 'Vbr',Vbr,Vbr/self.vStall
-        if self.y>0.2:
-            print'pause'
+#         print 'Vbr',Vbr,Vbr/self.vStall
+#         if self.y>0.2:
+#             print'pause'
         return Vball,gammaBall,ygainDelay   
         
     def delayOutcomes12(self,Vbr,Lbr,alphabr,gammabr,pl):
@@ -900,9 +905,10 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
-            print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
-            if gl.y>0.2 or sm>0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
+            if gl.y>0.01:  
+                sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
+                print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
+                if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
@@ -999,16 +1005,16 @@ if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(rop
 #--- pilot controls
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
-recovDelay = 0
+recovDelay = 1.5
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
-# control = ['alpha','alpha']  # Use '' for none
-# setpoint = [5 ,5 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','alpha']  # Use '' for none
+setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['alpha','v']
-setpoint = [5,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['alpha','v']
+# setpoint = [5,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 #control = ['v','v']
@@ -1286,10 +1292,10 @@ plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.
 plts.i = 0 #restart color cycle
 # plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
 #         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-#         ['v','height/10','Climb angle','L/W','Struct Margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
+#         ['v','height/10','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
 plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-        ['v','height','Climb angle','L/W','Struct Margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
+        ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
 
 #zoom in on a time range same plot as above
 zoom = False
