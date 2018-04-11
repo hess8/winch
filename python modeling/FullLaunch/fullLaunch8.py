@@ -185,10 +185,11 @@ class plots:
             sys.exit('Stop: number of entries in the 0/1 map, legend labels and curves do not match for curve {}'.format(titlestr))
         ymaxs = [[],[]]; ymins = [[],[]]       
         for iy,y in enumerate(ys):
+            lstyle = '-'
             if 'margin' in legendLabels[iy]:
                 lstyle = '--'
-            else:
-                lstyle = '-'
+            if 'Recovery' in legendLabels[iy]:
+                lstyle = ':'
             if len(xs[iy]) != len(y):
                 sys.exit('Stop: curve {} on plot {} has x with dimensions different from y.'.format(iy+1,titlestr))
             if yscalesMap[iy] == 0:
@@ -1292,10 +1293,10 @@ plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.
 plts.i = 0 #restart color cycle
 # plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
 #         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-#         ['v','height/10','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
+#         ['v','height/10','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
 plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-        ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovey margin'],'Glider and safety margins')
+        ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
 
 #zoom in on a time range same plot as above
 zoom = False
