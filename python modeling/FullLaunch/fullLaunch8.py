@@ -430,11 +430,16 @@ class glider:
         
         
 class air:
-    def __init__(self,vhead,vupdr,hupdr):
+    def __init__(self,vhead,vupdr,hupdr,gust,gl):
         # wind parameters 
         self.vhead = vhead #headwind
         self.vupdr = vupdr #updraft
         self.hupdr = hupdr #height to turn on updraft
+        self.gust = gust 
+        
+    def mediation(self,gl):
+        
+        
    
 class rope:
     def __init__(self,thetaMax,breakAngle=None,breakTime=None):
@@ -972,9 +977,10 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 
 #--- air
 vhead = 0   #headwind
-if abs(vhead) > 0: print 'Headwind', vhead   # m/s
 vupdr = 0  #updraft
 hupdr = 600 #m At what height to turn the updraft on for testing
+vgust = 10  #m/s always perpendicular to flight path, for safety margin calcs. 
+if abs(vhead) > 0: print 'Headwind', vhead   # m/s
 if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
 #--- throttle and engine
@@ -1045,7 +1051,7 @@ for iloop,param in enumerate(loopParams):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
-    ai = air(vhead,vupdr,hupdr)
+    ai = air(vhead,vupdr,hupdr,gust,gl)
     rp = rope(ropeThetaMax,ropeBreakAngle,ropeBreakTime) 
     wi = winch()
     tc = torqconv()

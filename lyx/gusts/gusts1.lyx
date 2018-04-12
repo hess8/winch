@@ -127,11 +127,11 @@ Gusts do not appear in
 \begin_inset Formula $V_{w}$
 \end_inset
 
-, but the maximum gusts it considers in any case is
+, but the maximum gust it considers in any case is
 \begin_inset Formula $v_{g}=15$
 \end_inset
 
- m/s (30 kts) upward and downward relative to the flight path.
+ m/s (30 kts) perpendicular to the flight path.
  They give a 
 \begin_inset Quotes eld
 \end_inset

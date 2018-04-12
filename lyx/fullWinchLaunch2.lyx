@@ -938,7 +938,7 @@ glider as a whole
 \bar default
  rather than for wing, elevator, etc.
  The lift 
-\begin_inset Formula $L=\frac{1}{2}\rho SC_{L}v^{2}=\frac{1}{2}\rho S(C_{o}+2\pi\alpha)v^{2},$
+\begin_inset Formula $L=\frac{1}{2}\rho SC_{L}v^{2}=\frac{1}{2}\rho S(C_{o}+C_{L,\alpha}\alpha)v^{2},$
 \end_inset
 
  where 
@@ -950,7 +950,7 @@ glider as a whole
 \end_inset
 
  ( greater than when the wing angle of attack is zero, i.e trimmed glider
- flight at 
+ flight at the best glide speed
 \begin_inset Formula $v_{b};$
 \end_inset
 
@@ -959,13 +959,13 @@ glider as a whole
 \end_inset
 
 = 0.650).
- So 
+ 
 \begin_inset Formula $L(0)=\frac{1}{2}\rho SC_{o}v_{b}^{2}=W$
 \end_inset
 
 .
  So in the linear region below stall the lift is 
-\begin_inset Formula $L=W(1+\frac{2\pi}{C_{o}}\alpha)\left(\frac{v}{vo}\right)^{2}$
+\begin_inset Formula $L=W(1+\frac{C_{L,\alpha}}{C_{o}}\alpha)\left(\frac{v}{v_{b}}\right)^{2}$
 \end_inset
 
  or 
@@ -980,7 +980,7 @@ L=(W+L_{\alpha}\alpha)\left(\frac{v}{v_{b}}\right)^{2}
 \end_inset
 
 where the lift slope is 
-\begin_inset Formula $L_{\alpha}=\frac{2\pi W}{C_{o}}$
+\begin_inset Formula $L_{\alpha}=\frac{C_{L,\alpha}W}{C_{o}}$
 \end_inset
 
 .
@@ -3492,7 +3492,7 @@ From the xflyr5 model for Grob:
 \end_inset
 
 
-\begin_inset Formula $C_{o}+2\pi\alpha)$
+\begin_inset Formula $C_{o}+C_{L,\alpha}\alpha)$
 \end_inset
 
 .=1.9 m/rad/ 
@@ -3500,7 +3500,7 @@ From the xflyr5 model for Grob:
 \end_inset
 
 
-\begin_inset Formula $C_{o}+2\pi\alpha)$
+\begin_inset Formula $C_{o}+C_{L,\alpha}\alpha)$
 \end_inset
 
 .
@@ -3530,7 +3530,7 @@ stabilator
 \end_inset
 
 
-\begin_inset Formula $C_{o}+2\pi\alpha)$
+\begin_inset Formula $C_{o}+C_{L,\alpha}\alpha)$
 \end_inset
 
  
@@ -3551,7 +3551,7 @@ stabilator
 
 \begin_layout Standard
 The moment due to elevator deflection is 
-\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+2\pi\alpha}\frac{S_{s}}{S_{w}}\delta_{e}$
+\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+C_{L,\alpha}\alpha}\frac{S_{s}}{S_{w}}\delta_{e}$
 \end_inset
 
 .
