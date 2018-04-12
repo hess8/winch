@@ -430,14 +430,17 @@ class glider:
         
         
 class air:
-    def __init__(self,vhead,vupdr,hupdr,gust,gl):
+    def __init__(self,vhead,vupdr,hupdr,vgust,gl):
         # wind parameters 
         self.vhead = vhead #headwind
         self.vupdr = vupdr #updraft
         self.hupdr = hupdr #height to turn on updraft
-        self.gust = gust 
+        self.vgust = vgust #for safety margin calcs
         
-    def mediation(self,gl):
+    def gustLoad(self,gl):
+        '''Includes gust mediation formula from JAR22'''
+        mu = 2*gl.m/()
+        
         
         
    
@@ -913,7 +916,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
             if gl.y>0.01:  
                 sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
-                print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
+#                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
@@ -972,12 +975,12 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 60 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
 vhead = 0   #headwind
-vupdr = 0  #updraft
+vupdr = 10  #updraft
 hupdr = 600 #m At what height to turn the updraft on for testing
 vgust = 10  #m/s always perpendicular to flight path, for safety margin calcs. 
 if abs(vhead) > 0: print 'Headwind', vhead   # m/s
@@ -990,12 +993,12 @@ tRampUp = 2
 tHold = 0.5
 targetT = 1.0
 dipT = 0.7
-thrmax =  1.0
+thrmax =  0.7
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-throttleType = 'constT'
+# throttleType = 'constT'
 # throttleType = 'constTdip'
-# throttleType = 'constThr'
+throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
@@ -1012,7 +1015,7 @@ if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(rop
 #--- pilot controls
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 #pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
-recovDelay = 1.5
+recovDelay = 0.5
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
@@ -1051,7 +1054,7 @@ for iloop,param in enumerate(loopParams):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
-    ai = air(vhead,vupdr,hupdr,gust,gl)
+    ai = air(vhead,vupdr,hupdr,vgust,gl)
     rp = rope(ropeThetaMax,ropeBreakAngle,ropeBreakTime) 
     wi = winch()
     tc = torqconv()
@@ -1291,6 +1294,13 @@ plts.xy(False,[t,tData,tData,t,tData,tData],[env/wi.rdrum*60/2/pi*en.diff*en.gea
 #Energy,Power
 plts.xy(False,[tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
 plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
+#zoom in on a time range same plot as above
+zoom = True
+if zoom:
+    t1 = 40; t2 = 45
+    plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+            [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+            ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
 #Specialty plots for presentations
 plts.i = 0 #restart color cycle
 plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
@@ -1304,13 +1314,6 @@ plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
         ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
 
-#zoom in on a time range same plot as above
-zoom = False
-if zoom:
-    t1 = 9; t2 = 10
-    plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-            [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-            ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
 # plot loop results
 if len(loopParams) > 1:
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop

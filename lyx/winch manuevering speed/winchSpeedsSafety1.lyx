@@ -393,9 +393,9 @@ Glider wings are designed to withstand positive wing loads
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
-\frac{1}{2}\rho SC_{L.max}V_{S}^{2}=mg=W
-\]
+\begin{equation}
+\frac{1}{2}\rho SC_{L.max}V_{S}^{2}=mg=W\label{eq:stall speed}
+\end{equation}
 
 \end_inset
 
@@ -1561,15 +1561,15 @@ Wind gust load
 \end_layout
 
 \begin_layout Standard
-We will treat wind gust risks in a later paper, but there we study how a
- 10 m/s gust perpendicular to the flight path affects the safety margins.
+We will treat wind gust risks more in a later paper, but there we include
+ simultaions of how a 10 m/s (20 kt) gust perpendicular to the flight path
+ affects the safety margins.
  The maximum gust JAR-22 considers in any case is
 \begin_inset Formula $v_{g}=15$
 \end_inset
 
- m/s (30 kts) perpendicular to the flight path, and this is expected statistical
-ly no more frequencly than 70,000 flight hours.
- .
+ m/s (30 kts) perpendicular to the flight path, chosen because it is expected
+ no more frequencly than every 70,000 flight hours on average.
  They give a 
 \begin_inset Quotes eld
 \end_inset
@@ -1579,7 +1579,7 @@ gust mediation
 \end_inset
 
  method that includes the glider's gradual entrance into a typical gust,
- and the glider's rotational response to it: 
+ and the glider's response to it: 
 \end_layout
 
 \begin_layout Standard
@@ -1595,10 +1595,18 @@ n_{g}=\frac{1}{2}\frac{\rho Sv_{g}v}{W}kC_{L,\alpha}
 \end_inset
 
  is the gust alleviation factor, and 
-\begin_inset Formula $\mu_{r}=\frac{2m}{\rho S_{w}C_{L,\alpha}(1\,meter)}=\frac{m}{L_{\alpha}}v_{b}^{2}$
+\begin_inset Formula $\mu_{r}=\frac{2m}{\rho SC_{L,\alpha}(1\,meter)}$
 \end_inset
 
- is a mass ratio.
+ is a 
+\begin_inset Quotes eld
+\end_inset
+
+mass ratio
+\begin_inset Quotes erd
+\end_inset
+
+.
  
 \begin_inset Formula $v_{g}$
 \end_inset
@@ -1608,51 +1616,59 @@ n_{g}=\frac{1}{2}\frac{\rho Sv_{g}v}{W}kC_{L,\alpha}
 \end_inset
 
  the glider speed.
- 
+ Some sources replace the 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+(1meter)
+\begin_inset Quotes erd
+\end_inset
+
+ with the average wing chord.
 \end_layout
 
 \begin_layout Standard
-We write this in terms of glider parameters independent of 
-\begin_inset Formula $rho$
+We rewrite this using the stall speed in eqn 
+\begin_inset Formula $1$
 \end_inset
 
-
-\begin_inset Formula $L=\frac{1}{2}\rho SC_{L}v^{2}=\frac{1}{2}\rho S(C_{o}+C_{L,\alpha}\alpha)v^{2}.$
-\end_inset
-
- Using the lift written in terms of 
-\begin_inset Formula $C_{o}$
-\end_inset
-
- referenced at normal flight in best glider, 
-\begin_inset Formula $v_{b}$
-\end_inset
-
- the 
-\begin_inset Formula $L(0)=\frac{1}{2}\rho SC_{o}v_{b}^{2}=W$
-\end_inset
-
-.
- So in the linear region below stall the lift is 
-\begin_inset Formula $L=W(1+\frac{C_{L,\alpha}}{C_{o}}\alpha)\left(\frac{v}{v_{b}}\right)^{2}$
-\end_inset
-
- or 
+:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-L=(W+L_{\alpha}\alpha)\left(\frac{v}{v_{b}}\right)^{2}
+n_{g}=\frac{\frac{1}{2}\rho Sv_{g}v}{\frac{1}{2}\rho SC_{Lmax}V_{s}^{2}}kC_{L,\alpha}=k\frac{v_{g}v}{V_{s}^{2}}\frac{C_{L,\alpha}}{C_{Lmax}}
 \]
 
 \end_inset
 
-where the lift slope is 
-\begin_inset Formula $L_{\alpha}=\frac{C_{L,\alpha}W}{C_{o}}$
+
+\end_layout
+
+\begin_layout Standard
+and 
+\begin_inset Formula $\mu_{r}=\frac{m}{\frac{1}{2}\rho SC_{L,\alpha}(1\,meter)}=\frac{C_{Lmax}m}{mgV_{s}^{2}C_{L,\alpha}(1\,meter)}=\frac{V_{s}^{2}}{g(1\,meter)}\frac{C_{Lmax}}{C_{L,\alpha}}$
 \end_inset
 
-.
+
+\end_layout
+
+\begin_layout Standard
+xxxAt first glance, it would seem that the rope tension should change something
+ in this gust load.
  
 \end_layout
 
@@ -2513,7 +2529,7 @@ Having defined
 \begin_inset Formula $\Gamma,$
 \end_inset
 
-we can write the speeds in terms of it: the average speed used in the pullout
+we can write speeds in terms of it: the average speed used in the pullout
  calculations is
 \begin_inset Formula $\bar{v}\approx V_{r}\left(1+\Gamma\right)$
 \end_inset
@@ -2724,7 +2740,7 @@ After a stall we must apply downward elevator quickly so that the glider
 \end_layout
 
 \begin_layout Subsubsection
-Rope break recovery quadratic gamma
+Rope break recovery
 \end_layout
 
 \begin_layout Standard
