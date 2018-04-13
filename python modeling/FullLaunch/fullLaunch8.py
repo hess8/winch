@@ -258,7 +258,7 @@ class timeinfo:
 class glider:
     def __init__(self,theta0,ntime):
         # parameters
-        self.vb = 35              #   speed of glider at best glide angle
+        self.vb = 32              # (m/s)  speed of glider at best glide angle
         self.alphaStall = rad(8.5)         #  stall angle vs glider zero
         self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
 #        self.wStall = rad(.5)      #transition width for post-stall loss
@@ -271,7 +271,7 @@ class glider:
         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
         self.CLmax = self.Co + self.CLalpha * self.alphaStall
         self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
-        self.I = 600*6/4   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
+        self.I = 600*650/400   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
         self.ls = 4           # distance(m) between cg and stabilizer center        
         self.palpha = 1.9     #   This is from xflr model: (m/rad) coefficient for air-glider pitch moment from angle of attack (includes both stabilizer,wing, fuselage)
         self.pelev =  1.2     # (m/rad) coefficient for air-glider pitch moment from elevator deflection
@@ -355,16 +355,50 @@ class glider:
         return [Fmain, Ftail,Ffric]
         
         
-#    def Lnl(self,v,alpha):
-#         '''Nonlinear lift including post stall'''
-##         Lmax_vb = self.W * (self.vb/self.vStall)**2 
-##         L = self.W * (1 + tanh (alpha/self.alphaStall) - 2*self.stallLoss*(1 + tanh((alpha-self.alphaStall)/self.wStall))) * (v/self.vb)**2
-##         return L
-#         if 
-#         s = sqrt(2*self.alphaStall/(self.Lalpha/self.W  - 1))
-#         A = .5
-#         L = gl.W*(tanh(self.Lalpha/self.W * alpha) + A*exp(self.alphaStall**2/s**2) * exp(-(alpha - self.alphaStall)**2 / s**2)) * (v/self.vb)**2
-#         return L
+    def Lnl(self,v,alpha):
+        '''Nonlinear lift including post stall'''
+ 
+        slope1 = self.Lalpha/gl.W 
+        A1 = .22
+        gaussPeakAlpha = self.alphaStall
+        scale = 1/1.9
+        A = A1
+        slope = slope1/scale
+        s = sqrt(2*gaussPeakAlpha/(slope  - 1))
+        L = scale*(gl.W*(tanh(slope * alpha) + A*exp(gaussPeakAlpha**2/s**2) * exp(-(alpha - gaussPeakAlpha)**2 / s**2)) * (v/self.vb)**2)
+#         
+
+        
+        Lpeak = self.W * (self.vb/self.vStall)**2
+        Lsteady = Lpeak * .67
+        A = Lpeak-Lsteady        
+        w = 0.36 * self.alphaStall
+        p = 2
+        alphaTrans = rad(6.0-1.25)
+        #after stall
+        w2 = 1.0 * self.alphaStall
+        p2 = 2.0 
+        #final drop 
+        c = .6
+        alphaTrans3 = rad(25)
+        Ltrans = (self.W + self.Lalpha * alphaTrans) * (v/self.vb)**2
+        
+        if alpha < alphaTrans:
+            L = (self.W + self.Lalpha * alpha) * (v/self.vb)**2
+        elif alpha < self.alphaStall:
+            L = (Lsteady + A * exp( -(abs((alpha- self.alphaStall))/w)**p2  ) ) * (v/self.vb)**2
+#             aldiff = alpha - alphaTrans
+#             L =  (Ltrans + self.Lalpha * aldiff + c2 * aldiff**2 + c3*aldiff**3) * (v/self.vb)**2
+        elif alpha < alphaTrans3:
+            L = (Lsteady + A * exp( -(abs((alpha- self.alphaStall))/w2)**p2  ) )  * (v/self.vb)**2
+        else:
+            L = (Lsteady * (1 - c * (alpha - alphaTrans3)**1.5) + A * exp( -(abs((alpha- self.alphaStall))/w2)**p2  ) ) * (v/self.vb)**2
+            
+        return L
+    
+    
+    
+    
 
     def smRecov(self,Vbr,Lbr,alphabr,gammabr,pl): 
         '''Height change after recovery from rope break or power failure'''
@@ -410,24 +444,7 @@ class glider:
 #         print 'Vbr',Vbr,Vbr/self.vStall
 #         if self.y>0.2:
 #             print'pause'
-        return Vball,gammaBall,ygainDelay   
-        
-    def delayOutcomes12(self,Vbr,Lbr,alphabr,gammabr,pl):
-        '''Uses  first and second order approximations'''
-        g = 9.8
-        tdelay = pl.recovDelay
-        elevbr = pl.elev
-        v1 = Vbr -0.5*g*sin(gammbr)*tdelay
-        
-
-        delTheta1 = 0.5/self.I * Lbr * (self.pelev * pl.elev - self.palpha * alphabr)/(self.Co + self.CLalpha*alphabr) * tdelay**2
-        delgamma1 = 0.5 * (Lbr - self.m*g*cos(gammabr))/gl.m/v1
-        delAlpha1 = delTheta1 - delgamma1
-        L2 = (self.W + self.Lalpha *(alphabr + delAlpha1))*(v1/self.vb)**2
-        Vball = vbr - g*sin(gammabr + delgamma1) * tdelay
-        gammaBall = (L2 - self.m*g*cos(gammabr + delgamma1))/gl.m/Vball * tdelay
-        return Vball,gammaBall,ygainDelay         
-        
+        return Vball,gammaBall,ygainDelay      
         
 class air:
     def __init__(self,vhead,vupdr,hupdr,vgust,gl):
@@ -435,15 +452,15 @@ class air:
         self.vhead = vhead #headwind
         self.vupdr = vupdr #updraft
         self.hupdr = hupdr #height to turn on updraft
-        self.vgust = vgust #for safety margin calcs
-        
-    def gustLoad(self,gl):
+        mu = gl.vStall**2 / 9.8 * gl.CLmax/gl.CLalpha #for safety margin calcs
+        k = 0.88 * mu/(5.3 + mu) #for safety margin calcs
+        self.vFactors = k * vgust  / gl.vStall**2  * gl.CLalpha/gl.CLmax #for safety margin calcs
+        print 'mu,k,vfactors',mu,k,self.vFactors
+    def gustLoad(self,gl,v):
         '''Includes gust mediation formula from JAR22'''
-        mu = 2*gl.m/()
-        
-        
-        
-   
+        ng = self.vFactors * v
+        return ng
+
 class rope:
     def __init__(self,thetaMax,breakAngle=None,breakTime=None):
         # Rope parameters  
@@ -850,7 +867,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gamma = 0
             gammaAir = 0
         alpha = gl.theta - gammaAir # angle of attack
-        L = (gl.W + gl.Lalpha*alpha) * (vair/gl.vb)**2 #lift       
+#         L = (gl.W + gl.Lalpha*alpha) * (vair/gl.vb)**2 #lift  
+        L = gl.Lnl(vair,alpha) #lift      
         D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)\
            + 0.5 * 1.22 * (gl.Agear * vair**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
         if alpha > gl.alphaStall: #stall mimic
@@ -918,8 +936,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
                 sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
 #                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
-            gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W #safety margin vs stall (g's)
-            gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W #safety margin vs structural damage (g's)            
+            ngust = ai.gustLoad(gl,v)
+            gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - L/gl.W - ngust #safety margin vs stall (g's)
+            gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - L/gl.W - ngust #safety margin vs structural damage (g's)            
             gl.data[ti.i]['vgw']  = vgw
             gl.data[ti.i]['L']  = L
             gl.data[ti.i]['D']  = D
@@ -975,14 +994,14 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 60 # end time for simulation
+tEnd = 3 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
 vhead = 0   #headwind
-vupdr = 10  #updraft
-hupdr = 600 #m At what height to turn the updraft on for testing
-vgust = 10  #m/s always perpendicular to flight path, for safety margin calcs. 
+vupdr = 10  #updraft for a one-time even
+hupdr = 75 #m At what height to turn the updraft on for testing
+vgust = 0  #m/s always perpendicular to flight path, for safety margin calcs. 
 if abs(vhead) > 0: print 'Headwind', vhead   # m/s
 if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
@@ -1264,10 +1283,10 @@ torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero spe
 plts.xy(False,[rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
 
 ##plot lift curve vs alpha at v_best
-#alphaList = linspace(-10,15,100)
-#lift = array([gl.Lnl(gl.vb,rad(alph)) for alph in alphaList])
-#plts.xy([alphaList],[lift/gl.W],\
-#        'Angle of attack (deg)','Lift/Weight',[''],'Lift vs angle of attack')
+alphaList = linspace(-6,80,100)
+lift = array([gl.Lnl(gl.vb,rad(alph)) for alph in alphaList])
+plts.xy(False,[alphaList],[lift/gl.W],\
+        'Angle of attack (deg)','Lift/Weight',[''],'Lift vs angle of attack')
 
 #glider position vs time
 plts.xy(False,[t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
@@ -1298,7 +1317,7 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 zoom = True
 if zoom:
     t1 = 40; t2 = 45
-    plts.xyy(True,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+    plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
 #Specialty plots for presentations

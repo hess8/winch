@@ -1561,7 +1561,7 @@ Wind gust load
 \end_layout
 
 \begin_layout Standard
-We will treat wind gust risks more in a later paper, but there we include
+We will treat wind gust risks more in a later paper, but here we include
  simultaions of how a 10 m/s (20 kt) gust perpendicular to the flight path
  affects the safety margins.
  The maximum gust JAR-22 considers in any case is
@@ -1574,7 +1574,7 @@ We will treat wind gust risks more in a later paper, but there we include
 \begin_inset Quotes eld
 \end_inset
 
-gust mediation
+gust alleviation
 \begin_inset Quotes erd
 \end_inset
 
@@ -1594,7 +1594,7 @@ n_{g}=\frac{1}{2}\frac{\rho Sv_{g}v}{W}kC_{L,\alpha}
 \begin_inset Formula $k=\frac{0.88\mu_{r}}{5.3+\mu_{r}},$
 \end_inset
 
- is the gust alleviation factor, and 
+ is the gust alleviation factor (about 0.6) , and 
 \begin_inset Formula $\mu_{r}=\frac{2m}{\rho SC_{L,\alpha}(1\,meter)}$
 \end_inset
 
@@ -1640,7 +1640,7 @@ mass ratio
 \end_layout
 
 \begin_layout Standard
-We rewrite this using the stall speed in eqn 
+We rewrite this using the stall speed and eqn 
 \begin_inset Formula $1$
 \end_inset
 
@@ -1663,13 +1663,25 @@ and
 \begin_inset Formula $\mu_{r}=\frac{m}{\frac{1}{2}\rho SC_{L,\alpha}(1\,meter)}=\frac{C_{Lmax}m}{mgV_{s}^{2}C_{L,\alpha}(1\,meter)}=\frac{V_{s}^{2}}{g(1\,meter)}\frac{C_{Lmax}}{C_{L,\alpha}}$
 \end_inset
 
-
+ The gust 
 \end_layout
 
 \begin_layout Standard
-xxxAt first glance, it would seem that the rope tension should change something
- in this gust load.
+This gust load 
+\begin_inset Formula $n_{g}$
+\end_inset
+
+ will affect the structural and stall safety margins.
  
+\end_layout
+
+\begin_layout Standard
+At first glance, it would seem that the gust would have a significant effect
+ on the tension safety margin.
+ But our simulations show that the tension changes very little even with
+ an abrupt gust.
+ This is almost entirely due to the elasticity of the rope, and the rapid
+ rotation of the glider toward the gust, which 
 \end_layout
 
 \begin_layout Section
@@ -1729,7 +1741,9 @@ d (lift per length
  the circle.
  But because the mass is not distributed in the same manner as the lift,
  it will create bending along the wing which could be positive or negative.
- We study only the bending of the wing spar at the center of the span:
+ We study only the bending of the wing spar at the center of the span (other
+ points will have different bending loads but the principles and conclusions
+ should be the same):
 \end_layout
 
 \begin_layout Standard
@@ -1749,7 +1763,7 @@ Let's define
 \end_inset
 
  that describe how the wing's lift and mass are distributed.
- They are normalized so each integrates to 1/ : 
+ They are normalized so each integrates to 1 : 
 \end_layout
 
 \begin_layout Standard
