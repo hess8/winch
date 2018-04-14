@@ -208,16 +208,38 @@ class plots:
         ax1.grid(color='k', linestyle='--', linewidth=1)
         ax1.set_ylabel(ylbls[1])
         #Set y limits: force the zeros on both sides to be the same
-        min0 = min(0,min(ymins[0]))
-        max0 = 1.1 * max(ymaxs[0])
-        ax0.set_ylim([min0,max0])
-        max1 = 1.1 * max(ymaxs[1])
-        if min0 < 0:
-            shift = max1 * -min0/max0
-        else:
-            shift = 0
-        min1 = min(ymins[1]) - shift
-        ax1.set_ylim([min1,max1])
+        
+#         xxx
+#         min0 = min(0,min(ymins[0]))
+#         max0 = 1.1 * max(ymaxs[0])
+#         ax0.set_ylim([min0,max0])
+#         max1 = 1.1 * max(ymaxs[1])
+#         if min0 < 0:
+#             shift = max1 * -min0/max0
+#         else:
+#             shift = 0
+#         min1 = min(ymins[1]) - shift
+#         
+#         xxx
+        
+        max0 = 1.1 * max(ymaxs[0]); min0 = min(ymins[0])    
+        max1 = 1.1 * max(ymaxs[1]); min1 = min(ymins[1])
+#         scale0 = max0 - min0; scale1 =  max1 - min1
+        if min0 >= 0 and min1 >= 0:
+            ymin0 = 0; ymin1 = 0
+        elif min0 >= 0 and min1 < 0:
+            ymin0 = min1*max0/max1; ymin1 = min1
+        elif min0 < 0 and min1 >= 0:
+            ymin0 = min0; ymin1 = min0*max1/max0
+        else: #both negative
+            if abs(min0/max0) > abs(min1/max1):
+                ymin0 = min0;
+                ymin1 = min0*max1/max0
+            else:
+                ymin0 = min1*max0/max1
+                ymin1 = min1
+        ax0.set_ylim([ymin0,max0])
+        ax1.set_ylim([ymin1,max1])
         #Set x limits
         if not xmin is None or not xmax is None:
             ax0.set_xlim([xmin,xmax])
@@ -479,7 +501,7 @@ class air:
             d = norm(array([x,y])-self.rStart)
             if d < 2*self.widthGust:
                 vgust = 0.5*vgustPeak*(1-cos(pi*d/self.widthGust)) #can be positive or negative varying with sign of vgustPeak
-                return -vgust*sin(gamma), vgust*cos(gamma),d  
+                return vgust*sin(gamma), vgust*cos(gamma),d  
             else:
                 return 0,0,0
 
@@ -877,7 +899,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             vwy = 0.0    
         #glider
         v = sqrt(gl.xD**2 + gl.yD**2) # speed
-        vecAir = array([gl.xD+vwx,gl.yD-vwy])
+        vecAir = array([gl.xD+vwx,gl.yD-vwy]) #note minus sign for y, similar to above for vwy.  Vy reduces glider speed vs air
         vair = norm(vecAir) # speed vs air
         vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
         vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
@@ -893,7 +915,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         #gusts -- only one gust per simulation
         vgx,vgy,d = ai.gustDynamic(vair,gammaAir,gl.x,gl.y)
         
-        vecGust = array([-vgx,-vgy])  #note minus sign for y, similar to above for vwy
+        vecGust = array([vgx,-vgy])  #note minus sign for y, similar to above for vwy
         if norm(vecGust) > 0:
             vecAir += vecGust
             vair = norm(vecAir) # speed vs air
@@ -921,8 +943,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         dotxD = 1/float(gl.m) * (Tg*cos(thetaRG) - D*cos(gamma) - L*sin(gamma) - Ffric) #x acceleration
         doty = gl.yD
         dotyD = 1/float(gl.m) * (L*cos(gamma) - Tg*sin(thetaRG) - D*sin(gamma) - gl.W  + Fmain + Ftail) #y acceleration
-        if t>45:
-            print 'pause'
+
         dottheta = gl.thetaD    
         dotthetaD = 1/float(gl.I) * (ropetorq + M)
         if pl.type == 'elevControl':
@@ -943,7 +964,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             ti.i += 1 
 #             print 't,d,vgx,vgy', t,d,vgx,vgy
     #         if t > 15 and gl.yD<0:
-            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+#             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
 #            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
@@ -953,8 +974,11 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             # store data from this time step for use /in controls or plotting.
 #             if 9<t<10:
 #                 print 't',t,thetarope,vtrans,Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG)
-#             if 10<t<15:
-#                 print 't',t, ropetorq, M  
+            
+            if norm(vecGust) > 8:
+                print 'vAir, vAir with gust',  norm(array([gl.xD+vwx,gl.yD-vwy]) ),vair
+                print 'alpha, alpha with gust',deg(gl.theta - arctan((gl.yD-vwy)/(gl.xD+vwx))),deg(alpha)
+                print 'Lift, lift with gust',gl.Lnl(norm(array([gl.xD+vwx,gl.yD-vwy])),gl.theta - arctan((gl.yD-vwy))),L
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
             gl.data[ti.i]['xD'] = gl.xD
@@ -1031,7 +1055,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 60 # end time for simulation
+tEnd = 15 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
@@ -1039,8 +1063,8 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosinde dynamic gust perpendicular to glider path
 hGust = 80   #m what height to turn gust on (set to very large to turn off gust)
-vgustPeak = 15  #m/s
-widthGust = 110 #meters, halfwidth
+vgustPeak = 9.9  #m/s
+widthGust = 9 #meters, halfwidth
 #updraft step function at a single time  
 vupdr = 0 
 hupdr = 1e6 #m At what height to turn the updraft on for testing
@@ -1081,16 +1105,16 @@ recovDelay = 0.5
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
-control = ['alpha','alpha']  # Use '' for none
-setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['alpha','alpha']  # Use '' for none
+# setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','v']
 # setpoint = [5,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
-#control = ['v','v']
-#setpoint = [30,30,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
+# control = ['v','v']
+# setpoint = [30,30,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 
 # control = ['','']
 # setpoint = [0,30,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
@@ -1098,8 +1122,8 @@ setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition t
 
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-#control = ['','']
-#setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+control = ['','']
+setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
 
@@ -1360,7 +1384,7 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 #Specialty plots for presentations
 zoom = True
 if zoom:
-    t1 = 10; t2 = 11
+    t1 = 9; t2 = 11
     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
