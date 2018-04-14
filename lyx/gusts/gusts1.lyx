@@ -97,6 +97,138 @@ Introduction
 
 \begin_layout Standard
 .
+ Gust alleviation method 
+\end_layout
+
+\begin_layout Standard
+We will treat wind gust risks more in a later paper, but here we include
+ simultaions of how a 10 m/s (20 kt) gust perpendicular to the flight path
+ affects the safety margins.
+ The maximum gust JAR-22 considers in any case is
+\begin_inset Formula $v_{g}=15$
+\end_inset
+
+ m/s (30 kts)
+\begin_inset CommandInset citation
+LatexCommand citep
+key "CS-22GliderAirworthiness"
+
+\end_inset
+
+ perpendicular to the flight path, chosen because it is expected no more
+ frequencly than every 70,000 flight hours on average.
+ They give a 
+\begin_inset Quotes eld
+\end_inset
+
+gust alleviation
+\begin_inset Quotes erd
+\end_inset
+
+ method that includes the glider's gradual entrance into a typical gust,
+ and the glider's response to it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+n_{g}=\frac{1}{2}\frac{\rho Sv_{g}v}{W}kC_{L,\alpha}
+\]
+
+\end_inset
+
+, where 
+\begin_inset Formula $k=\frac{0.88\mu_{r}}{5.3+\mu_{r}},$
+\end_inset
+
+ is the gust alleviation factor (about 0.6) , and 
+\begin_inset Formula $\mu_{r}=\frac{2m}{\rho SC_{L,\alpha}(1\,meter)}$
+\end_inset
+
+ is a 
+\begin_inset Quotes eld
+\end_inset
+
+mass ratio
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\begin_inset Formula $v_{g}$
+\end_inset
+
+ is the gust speed, 
+\begin_inset Formula $v$
+\end_inset
+
+ the glider speed.
+ Some sources replace the 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+(1meter)
+\begin_inset Quotes erd
+\end_inset
+
+ with the average wing chord.
+\end_layout
+
+\begin_layout Standard
+We rewrite this using the stall speed and eqn 
+\begin_inset Formula $1$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+n_{g}=\frac{\frac{1}{2}\rho Sv_{g}v}{\frac{1}{2}\rho SC_{Lmax}V_{s}^{2}}kC_{L,\alpha}=k\frac{v_{g}v}{V_{s}^{2}}\frac{C_{L,\alpha}}{C_{Lmax}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and 
+\begin_inset Formula $\mu_{r}=\frac{m}{\frac{1}{2}\rho SC_{L,\alpha}(1\,meter)}=\frac{C_{Lmax}m}{mgV_{s}^{2}C_{L,\alpha}(1\,meter)}=\frac{V_{s}^{2}}{g(1\,meter)}\frac{C_{Lmax}}{C_{L,\alpha}}$
+\end_inset
+
+ The gust 
+\end_layout
+
+\begin_layout Standard
+This gust load 
+\begin_inset Formula $n_{g}$
+\end_inset
+
+ will affect the structural and stall safety margins.
+ 
+\end_layout
+
+\begin_layout Standard
+At first glance, it would seem that the gust would have a significant effect
+ on the tension safety margin.
+ But our simulations show that although the lift changes dramatically, the
+ tension changes very little even with an abrupt gust.
+ This is almost entirely due to the elasticity of the rope, and the rapid
+ rotation of the glider toward the gust.
  
 \end_layout
 
