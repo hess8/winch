@@ -496,14 +496,18 @@ class air:
         if self.rStart is None:
             if y > self.hGust: #one time switch on gust
                 self.rStart = array([x,y])
-            return 0,0,0
+            return 0,0,0,0,0
         else:
             d = norm(array([x,y])-self.rStart)
             if d < 2*self.widthGust:
                 vgust = 0.5*vgustPeak*(1-cos(pi*d/self.widthGust)) #can be positive or negative varying with sign of vgustPeak
-                return vgust*sin(gamma), vgust*cos(gamma),d  
-            else:
-                return 0,0,0
+            else: 
+                vgust = 0
+            if d - gl.ls < 2*self.widthGust:
+                vgustElev = 0.5*vgustPeak*(1-cos(pi*(d-gl.ls)/self.widthGust)) 
+            else: 
+                vgustElev = 0                
+            return vgust*sin(gamma),vgust*cos(gamma),d,vgustElev*sin(gamma),vgustElev*cos(gamma)  
 
 class rope:
     def __init__(self,thetaMax,breakAngle=None,breakTime=None):
@@ -773,7 +777,7 @@ class pilot:
         self.elev = 0  # elevator deflection, differs from elevTarget by about humanT
         
         
-    def control(self,t,ti,gl):
+    def control(self,t,ti,gl,alphaElev):
         #all angles in routines are in radians (vs degrees on the main script input) 
         def alphaControl(t,time,setpoint,ti,Nint):
             if gl.state == 'onGnd' and gl.theta >= gl.theta0 - rad(1): #no elevator authority
@@ -835,7 +839,8 @@ class pilot:
         alpha = gl.data[ti.i]['alpha']
         gamma = gl.data[ti.i]['gamma']
         crossAngle = rad(self.setpoint[2])  #climb angle to switch from one control to another
-        Mdelev =  max(0.001,L * gl.pelev/(gl.Co + gl.CLalpha*alpha)) #ratio between moment and elevator deflection.  Avoid zero velocity case with the 0.1.  
+        Mdelev =  max(0.001,L * gl.pelev/(gl.Co + gl.CLalpha*alphaElev)) #ratio between moment and elevator deflection.  Avoid zero velocity case with the 0.1.  
+                                                                         # alphaElev can be different from wing alpha because of gusts.
         maxMe = gl.maxElev * Mdelev
 #         if '' in control:
 #             self.Me = 0
@@ -900,7 +905,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         #glider
         v = sqrt(gl.xD**2 + gl.yD**2) # speed
         vecAir = array([gl.xD+vwx,gl.yD-vwy]) #note minus sign for y, similar to above for vwy.  Vy reduces glider speed vs air
-        vair = norm(vecAir) # speed vs air
+        vAir = norm(vecAir) # speed vs air
         vgw = (gl.xD*(rp.lo - gl.x) - gl.yD*gl.y)/float(lenrope) #velocity of glider toward winch
         vtrans = sqrt(v**2 - vgw**2 + 1e-6) # velocity of glider perpendicular to straight line rope
         thetaRG = rp.thetaRopeGlider(t,ti,thetarope,vtrans,lenrope) # rope angle at glider corrected for rope weight and drag
@@ -911,25 +916,31 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         else:
             gamma = 0
             gammaAir = 0
-        
-        #gusts -- only one gust per simulation
-        vgx,vgy,d = ai.gustDynamic(vair,gammaAir,gl.x,gl.y)
-        
-        vecGust = array([vgx,-vgy])  #note minus sign for y, similar to above for vwy
-        if norm(vecGust) > 0:
-            vecAir += vecGust
-            vair = norm(vecAir) # speed vs air
-            gammaAir = arctan(vecAir[1]/vecAir[0])  # climb angle vs air with gust
-        alpha = gl.theta - gammaAir # angle of attack
+        #gusts -- only one 1-cos gust per simulation
+        vgx,vgy,d,vgxElev,vgyElev = ai.gustDynamic(vAir,gammaAir,gl.x,gl.y)       
+        vecGustWing = array([vgx,-vgy])  #note minus sign for y, similar to above for vwy
+        gammaAirWing = gammaAir; vAirWing = vAir
+        if norm(vecGustWing) > 0:
+            vecAirWing = vecAir + vecGustWing
+            vAirWing = norm(vecAirWing) # speed vs air
+            gammaAirWing = arctan(vecAirWing[1]/vecAirWing[0])  # climb angle vs air with gust
+        alpha = gl.theta - gammaAirWing # angle of attack for wing
+        vecGustElev = array([vgxElev,-vgyElev])  #note minus sign for y, similar to above for vwy
+        gammaAirElev = gammaAir
+        if norm(vecGustElev) > 0:
+            vecAirElev = vecAir + vecGustElev
+            vAirElev = norm(vecAirElev)  
+            gammaAirElev = arctan(vecAirElev[1]/vecAirElev[0])  
+        alphaElev = gl.theta - gammaAirElev # angle of attack for elevator
         #forces on glider 
-#         L = (gl.W + gl.Lalpha*alpha) * (vair/gl.vb)**2 #lift  
-        L = gl.Lnl(vair,alpha) #lift      
+#         L = (gl.W + gl.Lalpha*alpha) * (vAirWing/gl.vb)**2 #lift  
+        L = gl.Lnl(vAirWing,alpha) #lift      
         D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)\
-           + 0.5 * 1.22 * (gl.Agear * vair**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
+           + 0.5 * 1.22 * (gl.Agear * vAirWing**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
         if alpha > gl.alphaStall: #stall mimic
             L = 0.70*L #this is supported by calculations 
             D = 4*L/float(gl.Q)
-        alphatorq = -L * gl.palpha * alpha/(gl.Co + gl.CLalpha*alpha)
+        alphatorq = -L * gl.palpha * alphaElev/(gl.Co + gl.CLalpha*alphaElev)
         [Fmain, Ftail, Ffric] = gl.gndForces(ti,rp)
         gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
         M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
@@ -975,10 +986,10 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 #             if 9<t<10:
 #                 print 't',t,thetarope,vtrans,Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG)
             
-            if norm(vecGust) > 8:
-                print 'vAir, vAir with gust',  norm(array([gl.xD+vwx,gl.yD-vwy]) ),vair
-                print 'alpha, alpha with gust',deg(gl.theta - arctan((gl.yD-vwy)/(gl.xD+vwx))),deg(alpha)
-                print 'Lift, lift with gust',gl.Lnl(norm(array([gl.xD+vwx,gl.yD-vwy])),gl.theta - arctan((gl.yD-vwy))),L
+            if norm(vecGustWing) > 8:
+#                 print 'vAirWing, vAirWing with gust',  norm(array([gl.xD+vwx,gl.yD-vwy]) ),vAirWing
+                print 't,alpha, alpha with gust,alphaElev',t,deg(gl.theta - arctan((gl.yD-vwy)/(gl.xD+vwx))),deg(alpha),deg(alphaElev)
+#                 print 'Lift, lift with gust',gl.Lnl(norm(array([gl.xD+vwx,gl.yD-vwy])),gl.theta - arctan((gl.yD-vwy))),L
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
             gl.data[ti.i]['xD'] = gl.xD
@@ -1030,7 +1041,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         #---update things that we don't need done ODEint enters stateDer
             gl.findState(t,ti,rp)
             # Update controls
-            pl.control(t,ti,gl)
+            pl.control(t,ti,gl,alphaElev)
             op.control(t,ti,gl,rp,wi,en) 
             op.SthOld = op.Sth
         return [dotx,dotxD,doty,dotyD,dottheta,dotthetaD,dotelev,dotT,dotvw,dotve]
@@ -1061,10 +1072,13 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 #--- air
 #headwind
 vhead = 0
-#standard 1-cosinde dynamic gust perpendicular to glider path
+#standard 1-cosine dynamic gust perpendicular to glider path
 hGust = 80   #m what height to turn gust on (set to very large to turn off gust)
-vgustPeak = 9.9  #m/s
+# vgustPeak = 9.9  #m/s
+# widthGust = 9 #meters, halfwidth
 widthGust = 9 #meters, halfwidth
+vgustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
+
 #updraft step function at a single time  
 vupdr = 0 
 hupdr = 1e6 #m At what height to turn the updraft on for testing
@@ -1105,8 +1119,8 @@ recovDelay = 0.5
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
-# control = ['alpha','alpha']  # Use '' for none
-# setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','alpha']  # Use '' for none
+setpoint = [2 ,2 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','v']
@@ -1122,8 +1136,8 @@ loopParams = [3] #Alpha
 
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+# control = ['','']
+# setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
 
@@ -1170,6 +1184,8 @@ for iloop,param in enumerate(loopParams):
         itr = len(t)
     #Shorten state data
     t = t[:itr] #shorten
+    
+#     sys.exit('stop')
     
 # where(gl.yD < negvyTrigger/2)[0]    
 #     if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger/2 :
@@ -1384,7 +1400,7 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 #Specialty plots for presentations
 zoom = True
 if zoom:
-    t1 = 9; t2 = 11
+    t1 = 9.5; t2 = 12
     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)

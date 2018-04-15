@@ -1557,7 +1557,7 @@ In these results we model a fully loaded two-seat 17m glider, in particular
 \end_layout
 
 \begin_layout Section
-Wind gust load
+Wind gust simulations
 \end_layout
 
 \begin_layout Subsection
@@ -1619,7 +1619,7 @@ We will simulate the most and least sudden gusts.
 
 = 15 m/s.
  The 1-cosine shape is 
-\begin_inset Formula $\frac{v_{gust,peak}}{2}\left(1+cos\left(\frac{\pi s}{H}\right)\right)$
+\begin_inset Formula $v_{gust}=\frac{v_{gust,peak}}{2}\left(1+cos\frac{\pi s}{H}\right)$
 \end_inset
 
 .
@@ -1628,9 +1628,38 @@ We will simulate the most and least sudden gusts.
 \begin_inset Formula $s$
 \end_inset
 
- with the distance between the current glider position and its position
+ with the distance between the glider wing current position and its position
  when the gust started.
  
+\begin_inset Formula $v_{gust}=\frac{v_{gust,peak}}{2}\left(1+cos\frac{\pi d}{H}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Pitching moment in gusts
+\end_layout
+
+\begin_layout Standard
+With a narrow gust, the angle of attack at the elevator will be different
+ than the angle of attack at the wing because a different gust speed is
+ at the elevator:
+\begin_inset Formula 
+\[
+v_{gust,elev}=\frac{v_{gust,peak}}{2}\left(1+cos\frac{\pi(d-l_{s})}{H}\right).
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
