@@ -428,7 +428,7 @@ class glider:
         g = 9.8
         Vr = 1.3*self.vStall   #recovery speed
         np0 = 1.5              #recovery pullout g's (constant during pullout, so lift changes during pullout, but not needed to model here, as it's in the diffEqns) 
-        p = 0.53
+        p = 0.5
         #Vball is velocity after delay, entering ballistic pushover 
         Vball,gammaBall,ygainDelay = self.delayOutcomes(Vbr,Lbr,alphabr,gammabr,pl) # quantities after delay, beginning of ballistic recovery  
         ygainBallistic = Vr**2/9.8/2 * ((Vball/Vr)**2 -1)
@@ -460,9 +460,9 @@ class glider:
         tdelay = pl.recovDelay
         c1 = (Lbr - m*g*cos(gammabr))/m/Vbr
         c2 = 0.5/m/Vbr * (self.Lalpha * (self.thetaD - c1) - 2*Lbr * g*sin(gammabr)/Vbr)
-        gammaAvg = gammabr + 0.5*c1*tdelay + 1/3.0 * c2*tdelay**2
+        gammaAvg = gammabr + 1/2.0*c1*tdelay + 1/3.0*c2*tdelay**2
         Vball = Vbr - g*sin(gammaAvg) * tdelay
-        gammaBall = gammabr + c1*tdelay + c2*tdelay**2
+        gammaBall = min(pi/2,gammabr + c1*tdelay + c2*tdelay**2)
         ygainDelay = (Vbr - 0.5*g*sin(gammaAvg) * tdelay) * sin(gammaAvg)*tdelay
 #         print 'Vbr',Vbr,Vbr/self.vStall
 #         if self.y>0.2:
@@ -887,7 +887,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         #rope
         thetarope = arctan(gl.y/float(rp.lo-gl.x));
         if thetarope <-1e-6: thetarope += pi #to handle overflight of winch 
-        if not rp.broken: #break rope if chosen in simulation:
+        if not rp.broken: #break rope if chosen for simulation:
             if not rp.breakAngle is None and (thetarope > rp.breakAngle or t>rp.breakTime):
                 rp.broken = True
                 rp.tRelease = t
@@ -937,9 +937,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         L = gl.Lnl(vAirWing,alpha) #lift      
         D = L/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*alpha**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*alpha**5)\
            + 0.5 * 1.22 * (gl.Agear * vAirWing**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
-        if alpha > gl.alphaStall: #stall mimic
-            L = 0.70*L #this is supported by calculations 
-            D = 4*L/float(gl.Q)
+#         if alpha > gl.alphaStall: #stall mimic
+#             L = 0.70*L #this is supported by calculations 
+#             D = 4*L/float(gl.Q)
         alphatorq = -L * gl.palpha * alphaElev/(gl.Co + gl.CLalpha*alphaElev)
         [Fmain, Ftail, Ffric] = gl.gndForces(ti,rp)
         gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
@@ -974,9 +974,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         if t - ti.oldt > 1.0*ti.dt: 
             ti.i += 1 
 #             print 't,d,vgx,vgy', t,d,vgx,vgy
-    #         if t > 15 and gl.yD<0:
-#             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-#            print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.thetaD),gl.state)
+            if t > 12.2: 
+#                 print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+                print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} theta: {:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.theta),deg(gl.thetaD),gl.state)
     #             print 'pause'
     #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,elev',t,deg(pl.elev)
@@ -986,9 +986,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 #             if 9<t<10:
 #                 print 't',t,thetarope,vtrans,Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG)
             
-            if norm(vecGustWing) > 8:
+#             if norm(vecGustWing) > 8:
 #                 print 'vAirWing, vAirWing with gust',  norm(array([gl.xD+vwx,gl.yD-vwy]) ),vAirWing
-                print 't,alpha, alpha with gust,alphaElev',t,deg(gl.theta - arctan((gl.yD-vwy)/(gl.xD+vwx))),deg(alpha),deg(alphaElev)
+#                 print 't,alpha, alpha with gust,alphaElev',t,deg(gl.theta - arctan((gl.yD-vwy)/(gl.xD+vwx))),deg(alpha),deg(alphaElev)
 #                 print 'Lift, lift with gust',gl.Lnl(norm(array([gl.xD+vwx,gl.yD-vwy])),gl.theta - arctan((gl.yD-vwy))),L
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
@@ -1003,7 +1003,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['gamma']  = gamma
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
-            if gl.y>0.01:  
+            if gl.y>0.01: 
+                if t>12.211:
+                    print'pause' 
                 sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
 #                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
@@ -1073,11 +1075,11 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 #headwind
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
-hGust = 80   #m what height to turn gust on (set to very large to turn off gust)
+hGust = 20   #m what height to turn gust on (set to very large to turn off gust)
 # vgustPeak = 9.9  #m/s
 # widthGust = 9 #meters, halfwidth
 widthGust = 9 #meters, halfwidth
-vgustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
+vgustPeak = 10 * (widthGust/float(110))**(1/float(6))  #m/s
 
 #updraft step function at a single time  
 vupdr = 0 
@@ -1091,14 +1093,14 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
 tRampUp = 2
 tHold = 0.5
-targetT = 1.0
+targetT = 0.5
 dipT = 0.7
-thrmax =  0.7
+thrmax =  1.0
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-# throttleType = 'constT'
+throttleType = 'constT'
 # throttleType = 'constTdip'
-throttleType = 'constThr'
+# throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
@@ -1113,14 +1115,14 @@ if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
 
 #--- pilot
-pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-#pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+# pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
+pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 recovDelay = 0.5
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
 control = ['alpha','alpha']  # Use '' for none
-setpoint = [2 ,2 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [2.7 ,2.7 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 #setpoint = [10 ,30 , 45]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','v']
@@ -1171,7 +1173,7 @@ for iloop,param in enumerate(loopParams):
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,args=(gl,ai,rp,wi,tc,en,op,pl))
+    S = odeint(stateDer,S0,t,mxstep=500000,args=(gl,ai,rp,wi,tc,en,op,pl))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #Find where release occurred in data.  Remove the time steps after that. 
@@ -1400,7 +1402,7 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 #Specialty plots for presentations
 zoom = True
 if zoom:
-    t1 = 9.5; t2 = 12
+    t1 = 9; t2 = 13
     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
