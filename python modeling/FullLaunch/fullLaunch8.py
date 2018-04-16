@@ -153,7 +153,7 @@ class plots:
             sys.exit('Stop: number of legend labels and curves do not match for curve {}'.format(titlestr))
         for iy,y in enumerate(ys):
             if len(xs[iy]) != len(y):
-                sys.exit('Stop: curve {} on plot {} has x with dimensions different from y.'.format(iy+1,titlestr))            
+                sys.exit('Stop: curve {} on plot "{}" has x with dimensions different from y.'.format(iy+1,titlestr))            
             ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
             self.i += 1
             if self.i > len(self.colorsList)-1:
@@ -181,22 +181,26 @@ class plots:
         fig, ax0 = subplots(figsize=(14, 7))        
         ax1 = ax0.twinx()
         if len(xs)<len(ys): #duplicate first x to every spot in list of correct length
-            xs = [xs[0] for y in ys] 
+            sys.exit('Stop: number of horizontal (x) arrays does not equal the number of vertical(y) arrays for plot "{}"'.format(titlestr))
         if len(yscalesMap) != len(legendLabels) != len(ys):
-            sys.exit('Stop: number of entries in the 0/1 map, legend labels and curves do not match for curve {}'.format(titlestr))
+            sys.exit('Stop: number of entries in the 0/1 map, legend labels and curves do not match for plot "{}"'.format(titlestr))
         ymaxs = [[],[]]; ymins = [[],[]]       
         for iy,y in enumerate(ys):
             lstyle = '-'
+            colorCurve = self.colorsList[self.i]
             if 'margin' in legendLabels[iy]:
                 lstyle = '--'
-            if 'Recovery' in legendLabels[iy]:
+            if 'recovery' in legendLabels[iy].lower():
                 lstyle = ':'
+            if 'vel gust' in legendLabels[iy].lower():
+                lstyle = '-'
+                colorCurve = 'k'
             if len(xs[iy]) != len(y):
-                sys.exit('Stop: curve {} on plot {} has x with dimensions different from y.'.format(iy+1,titlestr))
+                sys.exit('Stop: curve {} on plot "{}" has x with dimensions different from y.'.format(iy+1,titlestr))
             if yscalesMap[iy] == 0:
-                ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])  
+                ax0.plot(xs[iy],y,color=colorCurve,linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])  
             else:
-                ax1.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])
+                ax1.plot(xs[iy],y,color=colorCurve,linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])
             ymaxs[yscalesMap[iy]].append(max(y))
             ymins[yscalesMap[iy]].append(min(y))
             self.i += 1 
@@ -464,13 +468,10 @@ class glider:
         Vball = Vbr - g*sin(gammaAvg) * tdelay
         gammaBall = min(pi/2,gammabr + c1*tdelay + c2*tdelay**2)
         ygainDelay = (Vbr - 0.5*g*sin(gammaAvg) * tdelay) * sin(gammaAvg)*tdelay
-#         print 'Vbr',Vbr,Vbr/self.vStall
-#         if self.y>0.2:
-#             print'pause'
         return Vball,gammaBall,ygainDelay      
         
 class air:
-    def __init__(self,vhead,vupdr,hupdr,vgustSM,hGust,widthGust,vgustPeak,gl):
+    def __init__(self,vhead,vupdr,hupdr,vgustSM,hGust,widthGust,vGustPeak,gl):
         # wind parameters 
         self.vhead = vhead #headwind
         ## - old updraft quantities
@@ -484,7 +485,9 @@ class air:
         self.rStart = None
         self.hGust = hGust #glider height to start gust
         self.widthGust = widthGust
-        self.vgustPeak = vgustPeak #peak gust velocity, can be positive or negative
+        self.vGustPeak = vGustPeak #peak gust velocity, can be positive or negative
+        #data
+        self.data = zeros(ntime,dtype = [('vGust', float)]) 
         
     def gustLoad(self,gl,v): #for safety margin calcs
         '''Includes gust mediation formula from JAR22'''
@@ -500,11 +503,12 @@ class air:
         else:
             d = norm(array([x,y])-self.rStart)
             if d < 2*self.widthGust:
-                vgust = 0.5*vgustPeak*(1-cos(pi*d/self.widthGust)) #can be positive or negative varying with sign of vgustPeak
+                vgust = 0.5*vGustPeak*(1-cos(pi*d/self.widthGust)) #can be positive or negative varying with sign of vGustPeak
             else: 
                 vgust = 0
-            if d - gl.ls < 2*self.widthGust:
-                vgustElev = 0.5*vgustPeak*(1-cos(pi*(d-gl.ls)/self.widthGust)) 
+            dElev = d - gl.ls
+            if 0 < dElev < 2*self.widthGust:
+                vgustElev = 0.5*vGustPeak*(1-cos(pi*dElev/self.widthGust)) 
             else: 
                 vgustElev = 0                
             return vgust*sin(gamma),vgust*cos(gamma),d,vgustElev*sin(gamma),vgustElev*cos(gamma)  
@@ -968,17 +972,17 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
         else: #no torque converter
             dotvw = 1/float(en.me + wi.me) * (op.Sth * en.Pavail(en.v) / float(en.v) - rp.T)
             dotve = dotvw
-        # The ode solver enters this routine
-        # usually two or more times per time step.  We advance the time step counter only if the time has changed 
-        # by close to a nominal time step    
+        # The ode solver enters this routine usually two or more times per time step.  
+        # We advance the time step counter only if the time has changed by close to a nominal time step
+
         if t - ti.oldt > 1.0*ti.dt: 
             ti.i += 1 
 #             print 't,d,vgx,vgy', t,d,vgx,vgy
-            if t > 12.2: 
-#                 print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-                print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} theta: {:8.3f} thetaD: {:8.3f} state {:12s} '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(gl.theta),deg(gl.thetaD),gl.state)
+            if t > 10: 
+#                 print 't:{:8.3f}| x:{:8.3f}| xD:{:8.3f}| y:{:8.3f}| yD:{:8.3f}| T:{:8.3f}| L:{:8.3f}| state {}|'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
+                print 't:{:8.3f}| x:{:8.3f}| xD:{:8.3f}| y:{:8.3f}| yD:{:8.3f}| T:{:8.3f}| L:{:8.3f}| alpha: {:8.3f}| gammaW: {:8.3f}| theta: {:8.3f}| thetaD: {:8.3f}| state {:12s}| '.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,deg(alpha),deg(gammaAirWing),deg(gl.theta),deg(gl.thetaD),gl.state)
     #             print 'pause'
-    #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
+    #        print t, 't:{:8.3f}| x:{:8.3f}| xD:{:8.3f}| y:{:8.3f}| yD:{:8.3f}| D/L:{:8.3f}|, L/D :{:8.3f}|'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,elev',t,deg(pl.elev)
     #         if rp.T > 10:
     #             print 'pause'
@@ -986,10 +990,11 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 #             if 9<t<10:
 #                 print 't',t,thetarope,vtrans,Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.theta-thetaRG)
             
-#             if norm(vecGustWing) > 8:
-#                 print 'vAirWing, vAirWing with gust',  norm(array([gl.xD+vwx,gl.yD-vwy]) ),vAirWing
-#                 print 't,alpha, alpha with gust,alphaElev',t,deg(gl.theta - arctan((gl.yD-vwy)/(gl.xD+vwx))),deg(alpha),deg(alphaElev)
-#                 print 'Lift, lift with gust',gl.Lnl(norm(array([gl.xD+vwx,gl.yD-vwy])),gl.theta - arctan((gl.yD-vwy))),L
+            if norm(vecGustWing) > 0:
+#                 print 'vAirWing at gust',  t,vAirWing
+#                 print t,norm(vecGustWing),',alpha,alphaElev',deg(alpha),deg(alphaElev),,gammaAirWing,vAirWing
+                print t,'vgust:{:8.3f}| vairwing:{:8.3f}, alpha:{:8.3f}| alphaElev:{:8.3f}| '.format(norm(vecGustWing),vAirWing,deg(alpha),deg(alphaElev))            
+
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
             gl.data[ti.i]['xD'] = gl.xD
@@ -1004,8 +1009,6 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['alpha']  = alpha
             gl.data[ti.i]['alphaStall']  = gl.alphaStall #constant stall angle
             if gl.y>0.01: 
-                if t>12.211:
-                    print'pause' 
                 sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
 #                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
@@ -1024,6 +1027,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
             gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here 
             gl.data[ti.i]['Pdeliv'] = Tg * v * cos(thetaRG + gl.theta) 
             gl.data[ti.i]['Edeliv'] = gl.data[ti.i - 1]['Edeliv'] + gl.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
+            ai.data[ti.i]['vGust'] = norm(vecGustWing)
             rp.data[ti.i]['Pdeliv'] = rp.T * wi.v 
             rp.data[ti.i]['Edeliv'] = rp.data[ti.i - 1]['Edeliv'] + rp.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
             rp.data[ti.i]['T'] = rp.T
@@ -1076,10 +1080,10 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
 hGust = 20   #m what height to turn gust on (set to very large to turn off gust)
-# vgustPeak = 9.9  #m/s
+# vGustPeak = 9.9  #m/s
 # widthGust = 9 #meters, halfwidth
-widthGust = 9 #meters, halfwidth
-vgustPeak = 10 * (widthGust/float(110))**(1/float(6))  #m/s
+widthGust = 40  #meters, halfwidth
+vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
 
 #updraft step function at a single time  
 vupdr = 0 
@@ -1093,7 +1097,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
 tRampUp = 2
 tHold = 0.5
-targetT = 0.5
+targetT = 1.0
 dipT = 0.7
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
@@ -1156,7 +1160,7 @@ for iloop,param in enumerate(loopParams):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
-    ai = air(vhead,vupdr,hupdr,vgustSM,hGust,widthGust,vgustPeak,gl)
+    ai = air(vhead,vupdr,hupdr,vgustSM,hGust,widthGust,vGustPeak,gl)
     rp = rope(ropeThetaMax,ropeBreakAngle,ropeBreakTime) 
     wi = winch()
     tc = torqconv()
@@ -1173,7 +1177,7 @@ for iloop,param in enumerate(loopParams):
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,mxstep=500000,args=(gl,ai,rp,wi,tc,en,op,pl))
+    S = odeint(stateDer,S0,t,mxstep=500,args=(gl,ai,rp,wi,tc,en,op,pl))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #Find where release occurred in data.  Remove the time steps after that. 
@@ -1186,6 +1190,7 @@ for iloop,param in enumerate(loopParams):
         itr = len(t)
     #Shorten state data
     t = t[:itr] #shorten
+    tmax = t[-1]
     
 #     sys.exit('stop')
     
@@ -1210,6 +1215,7 @@ for iloop,param in enumerate(loopParams):
     eData = en.data[:ti.i]
     oData = op.data[:ti.i]
     rData = rp.data[:ti.i]
+    aData = ai.data[:ti.i]
 
     if smoothed:
     #define smoothed data arrays before plotting
@@ -1247,6 +1253,7 @@ for iloop,param in enumerate(loopParams):
         smStall = smooth(gData['smStall'],tData,1)
         smStruct = smooth(gData['smStruct'],tData,1)
         smRecov = smooth(gData['smRecov'],tData,1)
+        vGust = smooth(aData['vgust'],tData,1)
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]
@@ -1282,6 +1289,7 @@ for iloop,param in enumerate(loopParams):
         smStall = gData['smStall'] 
         smStruct = gData['smStruct'] 
         smRecov = gData['smRecov']
+        vGust = aData['vGust']
     #ground roll
     if max(gl.y) >gl.deltar:
         iEndRoll = where(gl.y > gl.deltar)[0][0]
@@ -1315,8 +1323,8 @@ for iloop,param in enumerate(loopParams):
     print 'Throttle ramp up time (after slack is out)', tRampUp
     print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
     print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(vmax,deg(thetaDmax))
-    print 'Maximum Tension factor: {:3.1f}'.format(Tmax)
-    print 'Average Tension factor: {:3.1f}'.format(Tavg)
+    print 'Maximum tension factor: {:3.1f}'.format(Tmax)
+    print 'Average tension factor: {:3.1f}'.format(Tavg)
     print 'Maximum angle of attack: {:3.1f} deg'.format(deg(alphaMax))
     print 'Ground roll: {:5.0f} m, {:5.1f} sec (includes about 1 sec of slack removal)'.format(xRoll,tRoll)
     print 'Final vy: {:5.1f} m/s'.format(yDfinal)
@@ -1417,10 +1425,15 @@ plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.
 plts.i = 0 #restart color cycle
 # plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
 #         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-#         ['v','height/10','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
-plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
+#         ['v','height/10','climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
+if vGustPeak > 0 and yfinal >  hGust:
+    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305, 1.94*vGust],\
+        [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+        ['vel','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust'],'Glider and safety margins')
+else:
+    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
-        ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
+        ['vel','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
 
 # plot loop results
 if len(loopParams) > 1:
