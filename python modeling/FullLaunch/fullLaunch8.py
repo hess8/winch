@@ -30,7 +30,7 @@ from numpy import degrees as deg
 from numpy import radians as rad
 
 from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,legend,title,grid
-from scipy.integrate import odeint
+from scipy.integrate import odeint,ode
 import logging
 logging.basicConfig()
 # ion() #turn on interactive mode 
@@ -872,7 +872,8 @@ class pilot:
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
-def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
+# def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
+def stateDer(t,S,gl,ai,rp,wi,tc,en,op,pl):
     '''First derivative of the state vector'''          
     if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
         return zeros(len(S))
@@ -1142,7 +1143,6 @@ setpoint = [2.7 ,2.7 , 90]  # deg,speed, deg last one is climb angle to transiti
 # setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
-
 data = zeros(len(loopParams),dtype = [('alpha1', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this height, the run failed, so ignore this time point
@@ -1171,23 +1171,37 @@ for iloop,param in enumerate(loopParams):
     gl.theta  = rad(theta0)
     #initialize state vector to zero  
     S0 = zeros(10)
-    #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,mxstep=500000,args=(gl,ai,rp,wi,tc,en,op,pl))
-    #Split S (now a matrix with state variables in columns and times in rows)
-    gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
-    #Find where release occurred in data.  Remove the time steps after that. 
-    if max(rp.data['theta'])  > rad(ropeThetaMax):
-        ti.i = where(rp.data['theta'] > rad(ropeThetaMax))[0][0]
-        tfinal = ti.data[ti.i]['t']
-        itr = where(t >= tfinal)[0][0]
-    else:
-        ti.i = argmax(ti.data['t'])
-        itr = len(t)
-    #Shorten state data
-    t = t[:itr] #shorten
+    #integrate the ODEs
+    integtr = ode(stateDer)
+    integtr.set_integrator('vode',nsteps=500000,method='bdf')
+    integtr.set_initial_value(S0,tStart)
+    ts = []; ys = []
+    while integtr.successful() and integtr.t < tEnd:
+        integtr.set_f_params(gl,ai,rp,wi,tc,en,op,pl)
+        integtr.integrate(integtr.t + dt)
+        ts.append(integtr.t)
+        ys.append(integtr.y)    
     
-#     sys.exit('stop')
+
+    
+    
+
+#     S = odeint(stateDer,S0,t,mxstep=500000,args=(gl,ai,rp,wi,tc,en,op,pl))
+#     S = ode(stateDer,S0,t,mxstep=500000,args=(gl,ai,rp,wi,tc,en,op,pl))
+#     #Split S (now a matrix with state variables in columns and times in rows)
+#     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
+#     #Find where release occurred in data.  Remove the time steps after that. 
+#     if max(rp.data['theta'])  > rad(ropeThetaMax):
+#         ti.i = where(rp.data['theta'] > rad(ropeThetaMax))[0][0]
+#         tfinal = ti.data[ti.i]['t']
+#         itr = where(t >= tfinal)[0][0]
+#     else:
+#         ti.i = argmax(ti.data['t'])
+#         itr = len(t)
+#     #Shorten state data
+#     t = t[:itr] #shorten
+    
     
 # where(gl.yD < negvyTrigger/2)[0]    
 #     if max(gl.yD)> 1 and min(gl.yD) < negvyTrigger/2 :
