@@ -958,7 +958,7 @@ L=\frac{1}{2}\rho\left[S_{w}(C_{ow}+C_{Lw,\alpha w}\alpha)+S_{s}(C_{os}+C_{Ls,\a
 \begin_layout Standard
 We find it useful to write quantities in terms of ratios that are likely
  to be common to many gliders, e.g.
- a ratio of numbers rather than a number specific an glider.
+ a ratio of measurements rather than a measurement specific an glider.
 \end_layout
 
 \begin_layout Standard
@@ -1017,10 +1017,11 @@ nts, which are defined for the trimmed glider at
 \end_inset
 
  at best glide speed 
-\begin_inset Formula $L=\frac{1}{2}\rho S_{w}\left(C_{ow}+\frac{S_{s}}{S_{w}}C_{os}\right)v_{b}^{2}=W$
+\begin_inset Formula $L(\alpha=0)=\frac{1}{2}\rho S_{w}\left(C_{ow}+\frac{S_{s}}{S_{w}}C_{os}\right)v_{b}^{2}=W$
 \end_inset
 
-, or 
+, so.
+ 
 \begin_inset Formula 
 \[
 \frac{1}{2}\rho S_{w}=\frac{W}{C_{o}v_{b}^{2}}
@@ -1032,24 +1033,20 @@ where
 \begin_inset Formula $\,\,C_{o}=C_{ow}+\frac{S_{s}}{S_{w}}C_{os}$
 \end_inset
 
- and 
-\begin_inset Formula $\frac{S_{w}}{S_{w}}$
-\end_inset
-
- is the ratio between the stabilizer area and the wing area.
+.
  So in the linear region below stall the lift is 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-L=W\left(1+L_{\alpha}\alpha+L_{\alpha s}\left(\alpha_{s}-\alpha_{w}\right)\right)\left(\frac{v}{v_{b}}\right)^{2}
+L=W\left(1+r_{\alpha}\alpha+r_{\alpha s}\left(\alpha_{s}-\alpha_{w}\right)\right)\left(\frac{v}{v_{b}}\right)^{2}
 \]
 
 \end_inset
 
-where the lift slope is 
-\begin_inset Formula $L_{\alpha}=\frac{C_{L,\alpha}}{C_{o}}$
+where the lift slope ratio is 
+\begin_inset Formula $r_{\alpha}=\frac{C_{L,\alpha}}{C_{o}}$
 \end_inset
 
 , 
@@ -1077,7 +1074,7 @@ where the lift slope is
 \end_inset
 
  
-\begin_inset Formula $L_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}$
+\begin_inset Formula $r_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}$
 \end_inset
 
  .
@@ -1159,7 +1156,7 @@ reference "sec:Pilot-and-elevator"
  is not zero is: 
 \begin_inset Formula 
 \[
-M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha=-l_{s}\frac{1}{2}\rho S_{s}C_{Ls,\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}=-l_{s}\frac{1}{2}\rho S_{w}\frac{S_{s}}{S_{w}}C_{Ls,\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}=-l_{s}L_{\alpha s}\left(\frac{v}{v_{b}}\right)^{2}
+M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha=-l_{s}\frac{1}{2}\rho S_{s}C_{Ls,\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}=-l_{s}\frac{1}{2}\rho S_{w}\frac{S_{s}}{S_{w}}C_{Ls,\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}=-l_{s}Wr_{\alpha s}\left(\frac{v}{v_{b}}\right)^{2}
 \]
 
 \end_inset
@@ -1174,7 +1171,7 @@ M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha=-l_{s}\frac{1}{2}\rho S_
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M=-l_{s}L_{\alpha s}\left(\frac{v}{v_{b}}\right)^{2}+M_{e}(t)
+M=-l_{s}r_{\alpha s}W\left(\frac{v}{v_{b}}\right)^{2}+M_{e}(t)
 \]
 
 \end_inset
@@ -1413,15 +1410,7 @@ Because we have already trimmed the glider, we are interested only in the
 : 
 \begin_inset Formula 
 \[
-\frac{1}{2}\rho S_{w}=\frac{W}{C_{o}v_{b}^{2}}
-\]
-
-\end_inset
-
-
-\begin_inset Formula 
-\[
-M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}\delta_{e}=l_{s}\frac{1}{2}\rho S_{s}C_{Ls,\delta_{e}}\delta_{e}v^{2}=l_{s}W\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\delta_{e}\left(\frac{v}{v_{b}}\right)^{2}=l_{s}L_{\delta s}\delta_{e}\left(\frac{v}{v_{b}}\right)^{2}
+M_{e}=l_{s}\frac{\partial L_{s}}{\partial\delta_{e}}\delta_{e}=l_{s}\frac{1}{2}\rho S_{s}C_{Ls,\delta_{e}}\delta_{e}v^{2}=l_{s}W\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\delta_{e}\left(\frac{v}{v_{b}}\right)^{2}=l_{s}Wr_{\delta e}\delta_{e}\left(\frac{v}{v_{b}}\right)^{2}
 \]
 
 \end_inset
@@ -1435,7 +1424,7 @@ where
 \end_inset
 
  , and 
-\begin_inset Formula $L_{\delta s}=W\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{o}}$
+\begin_inset Formula $r_{\delta e}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{o}}$
 \end_inset
 
 .
@@ -1490,7 +1479,7 @@ wind
 \end_layout
 
 \begin_layout Standard
-We will defind a headwind to be a positive horizontal wind component 
+We will define a headwind to be a positive horizontal wind component 
 \begin_inset Formula $v_{wx}$
 \end_inset
 
@@ -3337,7 +3326,7 @@ I_{g}\ddot{\theta}=\tau_{rope,glider}+M+(G_{m}d_{m}-G_{t}d_{t})cos\theta
 \end_layout
 
 \begin_layout Standard
-We write the wheel positons in terms of the glider height 
+We write the wheel positions in terms of the glider height 
 \begin_inset Formula $y$
 \end_inset
 
@@ -3553,7 +3542,7 @@ kgm
 \begin_inset Formula $\frac{S_{s}}{S_{w}}$
 \end_inset
 
-= 0.1
+= 0.10
 \end_layout
 
 \begin_layout Standard
@@ -3584,7 +3573,33 @@ The center of gravity in the simulation is 0.32m aft of the wing leading
 \end_layout
 
 \begin_layout Subsubsection
-Wing, stabilizer and elevator moments
+Wing, stabilizer pitch moment
+\end_layout
+
+\begin_layout Standard
+NACA report 278 the lift slope of the 
+\begin_inset Quotes eld
+\end_inset
+
+stabilator
+\begin_inset Quotes erd
+\end_inset
+
+ (stabilizer including elevator) vs alpha is 
+\begin_inset Formula $\frac{\partial C_{Ls}}{\partial\alpha}=C_{Ls,\alpha}=$
+\end_inset
+
+0.05/deg=3/rad (half what is expected for a long wing).
+ Then 
+\begin_inset Formula $r_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\approx0.11*3/rad/(0.49)\approx0.6/rad.$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+OLD________________________________________________________________________
+ 
 \end_layout
 
 \begin_layout Standard
@@ -3629,20 +3644,6 @@ From the xflyr5 model for Grob:
 \end_layout
 
 \begin_layout Standard
-Comparing to NACA report 278 the lift slope of the 
-\begin_inset Quotes eld
-\end_inset
-
-stabilator
-\begin_inset Quotes erd
-\end_inset
-
- (stabilizer including elevator) vs alpha is 
-\begin_inset Formula $\frac{\partial C_{Ls}}{\partial\alpha}=C_{Ls,\alpha}=$
-\end_inset
-
-0.05/deg=3/rad (half what is expected for a long wing).
- Then 
 \begin_inset Formula $p_{\alpha}(\alpha)=l_{s}\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\approx$
 \end_inset
 
@@ -3670,19 +3671,39 @@ stabilator
  
 \end_layout
 
-\begin_layout Standard
-The moment due to elevator deflection is 
-\begin_inset Formula $M_{\delta e}(\alpha)=l_{s}L\frac{C_{Ls,\delta_{e}}}{C_{o}+C_{L,\alpha}\alpha}\frac{S_{s}}{S_{w}}\delta_{e}$
-\end_inset
-
-.
- 
-\end_layout
-
 \begin_layout Paragraph
 
 \series bold
 Elevator pitch moment
+\end_layout
+
+\begin_layout Standard
+From NACA report 278 the lift slope vs elevator deflection is 
+\begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
+\end_inset
+
+0.032/deg = 1.8/rad.
+ Then 
+\begin_inset Formula $r_{\delta e}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{o}}=0.11*1.8/rad$
+\end_inset
+
+/0.49= 0.40/rad.
+\end_layout
+
+\begin_layout Standard
+OLD________________________________________________________________________
+ 
+\end_layout
+
+\begin_layout Standard
+From the xflyr5 model for Grob: 
+\begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
+\end_inset
+
+-1.9/rad.
+ This is the same as the experimental result for the SGS-1-36, as used in
+ Santel 2010.
+ The m
 \end_layout
 
 \begin_layout Standard
