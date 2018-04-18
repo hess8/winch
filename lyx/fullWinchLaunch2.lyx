@@ -1171,7 +1171,7 @@ M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha=-l_{s}\frac{1}{2}\rho S_
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M=-l_{s}r_{\alpha s}W\left(\frac{v}{v_{b}}\right)^{2}+M_{e}(t)
+M=-l_{s}Wr_{\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}+M_{e}(t)
 \]
 
 \end_inset
@@ -3573,7 +3573,24 @@ The center of gravity in the simulation is 0.32m aft of the wing leading
 \end_layout
 
 \begin_layout Subsubsection
-Wing, stabilizer pitch moment
+Wing lift slope
+\end_layout
+
+\begin_layout Standard
+From xflr5, the lift coefficient slope is 
+\begin_inset Formula $C_{L,\alpha}$
+\end_inset
+
+= 0.090/deg = 5.2/rad.
+ Then 
+\begin_inset Formula $r_{\alpha}=\frac{C_{L,\alpha}}{C_{o}}=5.2/rad/0.49$
+\end_inset
+
+= 11/rad
+\end_layout
+
+\begin_layout Subsubsection
+Stabilizer and elevator pitch moments
 \end_layout
 
 \begin_layout Standard
@@ -3589,85 +3606,11 @@ stabilator
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\alpha}=C_{Ls,\alpha}=$
 \end_inset
 
-0.05/deg=3/rad (half what is expected for a long wing).
+0.05/deg=3/rad (about half what is expected for a long wing).
  Then 
 \begin_inset Formula $r_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\approx0.11*3/rad/(0.49)\approx0.6/rad.$
 \end_inset
 
- 
-\end_layout
-
-\begin_layout Standard
-OLD________________________________________________________________________
- 
-\end_layout
-
-\begin_layout Standard
-From the xflyr5 model for Grob: 
-\begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
-\end_inset
-
--1.9/rad.
- This is the same as the experimental result for the SGS-1-36, as used in
- Santel 2010.
- The moment is 
-\begin_inset Formula $M=\frac{1}{2}\rho S_{w}v^{2}cC_{m}=p_{\text{\alpha}}\alpha$
-\end_inset
-
-, where 
-\begin_inset Formula $c=1.0m$
-\end_inset
-
- is the mean chord.
- So 
-\begin_inset Formula $p_{\alpha}=c\frac{C_{m,\alpha}}{C_{Lw}}=$
-\end_inset
-
- (1.0 m)(1.9/rad)/
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+C_{L,\alpha}\alpha)$
-\end_inset
-
-.=1.9 m/rad/ 
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+C_{L,\alpha}\alpha)$
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $p_{\alpha}(\alpha)=l_{s}\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha}}{C_{Lw}}\approx$
-\end_inset
-
-4m*1/10*3/rad/
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+C_{L,\alpha}\alpha)$
-\end_inset
-
- 
-\begin_inset Formula $\approx$
-\end_inset
-
- 1.2m/rad/
-\begin_inset Formula $($
-\end_inset
-
-
-\begin_inset Formula $C_{o}+2\pi\alpha)$
-\end_inset
-
- just from the stabilizer.
  
 \end_layout
 
@@ -3690,58 +3633,13 @@ From NACA report 278 the lift slope vs elevator deflection is
 /0.49= 0.40/rad.
 \end_layout
 
-\begin_layout Standard
-OLD________________________________________________________________________
- 
-\end_layout
-
-\begin_layout Standard
-From the xflyr5 model for Grob: 
-\begin_inset Formula $\frac{\partial C_{m}}{\partial\alpha}=$
-\end_inset
-
--1.9/rad.
- This is the same as the experimental result for the SGS-1-36, as used in
- Santel 2010.
- The m
-\end_layout
-
-\begin_layout Standard
-The elevator in the xflr5 model is at a tilt of -2 deg.
- With the xflr5 model when this is set to zero for a test, 
-\begin_inset Formula $C_{m}(0)$
-\end_inset
-
-= -0.074.
- Then for the elevator alone 
-\begin_inset Formula $\frac{\partial C_{m,elev}}{\partial\alpha}=-0.21/\text{rad . So the body and wing exert a small positive pitch slope of  \frac{\partial C_{m,elev}}{\partial\alpha}=+0.02}$
-\end_inset
-
-.
- We can neglect the body and wing pitching effects during stall.
- 
-\end_layout
-
 \begin_layout Subsubsection
 Elevator drag
 \end_layout
 
 \begin_layout Standard
 This is negligible compared to the other drags.
- From NACA report 278 the lift slope of the 
-\begin_inset Quotes eld
-\end_inset
-
-stabilator
-\begin_inset Quotes erd
-\end_inset
-
- (stabilizer including elevator) vs elevator deflection is 
-\begin_inset Formula $\frac{\partial C_{Ls}}{\partial\delta_{e}}=C_{Ls,\delta_{e}}=$
-\end_inset
-
-0.032/deg.
- The drag is 
+ From NACA report 278, the drag is 
 \begin_inset Formula $C_{Ds}\approx\frac{1}{10}C_{Ls}$
 \end_inset
 
