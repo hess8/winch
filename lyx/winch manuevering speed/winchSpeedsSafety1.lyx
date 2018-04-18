@@ -1956,7 +1956,7 @@ where
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-M_{st}=F_{ni}gy_{L}-m_{w}gy_{G}\label{eq:Static bending first}
+M_{ni}=F_{ni}gy_{L}-m_{w}gy_{G}\label{eq:Static bending first}
 \end{equation}
 
 \end_inset
@@ -1975,7 +1975,7 @@ We write the non-inertial forces in terms of a load factor:
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-M_{st}=n_{ni}Wy_{L}-m_{w}gy_{G}\label{eq:static load bending}
+M_{ni}=n_{ni}Wy_{L}-m_{w}gy_{G}\label{eq:static load bending}
 \end{equation}
 
 \end_inset
@@ -2093,18 +2093,18 @@ Winch maneuvering speed:
 \end_layout
 
 \begin_layout Standard
-In the winch launch the case with the greatest ratio of non-inertial to
- inertial loading is at the top of the launch, as treated in section 
+During a launch the case with the greatest ratio of non-inertial to inertial
+ loading is at the top of the launch, as treated in section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Wing-bending- top of launch"
 
 \end_inset
 
-, so it the configuration that determines the maximum speed to fly on the
- winch.
- This will be the speed where bending moment at the top of the winch launch
- will equal the maximum bending moment at the maximum inertial load.
+, so it is the configuration that determines the maximum maneuvering speed
+ for the launch.
+ This will be the speed where the bending moment at the top of the winch
+ launch will equal the maximum bending moment at the maximum inertial load.
  The lift terms 
 \end_layout
 

@@ -37,7 +37,17 @@ logging.basicConfig()
 print 'Backend {}, interactive {}'.format(matplotlib.get_backend(),matplotlib.is_interactive())
 g = 9.8
 
+def readfile(filepath):
+    file1 = open(filepath,'r')
+    lines = file1.readlines()
+    file1.close()
+    return lines
 
+def writefile(lines,filepath): #need to have \n's inserted already
+    file1 = open(filepath,'w')
+    file1.writelines(lines) 
+    file1.close()
+    return
  
 def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     '''Splits the formal state matrix S (each row a different time) into the various state variables'''
@@ -52,7 +62,36 @@ def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     wi.v      = S[:,8]
     en.v      = S[:,9]
     return gl,rp,wi,tc,en,op,pl
+
+def writeState(S,gl,rp,wi,tc,en,op,pl,path):
+    '''Writes state to a file with one float number per line'''
+#     gl.x      = S[:,0]
+#     gl.xD     = S[:,1]
+#     gl.y      = S[:,2]
+#     gl.yD     = S[:,3]
+#     gl.theta  = S[:,4]
+#     gl.thetaD = S[:,5]
+#     pl.elev   = S[:,6]
+#     rp.T      = S[:,7]
+#     wi.v      = S[:,8]
+#     en.v      = S[:,9]
+    writefile(['{:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n {:12.8f}\n'\
+                .format(gl.x, gl.xD, gl.y, gl.yD, gl.theta, gl.thetaD, pl.elev, rp.T, wi.v, en.v)], path)
     
+def readState(path,gl,rp,wi,tc,en,op,pl):
+    '''Reads each line into a state variable'''
+    lines = readfile(path)
+    gl.x      = float(lines[0])
+    gl.xD     = float(lines[1])
+    gl.y      = float(lines[2])
+    gl.yD     = float(lines[3])
+    gl.theta  = float(lines[4])
+    gl.thetaD = float(lines[5])
+    pl.elev   = float(lines[6])
+    rp.T      = float(lines[7])
+    wi.v      = float(lines[8])
+    en.v      = float(lines[9]) 
+    return gl,rp,wi,tc,en,op,pl  
     
 def stateSplitVec(S,gl,rp,wi,tc,en,op,pl):
     '''Splits the formal state vector S into the various state variables'''
@@ -660,7 +699,7 @@ class operator:
             if gl.xD < self.vSlackEnd: #take out slack
                 self.Sth = self.thrSlack
             else:
-                if  tSlackEnd  <= t <  tEndRamp:
+                if  tSlackEnd  <= t <  tEndRamp and gl.state == 'onGnd': #onGnd so that we can test for sim that is airstart
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
                     pp = -16; pd = -16; pint = -32              
                 elif gl.state == 'prepRelease':
@@ -862,7 +901,7 @@ class pilot:
         pl.data[ti.i]['Me'] = self.Me  
         pl.data[ti.i]['elev'] = self.elev           
 
-def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
+def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
     '''First derivative of the state vector'''          
     if rp.data[ti.i]['theta'] > rp.thetaMax: # glider released but the integrator must finish   
         return zeros(len(S))
@@ -981,7 +1020,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
 # #                 print 'vAirWing at gust',  t,vAirWing
 # #                 print t,norm(vecGustWing),',alpha,alphaStab',deg(alpha),deg(alphaStab),,gammaAirWing,vAirWing
 #                 print t,'vgust:{:8.3f}| vairwing:{:8.3f}, alpha:{:8.3f}| alphaStab:{:8.3f}| '.format(norm(vecGustWing),vAirWing,deg(alpha),deg(alphaStab))            
-
+            
+            if not save is None and t > save[1] and not os.path.exists(statefile):
+                writeState(S,gl,rp,wi,tc,en,op,pl,save[0])
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
             gl.data[ti.i]['xD'] = gl.xD
@@ -999,9 +1040,11 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl):
                 sm,Vball,gammaBall,ygainDelay,type = gl.smRecov(v,L,alpha,gamma,pl)
 #                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
-            ngust = ai.gustLoad(gl,v)
+            ngust = ai.gustLoad(gl,v) 
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - Lglider/gl.W - ngust #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
+            gl.data[ti.i]['smStruct']  = gl.n1*(1-0) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
+
             gl.data[ti.i]['vgw']  = vgw
             gl.data[ti.i]['L']  = L
             gl.data[ti.i]['D']  = D
@@ -1059,7 +1102,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 15 # end time for simulation
+tEnd = 2 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
@@ -1072,7 +1115,7 @@ vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
 #updraft step function at a single time  
 vupdr = 0 
 hupdr = 1e6 #m At what height to turn the updraft on for testing
-vgustSM = 0  #m/s always perpendicular to flight path, for safety margin calcs. 
+vgustSM = 0  #m/s Keep this zero if simulating dynamic gusts.  Always perpendicular to flight path, for safety margin calcs. 
 if abs(vhead) > 0: print 'Headwind', vhead   # m/s
 if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupdr), vupdr   # m/s
 
@@ -1081,7 +1124,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
 tRampUp = 2
 tHold = 0.5
-targetT = 1.0
+targetT = 0.0
 dipT = 0.7
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
@@ -1103,8 +1146,8 @@ if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.
 if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(ropeBreakTime)  #
 
 #--- pilot
-pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
-# pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
+# pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
+pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 recovDelay = 0.5
 #loopParams = linspace(3,8,20) #Alpha
 loopParams = [3] #Alpha
@@ -1113,8 +1156,8 @@ loopParams = [3] #Alpha
 # setpoint = [5 ,5 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
-# control = ['alpha','v']
-# setpoint = [5,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','v']
+setpoint = [3,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 # control = ['v','v']
@@ -1123,8 +1166,8 @@ loopParams = [3] #Alpha
 # setpoint = [0,30,10]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 #control = ['v','v']
 #setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['','']
-setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
+# control = ['','']
+# setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
 
@@ -1148,17 +1191,31 @@ for iloop,param in enumerate(loopParams):
     en = engine(tcUsed,wi.rdrum)
     op = operator(throttleType,targetT,dipT,thrmax,tRampUp,tHold,ntime)
     pl = pilot(pilotType,ntime,control,setpoint,recovDelay)
-    # nonzero initial conditions
-    gl.xD = 1e-6  #to avoid div/zero
-    gl.yD = 1e-6  #to avoid div/zero
-    gl.v = 1e-6  #to avoid div/zero
-    en.v = en.idle
-    gl.theta  = rad(theta0)
+    # standard nonzero initial conditions, some to avoid div/zero
+    gl.xD = 1e-6; gl.yD = 1e-6; gl.v = 1e-6; en.v = en.idle; gl.theta  = rad(theta0)
+    # save state
+    statefile = path + '\\state'
+    
+    ##### Advanced block for air start
+    save = None
+#     save = [statefile, 7.6 ] # 2nd entry is time to save state
+    if not save is None:     
+        if os.path.exists(statefile): os.remove(statefile)
+    # read initial state
+    loadState = True
+#     loadState = False
+    if loadState: #
+        print 'loading state from {}'.format(statefile)     
+        gl,rp,wi,tc,en,op,pl = readState(statefile,gl,rp,wi,tc,en,op,pl)
+        #Change some of the initial conditions
+        rp.T = targetT * gl.W  
+    ##### End advanced block for air start
+    
     #initialize state vector to zero  
     S0 = zeros(10)
     #integrate the ODEs
     S0 = stateJoin(S0,gl,rp,wi,tc,en,op,pl)
-    S = odeint(stateDer,S0,t,mxstep=500,args=(gl,ai,rp,wi,tc,en,op,pl))
+    S = odeint(stateDer,S0,t,mxstep=500,args=(gl,ai,rp,wi,tc,en,op,pl,save))
     #Split S (now a matrix with state variables in columns and times in rows)
     gl,rp,wi,tc,en,op,pl = stateSplitMat(S,gl,rp,wi,tc,en,op,pl)
     #Find where release occurred in data.  Remove the time steps after that. 
@@ -1392,28 +1449,28 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 zoom = True
 if zoom:
     t1 = 6 ; t2 = 8
-    plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-            [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-            ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
+    plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+            [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+            ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
     plts.i = 0 #restart color cycle
     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
-            [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+            [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
             ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins',t1,t2)
 plts.i = 0 #restart color cycle
-plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,vD/g,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-        [0,0,0,1,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', "g's",'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
+plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,tData,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+        [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+        ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
 plts.i = 0 #restart color cycle
 # plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
-#         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+#         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
 #         ['v','height/10','climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
 if vGustPeak > 0 and ymax >  hGust:
     plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305, 1.94*vGust*10],\
-        [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+        [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
         ['vel','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
 else:
     plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
-        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces, g's"],\
+        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
         ['vel','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
 
 # plot loop results
