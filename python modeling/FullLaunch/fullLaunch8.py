@@ -1042,8 +1042,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
             ngust = ai.gustLoad(gl,v) 
             gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - Lglider/gl.W - ngust #safety margin vs stall (g's)
-            gl.data[ti.i]['smStruct']  = gl.n1*(1-gl.mw*gl.yG/gl.m/gl.yL) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
-            gl.data[ti.i]['smStruct']  = gl.n1*(1-0) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
+            gl.data[ti.i]['smStruct']  = gl.n1*sqrt((1-gl.mw*gl.yG/gl.m/gl.yL*(1-1/gl.n1))) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
+#             gl.data[ti.i]['smStruct']  = gl.n1*(1-0) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
 
             gl.data[ti.i]['vgw']  = vgw
             gl.data[ti.i]['L']  = L
@@ -1124,7 +1124,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
 tRampUp = 2
 tHold = 0.5
-targetT = 0.0
+targetT = 1.0
 dipT = 0.7
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
@@ -1208,7 +1208,9 @@ for iloop,param in enumerate(loopParams):
         print 'loading state from {}'.format(statefile)     
         gl,rp,wi,tc,en,op,pl = readState(statefile,gl,rp,wi,tc,en,op,pl)
         #Change some of the initial conditions
-        rp.T = targetT * gl.W  
+        rp.T = targetT * gl.W
+        gl.xD = 43/44.0*gl.xD; 
+        gl.yD = 43/44.0*gl.yD;   
     ##### End advanced block for air start
     
     #initialize state vector to zero  

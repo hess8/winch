@@ -528,7 +528,7 @@ experienced
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
@@ -665,12 +665,24 @@ reference "subsec:Wing-bending appendix"
 
 \begin_layout Standard
 \begin_inset Formula 
+\begin{equation}
+V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}\left(1-\frac{1}{n_{1}}\right)}\label{eq:VA_W}
+\end{equation}
+
+\end_inset
+
+or
+\begin_inset Formula 
 \[
-V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}
+\frac{L_{max,winch}}{W}=n_{max,winch}=n_{1}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}\left(1-\frac{1}{n_{1}}\right)}
 \]
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Standard
 where 
 \begin_inset Formula $m_{w}$
 \end_inset
@@ -732,6 +744,10 @@ key "selfCGs"
 
 \begin_layout Standard
 For a typical dry glider, 
+\begin_inset Formula $n_{1}=5.3,$
+\end_inset
+
+ 
 \begin_inset Formula $y_{G}\approx0.3\frac{b}{2}$
 \end_inset
 
@@ -810,7 +826,10 @@ With the wings protected by flying below our defined
 We could begin a detailed analysis of the inertial and tension loads that
  the glider experiences at different speeds.
  In fact this is done later in the paper.
- But first we stress that the tension and inertial stresses are similar
+ But first we stress that the tension and inertial stresses are 
+\emph on
+similar
+\emph default
  (when scaled by glider weight and 
 \begin_inset Formula $V_{A}$
 \end_inset
@@ -852,6 +871,29 @@ reference "fig: VW over VA"
 
 \end_inset
 
+.
+ Using 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:VA_W"
+
+\end_inset
+
+, the ratio 
+\begin_inset Formula $V_{w}/V_{A}$
+\end_inset
+
+ ranges between 0.84 and 0.92 for the gliders in fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig: VW over VA"
+
+\end_inset
+
 
 \end_layout
 
@@ -861,21 +903,17 @@ Empirically we can simply look at gliders at the top of the existing
 \end_inset
 
  chart to see that some have been certified and tested to fly with winch
- speeds up to 
+ speeds of 
 \begin_inset Formula $V_{w}/V_{A}=0.84$
 \end_inset
 
 .
- If all common gliders have similar control authority, and hence similar
- risk of stall or rope break, is there any reason why 
+ If all common gliders have similar control authority, and hence have a
+ similar risk of stall or rope break, is there any reason why 
 \begin_inset Formula $V_{W}$
 \end_inset
 
- for each composite glider flying today should not be the lower of 
-\begin_inset Formula $V_{Aw}$
-\end_inset
-
- or 0.84 
+ for composite gliders flying today should be lower than 0.84 
 \begin_inset Formula $V_{A}?$
 \end_inset
 
@@ -886,11 +924,11 @@ Empirically we can simply look at gliders at the top of the existing
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename Vw2 Vw vs VA.png
+	filename VAw,Vw vs VA.png
 	scale 35
 
 \end_inset
@@ -909,11 +947,11 @@ Manufacturers' max winch speed
 \begin_inset Formula $V_{W}$
 \end_inset
 
- (blue) and proposed 
-\begin_inset Formula $V_{w2}$
+ (blue) and proposed winch maneuvering speed
+\begin_inset Formula $V_{Aw}$
 \end_inset
 
-(red) vs maneuvering speed 
+ (red) vs maneuvering speed 
 \begin_inset Formula $V_{A}$
 \end_inset
 
@@ -924,12 +962,8 @@ Manufacturers' max winch speed
 
  is used, though this should be determined for each glider by wing CG measuremen
 t and wing lift distribution modeling.
- Note that the Grob point covers the Cirrus point; the Duo points cover
- the Ventus 
-\begin_inset Formula $V_{w}$
-\end_inset
-
-point.
+ Note that the Grob points covers the Cirrus points; the Ventus points cover
+ the Duo points, and the red Pik20D points covers the red DG points.
  
 \end_layout
 
@@ -988,28 +1022,22 @@ as the difference between
 \begin_inset Formula $m$
 \end_inset
 
- and the maximum non-lifting mass.
- For the Ventus 2c, 
-\begin_inset Formula $V_{W2}$
+ and the maximum non-lifting mass, and 
+\begin_inset Formula $n_{1}=5.3$
 \end_inset
 
- is lower than the present 
-\begin_inset Formula $V_{w,}$
+.
+ Our proposed 
+\begin_inset Formula $V_{Aw}$
 \end_inset
 
-because it is calculated with maximum water load, and the wing weight ratio
- is large.
- For all the others, 
-\begin_inset Formula $V_{W2}$
+is higher than the manufacturers'
+\begin_inset Formula $V_{W}$
 \end_inset
 
- is the same or larger.
- Note that the Grob point covers the Cirrus point and the Duo points cover
- the Ventus 
-\begin_inset Formula $V_{w}$
-\end_inset
-
-(blue) point.
+ for all the gliders except the Ventus, where it stays essentially the same.
+ Note that the Grob points covers the Cirrus points; the Ventus points cover
+ the Duo points, and the red Pik20D points covers the red DG points.
  
 \end_layout
 
@@ -1038,7 +1066,7 @@ structural
  the wing.
 \begin_inset Formula 
 \begin{equation}
-\overline{sm}_{struct}=\frac{L_{max.design}-L(t)}{W}=n_{1}\left(1-\frac{m_{w}y_{G}}{my_{L}}\right)-\frac{L(t)}{W}\label{eq: structural SM}
+\overline{sm}_{struct}=\frac{L_{max,winch}-L(t)}{W}=n_{1}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}\left(1-\frac{1}{n_{1}}\right)}-\frac{L(t)}{W}\label{eq: structural SM}
 \end{equation}
 
 \end_inset
@@ -1459,8 +1487,7 @@ The pilot feels the same inertial (maneuvering or acceleration) g's the
 \begin_inset Quotes eld
 \end_inset
 
-In a pullout or rotation maneuver, the pilot doesn't feel the extra wing
- load due to rope tension.
+The pilot doesn't feel the extra wing load due to rope tension.
  
 \begin_inset Quotes erd
 \end_inset
@@ -1653,13 +1680,6 @@ v_{gust,elev}=\frac{v_{gust,peak}}{2}\left(1+cos\frac{\pi(d-l_{s})}{H}\right).
 \end_inset
 
 
-\begin_inset Formula 
-\[
-\]
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section
@@ -1824,7 +1844,7 @@ M_{2}=L_{2}y_{L}
 \end_layout
 
 \begin_layout Standard
-The total bending moment is .
+The bending moment is .
 \end_layout
 
 \begin_layout Standard
@@ -1898,10 +1918,10 @@ and
 \end_layout
 
 \begin_layout Subsubsection
-Wing bending under non-inertial loads at top of winch launch
+Wing bending under non-inertial loads
 \begin_inset CommandInset label
 LatexCommand label
-name "subsec:Wing-bending- top of launch"
+name "subsec:Wing-bending-nonInertial"
 
 \end_inset
 
@@ -1909,21 +1929,14 @@ name "subsec:Wing-bending- top of launch"
 \end_layout
 
 \begin_layout Standard
-For now, we will consider the case just before release.
- The glider is essentially just above the winch and the rope angle is greater
- than 70 deg above the horizon.
- This is the part of the launch when the tension 
-\begin_inset Formula $T$
-\end_inset
+In the case of no acceleration the lift balances the non-inertial load forces
+ with components opposite the lift
+\end_layout
 
- is acting most directly against the lift and when the wings must generate
- the most lift per unit of tension.
- So the difference in the wing bending vs an inertial load will be the largest
- here.
- We ignore the difference between 70 degrees and vertical: 
+\begin_layout Standard
 \begin_inset Formula 
 \[
-L-mg-T=0
+L-F_{ni}=0
 \]
 
 \end_inset
@@ -1932,25 +1945,8 @@ L-mg-T=0
 \end_layout
 
 \begin_layout Standard
-Here there is no acceleration, so 
-\begin_inset Formula 
-\[
-L=F_{ni}
-\]
-
-\end_inset
-
-where 
-\begin_inset Formula $F_{ni}$
-\end_inset
-
- is the sum of the non-inertial loads, which are 
-\begin_inset Formula $F_{ni}=mg+T$
-\end_inset
-
-.
- So there is an upward bending of the wings due to lift generation, and
- a downward bending due to the weight of the wings: 
+So there is an upward bending of the wings due to lift generation, and a
+ downward bending due to the weight of the wings: 
 \end_layout
 
 \begin_layout Standard
@@ -1995,7 +1991,7 @@ reference "eq: inertial load bending-1"
 \begin_inset Formula $\ref{eq:static load bending}$
 \end_inset
 
- is that the load factor 
+ is that a load factor 
 \begin_inset Formula $n$
 \end_inset
 
@@ -2013,47 +2009,57 @@ reference "eq: inertial load bending-1"
 \end_layout
 
 \begin_layout Subsubsection
+Total bending moment
+\end_layout
+
+\begin_layout Standard
+In general the loading is a mix of inertial and non-inertial loads.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{tot}=M_{iner}+M_{ni}=n_{a}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+n_{ni}Wy_{L}-m_{w}gy_{G}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Define the scaled ratio of wing mass to total mass
+\begin_inset Formula 
+\[
+\mu_{w}\equiv\frac{m_{w}}{m}\frac{y_{G}}{y_{L}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+M_{tot}=Wy_{L}\left(\left(n_{a}+n_{ni}\right)-\left(n_{a}+1\right)\mu_{w}\right)\label{eq:general bending moment}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
 Maximum bending moment
 \end_layout
 
 \begin_layout Standard
-If the glider load was certified as purely inertial, from eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: inertial load bending-1"
-
-\end_inset
-
- :
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)\label{eq: Max bending moment}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-If the glider load was certified as inertial in addition to the glider's
- weight then we would subtract a term , from eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: inertial load bending-1"
-
-\end_inset
-
- :
-\end_layout
-
-\begin_layout Standard
+The glider was certified under a static load of its own weight so
 \begin_inset Formula 
 \[
-M_{max}=(n_{1}-1)W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+Wy_{L}-m_{w}gy_{G}
+M_{max}=Wy_{L}\left(\left(n_{a}+1\right)-\left(n_{a}+1\right)\mu_{w}\right)
 \]
 
 \end_inset
@@ -2062,71 +2068,108 @@ M_{max}=(n_{1}-1)W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)+Wy_{L}-m_{w}gy_{G}
 \end_layout
 
 \begin_layout Standard
+The load factor 
+\begin_inset Formula $n_{a}+1=n_{1}$
+\end_inset
+
+ at max, so
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}\label{eq: Max bending with weight static}
+M_{max}=n_{1}Wy_{L}\left(1-\mu_{w}\right)\label{eq: Max bending moment-1}
 \end{equation}
 
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
-These differ only in the last (small) term 
-\begin_inset Formula $-m_{w}gy_{G},$
-\end_inset
-
- so we're on the safe side if we take the smaller of the two (eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq: Max bending with weight static"
-
-\end_inset
-
-) in any case.
- 
 \end_layout
 
 \begin_layout Subsubsection
-Winch maneuvering speed: 
+Winch maneuvering speed at top of launch: 
 \end_layout
 
 \begin_layout Standard
-During a launch the case with the greatest ratio of non-inertial to inertial
- loading is at the top of the launch, as treated in section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "subsec:Wing-bending- top of launch"
-
-\end_inset
-
-, so it is the configuration that determines the maximum maneuvering speed
- for the launch.
- This will be the speed where the bending moment at the top of the winch
- launch will equal the maximum bending moment at the maximum inertial load.
- The lift terms 
-\end_layout
-
-\begin_layout Standard
-From eqn 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:Static bending first"
-
-\end_inset
-
-, and using 
-\begin_inset Formula $F_{ni}=L$
-\end_inset
-
-, 
+The time with the greatest ratio of non-inertial to inertial loading is
+ at the top of the launch, and there is essentially no acceleration, while
+ the non-inertial forces are the weight and tension pulling almost opposite
+ the lift (normal release occurs when the rope angle is greater than 70
+ deg above the horizon; we ignore the difference between 70 degrees and
+ vertical:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}
+L=F_{ni}=n_{ni}W
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The bending moment with 
+\begin_inset Formula $n_{a}=0$
+\end_inset
+
+ is 
+\begin_inset Formula 
+\[
+M_{top}=Wy_{L}\left(n_{ni}-\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We equate this with the maximum design bending load from eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: Max bending moment-1"
+
+\end_inset
+
+ to get
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+n_{ni}-\mu_{w}=n_{1}-n_{1}\mu_{w}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+n_{ni}=n_{1}-\mu_{w}(n_{1}-1)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The goal is to make sure that the glider stalls before the bending moment
+ exceeds the maximum.
+ So we limit the speed to 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}}{W}=\frac{\frac{1}{2}\rho SC_{L.max}V_{A}^{2}}{W}-\mu_{w}\left(\frac{\frac{1}{2}\rho SC_{L.max}V_{A}^{2}}{W}-1\right)
 \]
 
 \end_inset
@@ -2137,7 +2180,7 @@ M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{1}{2}\rho SC_{L.max}V_{Aw}^{2}gy_{L}-m_{w}gy_{G}=\frac{1}{2}\rho SC_{L.max}V_{A}^{2}\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)-m_{w}gy_{G}
+\frac{V_{Aw}^{2}}{V_{S}^{2}}=\frac{V_{A}^{2}}{V_{S}^{2}}-\mu_{w}\left(\frac{V_{A}^{2}}{V_{S}^{2}}-1\right)
 \]
 
 \end_inset
@@ -2146,14 +2189,211 @@ M_{ni}=Lgy_{L}-m_{w}gy_{G}=M_{max}=n_{1}W\left(y_{L}-\frac{m_{w}}{m}y_{G}\right)
 \end_layout
 
 \begin_layout Standard
-Then we take for our proposed winch maneuvering speed:
+So at the top of the climb, 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
-\begin{equation}
-V_{Aw}=V_{A}\sqrt{1-\frac{m_{w}y_{G}}{my_{L}}}\label{eq: VAw}
-\end{equation}
+\[
+V_{Aw}^{2}=V_{A}^{2}-\mu_{w}\left(V_{A}^{2}-V_{S}^{2}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw,top}=V_{A}\sqrt{1-\mu_{w}\left(1-\frac{1}{n_{1}}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Winch maneuvering speed generally
+\end_layout
+
+\begin_layout Standard
+At any time during the launch, we can sum the forces along the lift direction
+ (perpendicular to the velocity direction):
+\begin_inset Formula 
+\[
+L-Wcos\gamma-Tsin(\gamma+\theta_{r})=ma_{turn}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then 
+\begin_inset Formula 
+\[
+n_{ni}=cos\gamma+n_{T}sin(\gamma+\theta_{r})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ is the climb angle and 
+\begin_inset Formula $\theta_{r}$
+\end_inset
+
+ is the rope angle above horizontal.
+ 
+\begin_inset Formula 
+\[
+n_{a}=\frac{a_{turn}}{g}=\frac{L}{W}-n_{ni}=n_{L}-n_{ni}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:general bending moment"
+
+\end_inset
+
+ becomes
+\begin_inset Formula 
+\[
+M_{gen}=Wy_{L}\left(\left(n_{L}-n_{ni}+n_{ni}\right)-\left(n_{L}-n_{ni}+1\right)\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M_{gen}=Wy_{L}\left(n_{L}-\left(n_{L}-n_{ni}+1\right)\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We set this equal to the maximum bending moment eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq: Max bending moment-1"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Wy_{L}\left(n_{L}-\left(n_{L}-n_{ni}+1\right)\mu_{w}\right)=n_{1}Wy_{L}\left(1-\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+n_{L}-\mu_{w}\left(n_{L}-n_{ni}+1\right)=n_{1}\left(1-\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The goal is to make sure that the glider stalls before the bending moment
+ exceeds the maximum.
+ So we limit the speed to 
+\begin_inset Formula $V_{Aw}$
+\end_inset
+
+ at the maximum angle of attack:
+\begin_inset Formula 
+\[
+\frac{V_{Aw}^{2}}{V_{S}^{2}}-\mu_{w}\left(\frac{V_{Aw}^{2}}{V_{S}^{2}}-n_{ni}+1\right)=\frac{V_{A}^{2}}{V_{S}^{2}}\left(1-\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}^{2}-\mu_{w}\left(V_{Aw}^{2}-V_{S}^{2}\left(n_{ni}-1\right)\right)=V_{A}^{2}\left(1-\mu_{w}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}^{2}\left(1-\mu_{w}\right)=V_{A}^{2}\left(1-\mu_{w}\right)-V_{S}^{2}\left(n_{ni}-1\right)\mu_{w}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}^{2}=V_{A}^{2}-V_{S}^{2}\frac{\mu_{w}}{\left(1-\mu_{w}\right)}\left(cos\gamma+n_{T}sin(\gamma+\theta_{r})-1\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}^{2}=V_{A}^{2}\left[1-\frac{\mu_{w}}{n_{1}\left(1-\mu_{w}\right)}\left(cos\gamma+n_{T}sin(\gamma+\theta_{r})-1\right)\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{Aw}=V_{A}\sqrt{1-\frac{\mu_{w}}{n_{1}\left(1-\mu_{w}\right)}\left(cos\gamma+n_{T}sin(\gamma+\theta_{r})-1\right)}
+\]
 
 \end_inset
 
