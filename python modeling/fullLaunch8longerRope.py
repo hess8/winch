@@ -1089,7 +1089,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 ##########################################################################                        
 #--- plotting
 smoothed = False
-path = 'D:\\Winch launch physics\\results\\test1000m'
+path = 'D:\\Winch launch physics\\results\\test2000m'
 # path = 'D:\\Winch launch physics\\results\\testSpy'
 if not os.path.exists(path): os.mkdir(path)
 
@@ -1140,8 +1140,8 @@ elif 'constT' in throttleType: print 'targetT',targetT
 if 'dip' in throttleType: print 'dipT',dipT
 
 #--- rope
-# lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-lo = 1000                 # m initial rope length
+lo = 2000 # 6500 * 0.305         #  6500 ft =1982 meters initial rope length (m)
+# lo = 1000                 # m initial rope length
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
 ropeBreakTime = 100 #sec
@@ -1175,13 +1175,13 @@ setpoint = [3,32, 20]  # deg,speed, deg last one is climb angle to transition to
 
 # Loop over parameters for study, optimization
 
-data = zeros(len(loopParams),dtype = [('alphaLoop', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
+data = zeros(len(loopParams),dtype = [('alpha1', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 2 #if yfinal is less than this height, the run failed, so ignore this time point
 for iloop,param in enumerate(loopParams): 
     if len(loopParams)>1: 
-        alphaLoop = param
         setpoint = [param ,3.0 , 150]  # deg,speed, deg last one is climb angle to transition to final control
+    alpha1 = setpoint[0]
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
     theta0 = 6   # deg resting angle of glider on ground    
     # create the objects we need from classes
@@ -1382,7 +1382,7 @@ for iloop,param in enumerate(loopParams):
         data[iloop] = data[iloop-1] #write over this data point with the last one. 
     else:
         # Store loop results
-        data[iloop]['alphaLoop'] = alphaLoop
+        data[iloop]['alpha1'] = alpha1
         data[iloop]['xRoll'] = xRoll
         data[iloop]['tRoll'] = tRoll
         data[iloop]['yfinal'] = yfinal
@@ -1494,12 +1494,12 @@ else:
 if len(loopParams) > 1:
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
     plts.i = 0 #restart color cycle
-    plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+    plts.xyy(False,[data['alpha1']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec, %',"Relative forces,g's"],\
             ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs initial AoA (2nd Aoa 3.0)')
     #fewer results, for presentation
     plts.i = 0 #restart color cycle
-    plts.xyy(True,[data['alphaLoop']]*6,[data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['Lmax'],data['gammaMax']],\
+    plts.xyy(True,[data['alpha1']]*6,[data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['Lmax'],data['gammaMax']],\
             [0,0,0,0,1,0],'Angle of attack target (deg)',['Velocity (m/s), Angles (deg), Height (m), %',"Relative forces"],\
             ['height/rope %','height diff',r'$v_{max}$', r'$L_{max}/W$', r'$\gamma_{max}$'],'Flight vs initial AoA (2nd Aoa 3.0)')
 

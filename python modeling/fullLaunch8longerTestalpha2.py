@@ -1089,7 +1089,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 ##########################################################################                        
 #--- plotting
 smoothed = False
-path = 'D:\\Winch launch physics\\results\\test1000m'
+path = 'D:\\Winch launch physics\\results\\test2000mAlpha2'
 # path = 'D:\\Winch launch physics\\results\\testSpy'
 if not os.path.exists(path): os.mkdir(path)
 
@@ -1141,7 +1141,7 @@ if 'dip' in throttleType: print 'dipT',dipT
 
 #--- rope
 # lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-lo = 1000                 # m initial rope length
+lo = 2000                 # m initial rope length
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
 ropeBreakTime = 100 #sec
@@ -1181,7 +1181,7 @@ yminLoop = 2 #if yfinal is less than this height, the run failed, so ignore this
 for iloop,param in enumerate(loopParams): 
     if len(loopParams)>1: 
         alphaLoop = param
-        setpoint = [param ,3.0 , 150]  # deg,speed, deg last one is climb angle to transition to final control
+        setpoint = [3.0 ,param , 150]  # deg,speed, deg last one is climb angle to transition to final control
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
     theta0 = 6   # deg resting angle of glider on ground    
     # create the objects we need from classes

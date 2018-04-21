@@ -72,7 +72,7 @@
 \begin_body
 
 \begin_layout Title
-Safe speeds in glider winch launches
+Safety margins in glider winch launches
 \end_layout
 
 \begin_layout Author
@@ -88,33 +88,86 @@ bret_hess@byu.edu
 \end_layout
 
 \begin_layout Abstract
-The maximum winch launch speed 
-\begin_inset Formula $V_{w}$
+We define structural, stall rope break and post-break recovery safety margins
+ for winch launches.
+ We propose a new winch maneuvering speed 
+\begin_inset Formula $V_{AW}$
 \end_inset
 
- for gliders and its determination by the manufacturer appears to be mostly
- arbitrary.
- Because of this, pilots often state that some overspeed vs 
-\begin_inset Formula $V_{w}$
+ that is lower than the usual maneuvering speed 
+\begin_inset Formula $V_{A}$
 \end_inset
 
- is allowed in practice for gliders with low 
-\begin_inset Formula $V_{w}$
+ but higher than the manufacturers' maximum winch speed 
+\begin_inset Formula $V_{W}$
 \end_inset
 
-, but have no guidance about the real upper limit is.
- This ignorance is dangerous, because it might encourage overly aggressive
- speed control or early rotation, leading to rope break or stall at low
- altitude.
- We propose a winch maneuvering speed 
-\begin_inset Formula $V_{Aw}$
-\end_inset
+(which in most cases appears to have been arbitrarily assigned).
+ Using a new simulation, we plot the safety margins vs time in winch launches
+ for little, optimal and aggressive elevator deflection.
+ We simulate gusts dynamically, and find that xxxxxxxxxxx
+\end_layout
 
- for safe maneuvering under winch launch, and a new maximum winch speed
-\begin_inset Formula $V_{w2}$
-\end_inset
+\begin_layout Section
+Sims scheme
+\end_layout
 
-.
+\begin_layout Standard
+1000m
+\end_layout
+
+\begin_layout Enumerate
+No gusts
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+find safest and highest launches at Tdip = 1.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+gusts: take safest as reference.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+rotation: at rotation speed in reference
+\end_layout
+
+\begin_layout Enumerate
+max climb angle; at VAw
+\end_layout
+
+\begin_layout Enumerate
+just before release 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Wing breaking from vertical gust: L>Lmax
+\end_layout
+
+\begin_layout Itemize
+Rope break: not dangerous
+\end_layout
+
+\begin_layout Standard
+Risks during rotation:
+\end_layout
+
+\begin_layout Itemize
+stall from acceleration:
+\end_layout
+
+\begin_layout Itemize
+stall from gust
+\end_layout
+
+\begin_layout Itemize
+rope break
 \end_layout
 
 \begin_layout Section
@@ -146,8 +199,8 @@ cavalier
 
  launches where the pilot uses the elevator aggressively in the rotation
  and initial climb.
- This lowers the speed which reduced the stall margin, but with only a gain
- of 10 m (30 ft) of height.
+ This lowers the speed and reduced the stall margin, but with only a gain
+ of 10 m (30 ft) of height for a 1000 m rope.
  In Santel's 2010 study 
 \begin_inset CommandInset citation
 LatexCommand citep
@@ -214,7 +267,7 @@ power loss
 \end_layout
 
 \begin_layout Standard
-The relationship between speed and risk is complex because: 1) high speed
+The relationship between speed and risk is not simple because: 1) high speed
  makes the glider more susceptible to wing failure during maneuvering (rotation)
  and wind gusts; 2) high speed increases the risk of accelerated stall for
  a given pitch rate during the rotation phase; and 3) low speed makes stall
@@ -230,7 +283,7 @@ none were
  reported by Santel or Browning to be from the structural failure of the
  wings.
  So the factors causing accidents are not exceeding structural limits: they
- are instead almost entirely stalls during rotation, rope breaks subsequent
+ are instead almost entirely stalls during rotation and after rope breaks,
 \end_layout
 
 \begin_layout Standard
@@ -1410,8 +1463,8 @@ key "2011MooreRecoveryASK21"
 \end_inset
 
  greater than this gives unrealistic results near the ground such as a glider
- just lifting off at 1 ft above the ground at a climb angle of 2 degrees
- needing 60 feet height loss to recover.
+ needing 60 feet height loss to recover when it has lifted off at 1 ft above
+ the ground with climb angle of 2 degrees (clearly recoverable) .
  
 \begin_inset Formula $V_{r}=1.3V_{S}$
 \end_inset
@@ -1441,7 +1494,7 @@ key "2011MooreRecoveryASK21"
 \begin_inset Formula $n_{p}$
 \end_inset
 
-by 0.1 (less turning g's) until the glider will not stall.
+ by 0.1 (less turning g's) until the glider will not stall.
  
 \end_layout
 
@@ -1606,7 +1659,7 @@ key "CS-22GliderAirworthiness"
  perpendicular to the flight path, chosen because it is expected no more
  frequencly than every 70,000 flight hours on average.
  Since we have a dynamic winch launching simulation, we can directly simulate
- the discrete gust shapes perpendicular to the flight path specified
+ the discrete gust shapes perpendicular to the flight path as specified
 \begin_inset CommandInset citation
 LatexCommand citep
 key "FAAGustAdvisory2014"
@@ -1618,7 +1671,7 @@ key "FAAGustAdvisory2014"
 \begin_inset Formula $H$
 \end_inset
 
- of 9m to 110m (30 to 350 ft ), with peak strengths.
+ of 9m to 110m (30 to 350 ft), with peak strengths.
  
 \begin_inset Formula 
 \[

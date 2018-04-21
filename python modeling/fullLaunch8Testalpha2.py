@@ -1089,7 +1089,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 ##########################################################################                        
 #--- plotting
 smoothed = False
-path = 'D:\\Winch launch physics\\results\\test1000m'
+path = 'D:\\Winch launch physics\\results\\test1000mAlpha2'
 # path = 'D:\\Winch launch physics\\results\\testSpy'
 if not os.path.exists(path): os.mkdir(path)
 
@@ -1181,7 +1181,7 @@ yminLoop = 2 #if yfinal is less than this height, the run failed, so ignore this
 for iloop,param in enumerate(loopParams): 
     if len(loopParams)>1: 
         alphaLoop = param
-        setpoint = [param ,3.0 , 150]  # deg,speed, deg last one is climb angle to transition to final control
+        setpoint = [3.0 ,param , 150]  # deg,speed, deg last one is climb angle to transition to final control
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
     theta0 = 6   # deg resting angle of glider on ground    
     # create the objects we need from classes
@@ -1496,11 +1496,11 @@ if len(loopParams) > 1:
     plts.i = 0 #restart color cycle
     plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec, %',"Relative forces,g's"],\
-            ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs initial AoA (2nd Aoa 3.0)')
+            ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs 2nd AoA ')
     #fewer results, for presentation
     plts.i = 0 #restart color cycle
     plts.xyy(True,[data['alphaLoop']]*6,[data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['Lmax'],data['gammaMax']],\
-            [0,0,0,0,1,0],'Angle of attack target (deg)',['Velocity (m/s), Angles (deg), Height (m), %',"Relative forces"],\
-            ['height/rope %','height diff',r'$v_{max}$', r'$L_{max}/W$', r'$\gamma_{max}$'],'Flight vs initial AoA (2nd Aoa 3.0)')
+            [0,0,0,1,0],'Angle of attack target (deg)',['Velocity (m/s), Angles (deg), Height (m), %',"Relative forces"],\
+            ['height/rope %','height diff',r'$v_{max}$', r'$L_{max}/W$', r'$\gamma_{max}$'],'Flight vs second AoA')
 
 print 'Done'
