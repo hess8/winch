@@ -799,7 +799,7 @@ class pilot:
         self.tElevClimb = None
         self.pilotStart = None
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
-        self.humanT = 1.0 #sec
+        self.humanT = 0.5 #sec
         self.cOld = None #previous PID coefficiens
         self.recovDelay = recovDelay
         #algebraic function
@@ -844,7 +844,7 @@ class pilot:
             elif gl.state =='initClimb':
                 pp = 64; pd = 0; pint = 0  
             elif gl.state == 'mainClimb': 
-                pp = 32; pd = 16; pint = 32
+                pp = 32; pd = 32; pint = 32
             elif gl.state == 'prepRelease':
                 pp =  0; pd =   0; pint =  0   
             c = array([pp,pd,pint])* gl.I/gl.vb
@@ -1126,7 +1126,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
 tRampUp = 2
 tHold = 0.5
-targetT = 1.0
+targetT = 0.8
 dipT = 0.7
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
@@ -1141,7 +1141,7 @@ if 'dip' in throttleType: print 'dipT',dipT
 
 #--- rope
 # lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-lo = 1000                 # m initial rope length
+lo = 2000                 # m initial rope length
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
 ropeBreakTime = 100 #sec
@@ -1153,15 +1153,15 @@ if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(rop
 # pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 recovDelay = 0.5
-loopParams = linspace(0,6,30) #Alpha
-# loopParams = [3] #Alpha
+# loopParams = linspace(0,6,30) #Alpha
+loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [5 ,5 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','v']
-setpoint = [3,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,43, 30]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 # control = ['v','v']
@@ -1177,10 +1177,10 @@ setpoint = [3,32, 20]  # deg,speed, deg last one is climb angle to transition to
 
 data = zeros(len(loopParams),dtype = [('alphaLoop', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float)])
-yminLoop = 2 #if yfinal is less than this height, the run failed, so ignore this time point
+yminLoop = 2 # (m) if yfinal is less than this height, the run failed, so ignore this time point
 for iloop,param in enumerate(loopParams): 
+    alphaLoop = param
     if len(loopParams)>1: 
-        alphaLoop = param
         setpoint = [3.0 ,param , 150]  # deg,speed, deg last one is climb angle to transition to final control
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
     theta0 = 6   # deg resting angle of glider on ground    
@@ -1482,13 +1482,13 @@ plts.i = 0 #restart color cycle
 
 #metric units
 if vGustPeak > 0 and ymax >  hGust:
-    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v,y/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
+    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
         [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height/10 (m), Angle (deg)',"Relative forces"],\
-        ['velocity','height/10','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
+        ['velocity x10','height','climb angle*10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
 else:
-    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v,y/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov],\
+    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height/10 (m), Angle (deg)',"Relative forces"],\
-        ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
+        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
 
 # plot loop results
 if len(loopParams) > 1:

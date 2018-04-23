@@ -256,6 +256,13 @@ We solve a system of first order differential equations in the form:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Formula $S_{th},$
+\end_inset
+
+ throttle setting
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula $T$
 \end_inset
 
@@ -421,14 +428,6 @@ Time-varying quantities derived from state variables
 
  , power available from the engine to the torque converter at each engine
  speed.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $S_{th},$
-\end_inset
-
- throttle setting (included as a state variable so state integrator can
- handle PID integrator)
 \end_layout
 
 \begin_layout Standard
@@ -1368,27 +1367,7 @@ name "sec:Pilot-and-elevator"
 By deflecting the elevator the pilot targets different glider states during
  different phases of the flight such as constant angle of attack, constant
  speed or constant pitch rate.
- The pilot determines a new moment 
-\begin_inset Formula $M_{e,set},$
-\end_inset
-
- represented by a PID controller in terms of the error 
-\begin_inset Formula $\epsilon$
-\end_inset
-
-:
-\begin_inset Formula 
-\[
-M_{e,set}=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
-\]
-
-\end_inset
-
-The targets and 
-\begin_inset Formula $p$
-\end_inset
-
-'s can change during the flight.
+ .
  
 \end_layout
 
@@ -1437,7 +1416,28 @@ does not depend on angle of attack.
 \end_layout
 
 \begin_layout Standard
-Adding the elevator deflection as a state variable allows us to include
+The pilot plans a new moment 
+\begin_inset Formula $M_{e,set},$
+\end_inset
+
+ represented by a PID controller in terms of the error 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+M_{e,target}=p_{p}\epsilon+p_{d}\dot{\epsilon}+p_{i}\intop^{t}\epsilon(t')dt'
+\]
+
+\end_inset
+
+The targets and 
+\begin_inset Formula $p$
+\end_inset
+
+'s can change during the flight.
+ Adding the elevator deflection as a state variable allows us to include
  the human response time 
 \begin_inset Formula $t_{h}$
 \end_inset
@@ -1449,7 +1449,7 @@ Adding the elevator deflection as a state variable allows us to include
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\delta_{e,set}=\frac{M_{e,set}}{Lp_{e}}
+\delta_{e,target}=\frac{M_{e,target}}{l_{s}Wr_{\delta e}\left(\frac{v}{v_{b}}\right)^{2}}
 \]
 
 \end_inset
@@ -1460,7 +1460,7 @@ Adding the elevator deflection as a state variable allows us to include
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{\delta_{e}}=\frac{\delta_{e,set}-\delta_{e}}{t_{h}}\label{eq: elevator diffeq}
+\dot{\delta_{e}}=\frac{\delta_{e,target}-\delta_{e}}{t_{h}}\label{eq: elevator diffeq}
 \end{equation}
 
 \end_inset
@@ -1533,7 +1533,7 @@ equivalent winch mass and engine mass
 \end_layout
 
 \begin_layout Standard
-The winch and engine have rotational inertia that resists changing their
+The winch and engine have rotational inertias that resist changing their
  rotational speed.
  Their inertial effects on the glider motion can be described simply in
  terms of ratios of masses compared to the glider mass 
@@ -1990,7 +1990,7 @@ The torque curve is modeled by a cubic polynomial, determined the fact that
 \begin_inset Formula $v_{peakP},$
 \end_inset
 
-with value 
+ with value 
 \begin_inset Formula $\frac{P_{max}}{\omega_{peak}},$
 \end_inset
 
@@ -2379,7 +2379,24 @@ Winch operator
 The operator (throttle) model targets certain engine or rope states during
  different phases of the flight, such as constant tension or throttle, also
  employing a PID controller.
- 
+ Adding the elevator deflection as a state variable allows us to include
+ the human response time 
+\begin_inset Formula $t_{h}$
+\end_inset
+
+ as a realistic delay.
+ So
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\dot{S}_{th}=\frac{S_{th,target}-S_{th}}{t_{h}}\label{eq: throttle diffeq}
+\end{equation}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2548,6 +2565,10 @@ we explain small changes to
 
 \begin_layout Section
 Good pilot control
+\end_layout
+
+\begin_layout Standard
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 \end_layout
 
 \begin_layout Standard
@@ -3733,52 +3754,6 @@ USA 2nd gear: 1:1.52 transmission.
 
 \begin_layout Section
 Ideas
-\end_layout
-
-\begin_layout Standard
-Define a 
-\begin_inset Quotes eld
-\end_inset
-
-safety margin
-\begin_inset Quotes erd
-\end_inset
-
- that includes risks of accelerated stall, gust stall, rope break, and inability
- to recover from rope break.
- LOGARITHMIC SCALE????
-\end_layout
-
-\begin_layout Standard
-Risks at top of launch:
-\end_layout
-
-\begin_layout Itemize
-Stall from vertical gust: : not dangerous
-\end_layout
-
-\begin_layout Itemize
-Wing breaking from vertical gust: L>Lmax
-\end_layout
-
-\begin_layout Itemize
-Rope break: not dangerous
-\end_layout
-
-\begin_layout Standard
-Risks during rotation:
-\end_layout
-
-\begin_layout Itemize
-stall from acceleration:
-\end_layout
-
-\begin_layout Itemize
-stall from gust
-\end_layout
-
-\begin_layout Itemize
-rope break
 \end_layout
 
 \begin_layout Standard
