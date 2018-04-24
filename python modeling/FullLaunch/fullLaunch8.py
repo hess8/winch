@@ -502,7 +502,7 @@ class glider:
         return Vball,gammaBall,ygainDelay      
         
 class air:
-    def __init__(self,vhead,vupdr,hupdr,vgustSM,hGust,widthGust,vGustPeak,gl):
+    def __init__(self,vhead,vupdr,hupdr,vgustSM,startGust,widthGust,vGustPeak,gl):
         # wind parameters 
         self.vhead = vhead #headwind
         ## - old updraft quantities
@@ -514,7 +514,10 @@ class air:
         self.vFactors = k * vgustSM  / gl.vStall**2  * gl.CLalpha/gl.CLmax #for safety margin calcs
         ## - dynamic gust simulation quantities 
         self.rStart = None
-        self.hGust = hGust #glider height to start gust
+        self.startGust = startGust
+        if not startGust is None:
+            self.gustStartType = startGust.split()[1] #either 'm' or 's' for height or time
+            self.gustStartValue = float(startGust.split()[0]) # height or seconds float
         self.widthGust = widthGust
         self.vGustPeak = vGustPeak #peak gust velocity, can be positive or negative
         #data
@@ -525,24 +528,29 @@ class air:
         ng = self.vFactors * v
         return ng
     
-    def gustDynamic(self,vglider,gamma,x,y):
+    def gustDynamic(self,t,vglider,gamma,x,y):
         '''Apply gust perpendicular to glider velocity, in a 1-cos shape'''
-        if self.rStart is None:
-            if y > self.hGust: #one time switch on gust
+        if self.startGust is None:
+            return 0,0,0,0,0 
+        else: 
+            if self.rStart is None and ((self.gustStartType == 'm' and y >= self.gustStartValue) or (self.gustStartType == 's' and t >= self.gustStartValue)):
+                 #one time switch on gust
                 self.rStart = array([x,y])
-            return 0,0,0,0,0
-        else:
-            d = norm(array([x,y])-self.rStart)
-            if d < 2*self.widthGust:
-                vgust = 0.5*vGustPeak*(1-cos(pi*d/self.widthGust)) #can be positive or negative varying with sign of vGustPeak
-            else: 
-                vgust = 0
-            dStab = d - gl.ls
-            if 0 < dStab < 2*self.widthGust:
-                vgustStab = 0.5*vGustPeak*(1-cos(pi*dStab/self.widthGust)) 
-            else: 
-                vgustStab = 0                
-            return vgust*sin(gamma),vgust*cos(gamma),d,vgustStab*sin(gamma),vgustStab*cos(gamma)  
+                return 0,0,0,0,0
+            elif self.rStart is None:
+                return 0,0,0,0,0
+            else:
+                d = norm(array([x,y])-self.rStart)
+                if d < 2*self.widthGust:
+                    vgust = 0.5*vGustPeak*(1-cos(pi*d/self.widthGust)) #can be positive or negative varying with sign of vGustPeak
+                else: 
+                    vgust = 0
+                dStab = d - gl.ls
+                if 0 < dStab < 2*self.widthGust:
+                    vgustStab = 0.5*vGustPeak*(1-cos(pi*dStab/self.widthGust)) 
+                else: 
+                    vgustStab = 0                
+                return vgust*sin(gamma),vgust*cos(gamma),d,vgustStab*sin(gamma),vgustStab*cos(gamma)  
 
 class rope:
     def __init__(self,lo,thetaMax,breakAngle=None,breakTime=None):
@@ -809,13 +817,12 @@ class pilot:
         self.pilotStart = None
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
         self.humanT = .5 #sec
-        self.cOld = None #previous PID coefficiens
+        self.cOld = [0,0,0] #previous PID coefficiens
         self.recovDelay = recovDelay
         #algebraic function
         self.elevTarget = 0   
         #state variable
         self.elev = 0  # elevator deflection, differs from elevTarget by about humanT
-        
         
     def control(self,t,ti,gl,alphaStab):
         #all angles in routines are in radians (vs degrees on the main script input) 
@@ -833,6 +840,7 @@ class pilot:
             c = array([pp,pd,pint]) * gl.I
             if not self.tElevClimb is None:
                 self.cCurr = c
+#                 print 't',t, self.cCurr ,self.cOld,self.tElevClimb
                 cSmooth = self.cCurr - (self.cCurr - self.cOld) * exp(-(t-self.tElevClimb)/self.humanT)
             else:
                 cSmooth = c
@@ -957,7 +965,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
             gamma = 0
             gammaAir = 0
         #gusts -- only one 1-cos gust per simulation
-        vgx,vgy,d,vgxStab,vgyStab = ai.gustDynamic(vAir,gammaAir,gl.x,gl.y)       
+        vgx,vgy,d,vgxStab,vgyStab = ai.gustDynamic(t,vAir,gammaAir,gl.x,gl.y)       
         vecGustWing = array([vgx,-vgy])  #note minus sign for y, similar to above for vwy
         gammaAirWing = gammaAir; vAirWing = vAir
         if norm(vecGustWing) > 0:
@@ -1110,15 +1118,18 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 60 # end time for simulation
+tEnd = 10 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
 #headwind
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
-hGust = 20000   #m what height to turn gust on (set to very large to turn off gust)
-widthGust = 9.5  #m, halfwidth
+# hGust = 10000.01   #m what height to turn gust on (set to very large to turn off gust)
+# startGust = None
+startGust = '6 s'
+# startGust = '20 m'
+widthGust = 9  #m, halfwidth
 vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
 #updraft step function at a single time  
 vupdr = 0 
@@ -1167,7 +1178,7 @@ loopParams = [3] #Alpha
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','v']
-setpoint = [3,32, 20]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,43, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 # control = ['v','v']
@@ -1194,7 +1205,7 @@ for iloop,param in enumerate(loopParams):
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(theta0,ntime)
-    ai = air(vhead,vupdr,hupdr,vgustSM,hGust,widthGust,vGustPeak,gl)
+    ai = air(vhead,vupdr,hupdr,vgustSM,startGust,widthGust,vGustPeak,gl)
     rp = rope(lo,ropeThetaMax,ropeBreakAngle,ropeBreakTime) 
     wi = winch()
     tc = torqconv()
@@ -1208,7 +1219,7 @@ for iloop,param in enumerate(loopParams):
     
     ##### Advanced block for air start
     save = None
-#     save = [statefile, 7.6 ] # 2nd entry is time to save state
+#     save = [statefile, 6.2 ] # 2nd entry is time to save state
     if not save is None:     
         if os.path.exists(statefile): os.remove(statefile)
     # read initial state
@@ -1219,8 +1230,10 @@ for iloop,param in enumerate(loopParams):
         gl,rp,wi,tc,en,op,pl = readState(statefile,gl,rp,wi,tc,en,op,pl)
         #Change some of the initial conditions
         rp.T = targetT * gl.W
-#         gl.xD = 43/44.0*gl.xD; 
-#         gl.yD = 43/44.0*gl.yD;   
+#         v = 43
+#         gl.xD = v * cos(gl.theta); gl.yD = v* sin(gl.theta)
+#         gl.y = 1
+   
     ##### End advanced block for air start
     
     #initialize state vector to zero  
@@ -1488,10 +1501,10 @@ plts.i = 0 #restart color cycle
 #         ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
 
 #metric units
-if vGustPeak > 0 and ymax >  hGust:
-    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v,y,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
+if vGustPeak > 0 and not startGust is None:
+    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v,y,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
         [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height/10 (m), Angle (deg)',"Relative forces"],\
-        ['velocity','height/10','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
+        ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
 else:
     plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[v,y,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height/10 (m), Angle (deg)',"Relative forces"],\
@@ -1501,7 +1514,7 @@ else:
 if len(loopParams) > 1:
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
     plts.i = 0 #restart color cycle
-    plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+    plts.xyy(True,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec, %',"Relative forces,g's"],\
             ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs initial AoA (2nd Aoa 3.0)')
     #fewer results, for presentation
