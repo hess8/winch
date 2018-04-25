@@ -346,12 +346,12 @@ class glider:
         self.CLSalphas = 3.0  # CL of stab slope /rad 
         self.CLSdelelev = 1.8  # CL of stab slope /rad 
         self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
-        self.I = 600*650/400   #   Grob glider moment of inertia, kgm^2, scaled from PIK20E
-        self.ls = 4           # distance(m) between cg and stabilizer center        
+        self.I = 1780   #   Grob glider moment of inertia Iyy from xflr5
+        self.ls = 4.7           # distance(m) between cg and stabilizer center        
         self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
         self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
         self.rdelev =  self.SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection
-        self.maxElev = rad(30)   # (rad) maximum elevator deflection
+        self.maxElev = rad(20)   # (rad) maximum elevator deflection
 #         self.de = 0.025        #   drag constant (/m) for elevator moment
 
         self.Agear = 0.02        # drag area (m^2) of main gear
@@ -1118,7 +1118,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 10 # end time for simulation
+tEnd = 65 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
@@ -1126,8 +1126,8 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
 # hGust = 10000.01   #m what height to turn gust on (set to very large to turn off gust)
-# startGust = None
-startGust = '6 s'
+startGust = None
+# startGust = '6 s'
 # startGust = '20 m'
 widthGust = 9  #m, halfwidth
 vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
@@ -1141,15 +1141,15 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 #--- throttle and engine
 #loopParams = linspace(3,10,10) #Throttle ramp up time
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
-tRampUp = 2
+tRampUp = 2 # time to ramp throttle up
 tHold = 0.5
 targetT = 1.0
 dipT = 0.7
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-# throttleType = 'constT'
-throttleType = 'constTdip'
+throttleType = 'constT'
+# throttleType = 'constTdip'
 # throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
@@ -1158,7 +1158,7 @@ if 'dip' in throttleType: print 'dipT',dipT
 
 #--- rope
 # lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-lo = 2000                 # m initial rope length
+lo = 1000                 # m initial rope length
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
 ropeBreakTime = 100 #sec
@@ -1173,12 +1173,12 @@ recovDelay = 0.5
 # loopParams = linspace(0,6,30) #Alpha
 loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
-# control = ['alpha','alpha']  # Use '' for none
-# setpoint = [5 ,5 , 90]  # deg,speed, deg last one is climb angle to transition to final control
+control = ['alpha','alpha']  # Use '' for none
+setpoint = [5 ,5 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
-control = ['alpha','v']
-setpoint = [3,43, 20]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['alpha','v']
+# setpoint = [3,43, 20]  # deg,speed, deg last one is climb angle to transition to final control
 #control = ['','vgrad']
 #setpoint = [0,35,15]  # deg,speed, deg last one is trigger climb angle to gradually raise the target velocity to setpoint
 # control = ['v','v']
