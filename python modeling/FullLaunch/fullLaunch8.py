@@ -336,7 +336,6 @@ class glider:
 #        self.wStall = rad(.5)      #transition width for post-stall loss
         self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
         self.W = self.m*9.8          #   weight (N)
-        self.Q = 36             #   L/D
         self.n1 = 5.3           # max wing lift factor before danger of structural failure        
         self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
         self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
@@ -991,7 +990,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
         L = Lglider + LstabExtra 
         D = gl.W * (gl.CD[0] + gl.CD[1]*alpha +  gl.CD[2]*alpha**2 +  gl.CD[3]*alpha**3)/gl.Co*(vAirWing/gl.vb)**2 \
            + 0.5 * 1.22 * (gl.Agear * vAirWing**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
-        alphatorq = -gl.ls * gl.W * gl.ralpha *  alphaStab * (vAirStab/gl.vb)**2
+        alphatorq = -gl.ls * gl.W * gl.ralphas *  alphaStab * (vAirStab/gl.vb)**2
         [Fmain, Ftail, Ffric] = gl.gndForces(ti,rp)
         gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
         M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
@@ -1072,10 +1071,6 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
             gl.data[ti.i]['vgw']  = vgw
             gl.data[ti.i]['L']  = L
             gl.data[ti.i]['D']  = D
-            if D > 10:
-                gl.data[ti.i]['L/D']  = L/D
-            else:
-                gl.data[ti.i]['L/D']  = gl.Q
             gl.data[ti.i]['gndTorq']  = gndTorq
             gl.data[ti.i]['Malpha']  = alphatorq
             gl.data[ti.i]['Emech'] = 0.5*(gl.m * v**2 + gl.I * gl.thetaD**2) + gl.m  * g * gl.y  #only glider energy here 
@@ -1132,8 +1127,8 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
 # hGust = 10000.01   #m what height to turn gust on (set to very large to turn off gust)
-# startGust = None
-startGust = '5 s'
+startGust = None
+# startGust = '5 s'
 # startGust = '20 m'
 widthGust = 40  #m, halfwidth
 vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
