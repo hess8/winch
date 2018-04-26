@@ -24,7 +24,7 @@ import matplotlib
 # matplotlib.use("GTKAgg")
 import os,sys
 from numpy import pi,array,zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,where,\
-    amin,amax,argmin,argmax,exp,mean 
+    amin,amax,argmin,argmax,exp,mean,divide 
 from numpy.linalg import norm
 from numpy import degrees as deg
 from numpy import radians as rad
@@ -346,7 +346,7 @@ class glider:
         self.CLSalphas = 3.0  # CL of stab slope /rad 
         self.CLSdelelev = 1.8  # CL of stab slope /rad 
         self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
-        self.I = 1780   #   Grob glider moment of inertia Iyy from xflr5
+        self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
         self.ls = 4.7           # distance(m) between cg and stabilizer center        
         self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
         self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
@@ -355,7 +355,7 @@ class glider:
 #         self.de = 0.025        #   drag constant (/m) for elevator moment
 
         self.Agear = 0.02        # drag area (m^2) of main gear
-        self.CDCL = [1.0,0.0, 160, 1800, 5800,130000] #Drag parameters for polynomial about zero.  y = 128142x5 - 5854.9x4 - 1836.7x3 + 162.92x2 - 0.9667x + 0.9905
+        self.CD = [0.0147,0.0021,0.0003,0.000015] #Drag parameters for polynomial about zero. 
         self.deltar = 0.02  #ground contact force distance of action (m)
 #        self.deltar = 0.05  #ground contact force distance of action (m)
         self.d_m = 0.25  # distance main wheel to CG (m) 
@@ -529,7 +529,10 @@ class air:
         return ng
     
     def gustDynamic(self,t,vglider,gamma,x,y):
-        '''Apply gust perpendicular to glider velocity, in a 1-cos shape'''
+        '''Apply gust perpendicular to glider velocity, in a 1-cos shape.  However
+         it takes some distance above the ground for a vertical component of wind to develop.
+         If the glider y < widthGust, rather than applying the gust perpendicular to glider velocity it is more of a headwind
+         We change this linearly from 0 height to widthGust'''
         if self.startGust is None:
             return 0,0,0,0,0 
         else: 
@@ -549,8 +552,10 @@ class air:
                 if 0 < dStab < 2*self.widthGust:
                     vgustStab = 0.5*vGustPeak*(1-cos(pi*dStab/self.widthGust)) 
                 else: 
-                    vgustStab = 0                
-                return vgust*sin(gamma),vgust*cos(gamma),d,vgustStab*sin(gamma),vgustStab*cos(gamma)  
+                    vgustStab = 0  
+                thetaGust = gamma + pi * (1- 0.5*min(y/self.widthGust,1))  # 180 degrees when glider is on the ground          
+#                 print 'gust',-vgust*cos(thetaGust),vgust*sin(thetaGust)
+                return -vgust*cos(thetaGust),vgust*sin(thetaGust),d,-vgustStab*cos(thetaGust),vgustStab*sin(thetaGust)  
 
 class rope:
     def __init__(self,lo,thetaMax,breakAngle=None,breakTime=None):
@@ -570,13 +575,14 @@ class rope:
                                  #                 datasheet 3.5% average elongation at break,  
                                  #                 average breaking load of 2400 kg (5000 lbs)
         self.hystRate = 100     # hysteresis rate (1/sec) for dynamic stiffness. To turn this effect off, make this rate large, not small
-        self.a = 0.7             #  horizontal distance (m) of rope attachment in front of CG, for Grob
+        self.a = 0.7  
+        self.b = 0.3            #  vertical distance (m) of rope attachment below CG                     #  horizontal distance (m) of rope attachment in front of CG, for Grob
 #        print'b set equal to zero!'
 #        self.b = 0.0            #  vertical distance (m) of rope attachment below CG
 #        print 'b set equal to 0.4!'
 #        self.b = 0.5 
 
-        self.b = 0.3            #  vertical distance (m) of rope attachment below CG  
+        
         self.lo = lo
         print 'Rope length', lo 
         self.Twl = 8500           #Newtons strength of weak link (Brown)
@@ -974,7 +980,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
             gammaAirWing = arctan(vecAirWing[1]/vecAirWing[0])  # climb angle vs air with gust
         alpha = gl.theta - gammaAirWing # angle of attack for wing
         vecGustStab = array([vgxStab,-vgyStab])  #note minus sign for y, similar to above for vwy
-        gammaAirStab = gammaAir
+        gammaAirStab = gammaAir; vAirStab = vAir
         if norm(vecGustStab) > 0:
             vecAirStab = vecAir + vecGustStab
             vAirStab = norm(vecAirStab)  
@@ -983,9 +989,9 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
         #forces on glider  
         Lglider,LstabExtra =  gl.Lnl(vAirWing,alpha,alphaStab) #lift  
         L = Lglider + LstabExtra 
-        D = abs(L)/float(gl.Q)*(1 + gl.CDCL[2]*alpha**2+gl.CDCL[3]*abs(alpha)**3+gl.CDCL[4]*alpha**4+gl.CDCL[5]*abs(alpha)**5)\
+        D = gl.W * (gl.CD[0] + gl.CD[1]*alpha +  gl.CD[2]*alpha**2 +  gl.CD[3]*alpha**3)/gl.Co*(vAirWing/gl.vb)**2 \
            + 0.5 * 1.22 * (gl.Agear * vAirWing**2 + rp.Apara * vgw**2)  # + gl.de*pl.Me #drag  
-        alphatorq = -gl.ls * gl.W * gl.ralpha *  alphaStab * (v/gl.vb)**2
+        alphatorq = -gl.ls * gl.W * gl.ralpha *  alphaStab * (vAirStab/gl.vb)**2
         [Fmain, Ftail, Ffric] = gl.gndForces(ti,rp)
         gndTorq = Fmain*gl.d_m - Ftail*gl.d_t
         M = alphatorq + pl.Me + gndTorq  #torque of air and ground on glider
@@ -1059,7 +1065,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 #                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
             ngust = ai.gustLoad(gl,v) 
-            gl.data[ti.i]['smStall']  = (v/gl.vStall)**2 - Lglider/gl.W - ngust #safety margin vs stall (g's)
+            gl.data[ti.i]['smStall']  = (vAirWing/gl.vStall)**2 - Lglider/gl.W - ngust #safety margin vs stall (g's)
             gl.data[ti.i]['smStruct']  = gl.n1*sqrt((1-gl.mw*gl.yG/gl.m/gl.yL*(1-1/gl.n1))) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
 #             gl.data[ti.i]['smStruct']  = gl.n1*(1-0) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
 
@@ -1118,7 +1124,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 65 # end time for simulation
+tEnd = 8 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
@@ -1126,10 +1132,10 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
 # hGust = 10000.01   #m what height to turn gust on (set to very large to turn off gust)
-startGust = None
-# startGust = '6 s'
+# startGust = None
+startGust = '5 s'
 # startGust = '20 m'
-widthGust = 9  #m, halfwidth
+widthGust = 40  #m, halfwidth
 vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
 #updraft step function at a single time  
 vupdr = 0 
@@ -1455,8 +1461,8 @@ plts.xy(False,[t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),d
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 
 plts.i = 0 #restart color cycle
-plts.xyy(False,[tData,t,t,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,deg(alpha),deg(gamma),deg(thetaD)],\
-        [0,0,1,1,1,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg)','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
+plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,divide(L,D),deg(alpha),deg(gamma),deg(thetaD)],\
+        [0,0,1,1,1,0,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg), L/D','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'L/D','angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
 #Forces
 plts.xy(False,[tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
         'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
@@ -1474,7 +1480,7 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 #Specialty plots for presentations
 zoom = True
 if zoom:
-    t1 = 6 ; t2 = 8
+    t1 = 5 ; t2 = 8
     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)

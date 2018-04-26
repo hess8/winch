@@ -1160,7 +1160,11 @@ M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha=-l_{s}\frac{1}{2}\rho S_
 
 \end_inset
 
- where L is the glider lift, 
+
+\end_layout
+
+\begin_layout Standard
+where L is the glider lift, 
 \begin_inset Formula $l_{s}$
 \end_inset
 
@@ -1197,31 +1201,23 @@ The glider drag includes both induced and viscous, and is described by a
 \begin_inset Formula $\alpha$
 \end_inset
 
-:
+, which is referenced to the wing area
 \begin_inset Formula 
 \[
-D=\frac{1}{2}\rho SC_{D}v^{2}=\frac{C_{D}}{C_{L}}L
+D_{glider}=\frac{1}{2}\rho S_{w}C_{D}v^{2}=\frac{1}{2}W\frac{C_{D}}{C_{o}}\frac{v^{2}}{v_{b}^{2}}
 \]
 
 \end_inset
 
-The drag ratio 
-\begin_inset Formula $\frac{C_{D}}{C_{L}}$
-\end_inset
-
- is minimized at 
-\begin_inset Formula $\alpha=0$
-\end_inset
-
-.
- We fit the polar curve to a 5th order polynomial.
+The drag is fit to a third order polynomial to results for xflr5 model of
+ the glider.
  
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{C_{D}}{C_{L}}\approx\frac{1}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{5}\alpha^{5}\right)
+C_{D}=d_{0}+d_{1}\alpha+d_{2}\alpha^{2}+d_{3}\alpha^{3}
 \]
 
 \end_inset
@@ -1234,7 +1230,7 @@ The drag ratio
  
 \begin_inset Formula 
 \[
-D=\frac{L}{Q}\left(1+d_{2}\alpha^{2}+d_{3}\alpha^{3}+d_{4}\alpha^{4}+d_{5}\alpha^{5}\right)+D_{gear}+D_{para}
+D=D_{glider}+D_{gear}+D_{para}
 \]
 
 \end_inset
@@ -3629,7 +3625,7 @@ stabilator
 
 0.05/deg=3/rad (about half what is expected for a long wing).
  Then 
-\begin_inset Formula $r_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\approx0.11*3/rad/(0.49)\approx0.6/rad.$
+\begin_inset Formula $r_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\approx0.11*3/rad/(0.49)\approx0.6\text{/rad}.$
 \end_inset
 
  
@@ -3648,7 +3644,7 @@ From NACA report 278 the lift slope vs elevator deflection is
 
 0.032/deg = 1.8/rad.
  Then 
-\begin_inset Formula $r_{\delta e}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{o}}=0.11*1.8/rad$
+\begin_inset Formula $r_{\delta e}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\delta_{e}}}{C_{o}}=0.11*1.8\text{/rad}$
 \end_inset
 
 /0.49= 0.40/rad.
@@ -3660,7 +3656,7 @@ Elevator drag
 
 \begin_layout Standard
 This is negligible compared to the other drags.
- From NACA report 278, the drag is 
+ [From NACA report 278, the drag is 
 \begin_inset Formula $C_{Ds}\approx\frac{1}{10}C_{Ls}$
 \end_inset
 
@@ -3681,7 +3677,7 @@ This is negligible compared to the other drags.
 \end_inset
 
  m
-\begin_inset Formula $^{-1}$
+\begin_inset Formula $^{-1}]$
 \end_inset
 
 .

@@ -105,7 +105,7 @@ We define structural, stall rope break and post-break recovery safety margins
 (which in most cases appears to have been arbitrarily assigned).
  Using a new simulation, we plot the safety margins vs time in winch launches
  for little, optimal and aggressive elevator deflection.
- We simulate gusts dynamically, and find that xxxxxxxxxxx
+ We simulate gusts dynamically, and find that 
 \end_layout
 
 \begin_layout Section
@@ -1680,20 +1680,19 @@ v_{gust,peak}=15\frac{\text{m}}{\text{s}}\left(\frac{H}{110m}\right)^{\frac{1}{6
 
 \end_inset
 
-We will simulate the most and least sudden gusts.
- At 
+For example, at the two extremes: the narrowest gust is 
 \begin_inset Formula $H$
 \end_inset
 
-=9 m, 
+=9 m, with peak 
 \begin_inset Formula $v_{gust,peak}$
 \end_inset
 
-= 9.9 m/s; at 
+= 9.9 m/s; the broadest gust is 
 \begin_inset Formula $H$
 \end_inset
 
-=110m, 
+=110m, with peak
 \begin_inset Formula $v_{gust,peak}$
 \end_inset
 
@@ -1715,6 +1714,23 @@ We will simulate the most and least sudden gusts.
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Standard
+To apply these to winch launching one change is needed.
+ If the ground is flat, it takes some distance above the ground for a vertical
+ component of wind to develop.
+ So if the glider is close to the ground, rather than applying the gust
+ perpendicular to glider velocity we apply it at an angle less than 90 degrees,
+ making it more of a headwind.
+ Without a better model, we choose this angle to increase linearly from
+ zero, at the ground, to 90 degrees, at a height of H or above.
+ So the angle of the gust vs the horizontal is 
+\begin_inset Formula $\theta_{gust}=\gamma+90^{\circ}max\left(\frac{y}{H},1\right)$
+\end_inset
+
+.
+ 
 \end_layout
 
 \begin_layout Subsection
