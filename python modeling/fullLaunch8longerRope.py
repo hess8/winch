@@ -561,6 +561,7 @@ class rope:
         # Rope parameters  
         self.thetaMax =rad(thetaMax) # release angle of rope  
         self.breakAngle = breakAngle
+        self.breakTime = breakTime
         if not breakAngle is None:
             self.breakAngle = rad(breakAngle) # break angle of rope
         if not breakTime is None:
@@ -819,7 +820,7 @@ class pilot:
         self.setpoint = setpoint
         self.currCntrl = 0
         self.tSwitch = None
-        self.tElevClimb = None
+        self.tStartClimb = None
         self.pilotStart = None
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
         self.humanT = .5 #sec
@@ -839,15 +840,15 @@ class pilot:
 #                pp = -1; pd = -16; pint = -0
                 pp = -0; pd = -0; pint = -0
             else:
-                if self.tElevClimb is None:
-                    self.tElevClimb = t  #one-time switch
+                if self.tStartClimb is None:
+                    self.tStartClimb = t  #one-time switch to climb
 #                 pp = -800; pd = -800; pint = -100
-                pp = -256; pd = -64; pint = -64
+                pp = -200; pd = -64; pint = -64
             c = array([pp,pd,pint]) * gl.I
-            if not self.tElevClimb is None:
+            if not self.tStartClimb is None:
                 self.cCurr = c
 #                 print 't',t, self.cCurr ,self.cOld,self.tElevClimb
-                cSmooth = self.cCurr - (self.cCurr - self.cOld) * exp(-(t-self.tElevClimb)/self.humanT)
+                cSmooth = self.cCurr - (self.cCurr - self.cOld) * exp(-(t-self.tStartClimb)/self.humanT)
             else:
                 cSmooth = c
                 self.cOld = c
@@ -1168,10 +1169,9 @@ if 'dip' in throttleType: print 'dipT',dipT
 
 #--- rope
 # lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-# lo = 1000                 # m initial rope length
 lo = 2000                 # m initial rope length
 ropeThetaMax = 75 #release angle degrees
-ropeBreakAngle = 180 #rope angle for break
+ropeBreakAngle = 100 #rope angle for break
 ropeBreakTime = 100 #sec
 #ropeBreakAngle = None
 if ropeBreakAngle < ropeThetaMax: print 'Rope break simulation at angle {} deg'.format(ropeBreakAngle)  #
@@ -1181,13 +1181,13 @@ if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(rop
 # pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 recovDelay = 0.5
-loopParams = linspace(0.8,9,30) #Alpha
-# loopParams = [3] #Alpha
+
+
 #loopParams = [''] #Alpha
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [1 ,1 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [4 ,4 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1205,7 +1205,12 @@ setpoint = [1 ,1 , 30]  # deg,speed, deg last one is climb angle to transition t
 # setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
-
+loop = True
+if loop:
+    loopParams = linspace(0,9,30) #Alpha\
+else:
+    loopParams = [setpoint[0]]
+#
 data = zeros(len(loopParams),dtype = [('alphaLoop', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float),\
                                     ('smRopeMin', float),('smStallMin', float),('smStructMin', float),('smRecovMin', float)])
@@ -1548,7 +1553,7 @@ else:
         ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
     #with safety margins
     plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
         ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
 

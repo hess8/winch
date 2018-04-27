@@ -1204,13 +1204,13 @@ The glider drag includes both induced and viscous, and is described by a
 , which is referenced to the wing area
 \begin_inset Formula 
 \[
-D_{glider}=\frac{1}{2}\rho S_{w}C_{D}v^{2}=\frac{1}{2}W\frac{C_{D}}{C_{o}}\frac{v^{2}}{v_{b}^{2}}
+D_{glider}=\frac{1}{2}\rho S_{w}C_{D}v^{2}=W\frac{C_{D}}{C_{o}}\frac{v^{2}}{v_{b}^{2}}
 \]
 
 \end_inset
 
-The drag is fit to a third order polynomial to results for xflr5 model of
- the glider.
+The drag is fit to a third order polynomial to results for xflr5 model at
+ 30m/s/ of the glider.
  
 \end_layout
 

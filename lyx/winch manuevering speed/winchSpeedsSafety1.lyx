@@ -1680,7 +1680,7 @@ v_{gust,peak}=15\frac{\text{m}}{\text{s}}\left(\frac{H}{110m}\right)^{\frac{1}{6
 
 \end_inset
 
-For example, at the two extremes: the narrowest gust is 
+For example, the narrowest gust is 
 \begin_inset Formula $H$
 \end_inset
 
@@ -1692,7 +1692,7 @@ For example, at the two extremes: the narrowest gust is
 \begin_inset Formula $H$
 \end_inset
 
-=110m, with peak
+=110 m, with peak
 \begin_inset Formula $v_{gust,peak}$
 \end_inset
 
@@ -1721,15 +1721,34 @@ To apply these to winch launching one change is needed.
  If the ground is flat, it takes some distance above the ground for a vertical
  component of wind to develop.
  So if the glider is close to the ground, rather than applying the gust
- perpendicular to glider velocity we apply it at an angle less than 90 degrees,
- making it more of a headwind.
- Without a better model, we choose this angle to increase linearly from
- zero, at the ground, to 90 degrees, at a height of H or above.
- So the angle of the gust vs the horizontal is 
-\begin_inset Formula $\theta_{gust}=\gamma+90^{\circ}max\left(\frac{y}{H},1\right)$
+ perpendicular to the glider velocity it is more of a headwind.
+ We choose the angle of the gust vs the horizontal to be 
+\begin_inset Formula $\theta_{gust}=\gamma+90^{\circ}\left(2-min\left[\frac{y}{H},1\right]\right)$
 \end_inset
 
 .
+ So when the glider is on the ground, the gust is purely headwind (180
+\begin_inset Formula $^{\circ})$
+\end_inset
+
+.
+ When the glider is at a height 
+\begin_inset Formula $y=\frac{H}{2},$
+\end_inset
+
+ then 
+\begin_inset Formula $\theta_{gust}$
+\end_inset
+
+ is 45
+\begin_inset Formula $^{\circ}$
+\end_inset
+
+beyond perpendicular to the glider velocity; When 
+\begin_inset Formula $y=H$
+\end_inset
+
+ and above, the gust is perpendicular to the velocity.
  
 \end_layout
 
@@ -1739,8 +1758,8 @@ Pitching moment in gusts
 
 \begin_layout Standard
 With a narrow gust, the angle of attack at the elevator will be different
- than the angle of attack at the wing because a different gust speed is
- at the elevator:
+ than the angle of attack at the wing because a different gust velocity
+ is at the elevator:
 \begin_inset Formula 
 \[
 v_{gust,elev}=\frac{v_{gust,peak}}{2}\left(1+cos\frac{\pi(d-l_{s})}{H}\right).
