@@ -179,12 +179,12 @@ def smooth(data,time,N):
         
 class plots:
     def __init__(self,path):
-        self.i = 0 #counter for plots, so each variable has a different color
+        self.iColor = 0 #counter for plots, so each variable has a different color
         self.path = path
         self.linew = 3.0
-        self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', u'#8b8b8b',
+        self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', 
         u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'violet',
-        u'#CC79A7',  u'#0072B2', u'#30a2da',u'#009E73','peru','slateblue'] # u'#F0E442',u'#467821','slateblue'      u'#56B4E9',
+        u'#CC79A7',  u'#0072B2', u'#30a2da',u'#009E73','peru','slateblue',u'#8b8b8b',] # u'#F0E442',u'#467821','slateblue'      u'#56B4E9',
         return 
     
     def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
@@ -198,10 +198,10 @@ class plots:
         for iy,y in enumerate(ys):
             if len(xs[iy]) != len(y):
                 sys.exit('Stop: curve {} on plot "{}" has x with dimensions different from y.'.format(iy+1,titlestr))            
-            ax0.plot(xs[iy],y,color=self.colorsList[self.i],linewidth=self.linew,label=legendLabels[iy])
-            self.i += 1
-            if self.i > len(self.colorsList)-1:
-                self.i = 0
+            ax0.plot(xs[iy],y,color=self.colorsList[self.iColor],linewidth=self.linew,label=legendLabels[iy])
+            self.iColor += 1
+            if self.iColor > len(self.colorsList)-1:
+                self.iColor = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbl)
         ax0.grid(color='k', linestyle='--', linewidth=1)
@@ -232,7 +232,7 @@ class plots:
         ymaxs = [[],[]]; ymins = [[],[]]       
         for iy,y in enumerate(ys):
             lstyle = '-'
-            colorCurve = self.colorsList[self.i]
+            colorCurve = self.colorsList[self.iColor]
             if 'margin' in legendLabels[iy]:
                 lstyle = '--'
             if 'recovery' in legendLabels[iy].lower():
@@ -248,9 +248,9 @@ class plots:
                 ax1.plot(xs[iy],y,color=colorCurve,linewidth=self.linew,linestyle=lstyle,label=legendLabels[iy])
             ymaxs[yscalesMap[iy]].append(max(y))
             ymins[yscalesMap[iy]].append(min(y))
-            self.i += 1 
-            if self.i > len(self.colorsList)-1:
-                self.i = 0
+            self.iColor += 1 
+            if self.iColor > len(self.colorsList)-1:
+                self.iColor = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbls[0])
         ax0.grid(color='k', linestyle='--', linewidth=1)
@@ -425,7 +425,7 @@ class glider:
             if self.xD < 0.001 and rp.T < muS*self.W: #not moving             
                 Ffric = rp.T
             else: #static broken
-                Ffric =  muK*self.W
+                Ffric = muK*self.W
         else:
             Ffric = 0
         return [Fmain, Ftail,Ffric]
@@ -560,6 +560,8 @@ class rope:
     def __init__(self,lo,thetaMax,breakAngle=None,breakTime=None):
         # Rope parameters  
         self.thetaMax =rad(thetaMax) # release angle of rope  
+        self.breakAngle = breakAngle
+        self.breakTime = breakTime
         if not breakAngle is None:
             self.breakAngle = rad(breakAngle) # break angle of rope
         if not breakTime is None:
@@ -1179,13 +1181,13 @@ if ropeBreakTime < tEnd: print 'Rope break simulation at time {} sec'.format(rop
 # pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
 recovDelay = 0.5
-# loopParams = linspace(0,6,30) #Alpha
-loopParams = [3] #Alpha
+loopParams = linspace(0,9,30) #Alpha
+# loopParams = [3] #Alpha
 #loopParams = [''] #Alpha
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3 ,3 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [1 ,1 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1205,12 +1207,13 @@ setpoint = [3 ,3 , 30]  # deg,speed, deg last one is climb angle to transition t
 # Loop over parameters for study, optimization
 
 data = zeros(len(loopParams),dtype = [('alphaLoop', float),('xRoll', float),('tRoll', float),('yfinal', float),('vmax', float),('vDmax', float),('Sthmax',float),\
-                                    ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float)])
+                                    ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('Tavg', float),('yDfinal', float),('Lmax', float),\
+                                    ('smRopeMin', float),('smStallMin', float),('smStructMin', float),('smRecovMin', float)])
 yminLoop = 2 #if yfinal is less than this height, the run failed, so ignore this time point
 for iloop,param in enumerate(loopParams): 
     alphaLoop = param
     if len(loopParams)>1: 
-        setpoint = [param ,3.0 , 150]  # deg,speed, deg last one is climb angle to transition to final control
+        setpoint = [param,param,30]  # deg,speed, deg last one is climb angle to transition to final control
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
     theta0 = 6   # deg resting angle of glider on ground    
     # create the objects we need from classes
@@ -1394,6 +1397,15 @@ for iloop,param in enumerate(loopParams):
     alphaMax = max(alpha[iEndRollData:])
     Lmax = max(L)/gl.W
     gammaMax = max(gamma)
+    # sm minimum values taken when glider is 1m or more above the ground 
+    minHeight = 1 #m to be airborne
+    iminHeight = where(gl.y > minHeight)[0][0]
+    tminHeight = t[iminHeight]
+    iminHeightData = where(ti.data['t']>tminHeight)[0][0]
+    smRopeMin  = min(smRope[iminHeightData:])
+    smStallMin = min(smStall[iminHeightData:])
+    smStructMin = min(smStruct[iminHeightData:])
+    smRecovMin = min(smRecov[iminHeightData:])
     # Comments to user
 #    print 'Controls', control    
     print 'Throttle ramp up time (after slack is out)', tRampUp
@@ -1428,6 +1440,11 @@ for iloop,param in enumerate(loopParams):
         data[iloop]['alphaMax'] = deg(alphaMax)
         data[iloop]['gammaMax'] = deg(gammaMax)
         data[iloop]['thetaDmax'] = deg(thetaDmax)
+        data[iloop]['smRopeMin'] = smRopeMin
+        data[iloop]['smStallMin'] = smStallMin
+        data[iloop]['smStructMin'] = smStructMin
+        data[iloop]['smRecovMin'] = smRecovMin
+        
 # plot results for last one
 close('all')
 plts = plots(path)   
@@ -1466,9 +1483,9 @@ plts.xy(False,[x],[y],'x (m)','y (m)',[''],'Glider y vs x')
 plts.xy(False,[t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
         'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
 
-plts.i = 0 #restart color cycle
-plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,divide(L,D),deg(alpha),deg(gamma),deg(thetaD)],\
-        [0,0,1,1,1,0,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg), L/D','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'L/D','angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
+# plts.iColor = 0 #restart color cycle
+# plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,divide(L,D),deg(alpha),deg(gamma),deg(thetaD)],\
+#         [0,0,1,1,1,0,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg), L/D','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'L/D','angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
 #Forces
 plts.xy(False,[tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
         'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
@@ -1490,19 +1507,19 @@ if zoom:
     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
-    plts.i = 0 #restart color cycle
+    plts.iColor = 0 #restart color cycle
     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
             ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins',t1,t2)
-plts.i = 0 #restart color cycle
+plts.iColor = 0 #restart color cycle
 plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
         [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
-plts.i = 0 #restart color cycle
+plts.iColor = 0 #restart color cycle
 # plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
 #         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
 #         ['v','height/10','climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
-# Impreial units:
+# Imperial units:
 # if vGustPeak > 0 and ymax >  hGust:
 #     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305, 1.94*vGust*10],\
 #         [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
@@ -1513,26 +1530,44 @@ plts.i = 0 #restart color cycle
 #         ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
 
 #metric units
+plts.iColor = 0 #restart color cycle
 if vGustPeak > 0 and not startGust is None:
-    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v,y,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
-        [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
-else:
-    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[v,y,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov],\
+    #without safety margins
+    plts.xyy(False,[tData,t,tData,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W,vGust*10],\
+        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+        ['velocity x10','height','climb angle x10','L/W','T/W','vel gust x10'],'Winch launch')
+    #with safety margins
+    plts.iColor = 0 #restart color cycle
+    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
+        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins')
+else:
+    #without safety margins
+    plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
+        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+        ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
+    #with safety margins
+    plts.iColor = 0 #restart color cycle
+    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
 
 # plot loop results
 if len(loopParams) > 1:
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
-    plts.i = 0 #restart color cycle
-    plts.xyy(True,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+    plts.iColor = 0 #restart color cycle
+    plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec, %',"Relative forces,g's"],\
             ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs initial AoA (2nd Aoa 3.0)')
     #fewer results, for presentation
-    plts.i = 0 #restart color cycle
-    plts.xyy(True,[data['alphaLoop']]*6,[data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['Lmax'],data['gammaMax']],\
-            [0,0,0,0,1,0],'Angle of attack target (deg)',['Velocity (m/s), Angles (deg), Height (m), %',"Relative forces"],\
-            ['height/rope %','height diff',r'$v_{max}$', r'$L_{max}/W$', r'$\gamma_{max}$'],'Flight vs initial AoA (2nd Aoa 3.0)')
-
+    plts.iColor = 0 #restart color cycle
+    plts.xyy(False,[data['alphaLoop']]*4,[data['vmax'],heightLoss,data['gammaMax'],data['Lmax']],\
+            [0,0,0,1],'Angle of attack target (deg)',['Velocity (m/s), Angle (deg), Height (m), %',"Relative forces"],\
+            [r'$v_{max}$','height diff','climb angle max', r'$L_{max}/W$' ],'Flight vs target angle of attack')
+    #With safety margins for presentation
+    plts.iColor = 4 #match colors in previous plot
+    plts.xyy(True,[data['alphaLoop']]*4,[data['smStructMin'],data['smStallMin'],data['smRopeMin'],data['smRecovMin']],\
+            [1,1,1,0],'Target angle of attack (deg)',['Recovery height margin (m)',"Safety margin (g's)"],\
+            ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins vs target angle of attack')
+    
 print 'Done'
