@@ -1,0 +1,32 @@
+% Encoding: UTF-8
+
+@Article{Browning2007SafetyBGA,
+  author  = {Hugh Browning},
+  title   = {Boundaries of Safe Winch Launching},
+  journal = {Technical Soaring},
+  year    = {2007},
+  pages   = {100},
+  url     = {http://journals.sfu.ca/ts/index.php/ts/article/download/138/124},
+}
+
+@Article{Hills2007SafetyBGA,
+  author  = {Trevor Hills},
+  title   = {Safety Analysis of the Winch Launch},
+  journal = {Technical Soaring},
+  year    = {2007},
+  volume  = {31},
+  pages   = {106},
+  month   = Octobe,
+  url     = {http://journals.sfu.ca/ts/index.php/ts/article/view/139},
+}
+
+@PhdThesis{Santel2010Accidents,
+  author = {Santel, Christoph},
+  title  = {An investigation of glider winch launch accidents utilizing multipoint aerodynamics models in flight simulation},
+  school = {Institute of Flight System Dynamics, RWTH Aachen, Germany},
+  year   = {2010},
+  type   = {phdthesis},
+  url    = {http://publications.rwth-aachen.de/record/229982/files/3454.pdf},
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}

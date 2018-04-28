@@ -1157,11 +1157,11 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 #headwind
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
-startGust = None
-# startGust = '4 s'
+# startGust = None
+startGust = '15 s'
 # startGust = '20 m'
 widthGust = 9  #m, halfwidth
-vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
+vGustPeak = 30 * (widthGust/float(110))**(1/float(6))  #m/s
 #updraft step function at a single time  
 vupdr = 0 
 hupdr = 1e6 #m At what height to turn the updraft on for testing
@@ -1562,14 +1562,14 @@ plts.iColor = 0 #restart color cycle
 #metric units
 plts.iColor = 0 #restart color cycle
 if vGustPeak > 0 and not startGust is None:
-    #without safety margins
-    plts.xyy(False,[tData,t,tData,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W,vGust*10],\
+    #without safety margins  
+    plts.xyy(False,[tData,t,tData,tData,t,tData],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W,vGust*10],\
         [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
         ['velocity x10','height','climb angle x10','L/W','T/W','vel gust x10'],'Winch launch')
-    #with safety margins
+    #with safety margins (T/W is redundant)
     plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
-        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+    plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
+        [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
         ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins')
 else:
     #without safety margins
