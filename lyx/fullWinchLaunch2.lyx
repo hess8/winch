@@ -87,6 +87,7 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
+
 bret_hess@byu.edu
 \end_layout
 
@@ -955,7 +956,7 @@ L=\frac{1}{2}\rho\left[S_{w}(C_{ow}+C_{Lw,\alpha w}\alpha)+S_{s}(C_{os}+C_{Ls,\a
 
 \begin_layout Standard
 We find it useful to write quantities in terms of ratios that are likely
- to be common to many gliders, e.g.
+ to be common between gliders, e.g.
  a ratio of measurements rather than a measurement specific an glider.
 \end_layout
 
@@ -1038,7 +1039,7 @@ where
 \begin_layout Standard
 \begin_inset Formula 
 \[
-L=W\left(1+r_{\alpha}\alpha+r_{\alpha s}\left(\alpha_{s}-\alpha_{w}\right)\right)\left(\frac{v}{v_{b}}\right)^{2}
+\frac{L}{W}=\left(1+r_{\alpha}\alpha+r_{\alpha s}\left(\alpha_{s}-\alpha_{w}\right)\right)\left(\frac{v}{v_{b}}\right)^{2}
 \]
 
 \end_inset
@@ -1138,42 +1139,75 @@ reference "sec:Pilot-and-elevator"
 \noun default
 \color inherit
 .
- The glider is trimmed at 
-\begin_inset Formula $\alpha=0$
-\end_inset
+ The stabilizer produces lift 
+\end_layout
 
-, so 
-\begin_inset Formula $M(0,t)=0$
-\end_inset
-
- .
- The moment produced by the stabilizer when 
-\begin_inset Formula $\alpha$
-\end_inset
-
- is not zero is: 
+\begin_layout Standard
+=
 \begin_inset Formula 
 \[
-M_{s}=-l_{s}\frac{\partial L_{s}}{\partial\alpha}\alpha=-l_{s}\frac{1}{2}\rho S_{s}C_{Ls,\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}=-l_{s}\frac{1}{2}\rho S_{w}\frac{S_{s}}{S_{w}}C_{Ls,\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}=-l_{s}Wr_{\alpha s}\left(\frac{v}{v_{b}}\right)^{2}
+L_{s}=\frac{1}{2}\rho\left[S_{w}(C_{ow}+C_{Lw,\alpha w}\alpha)+S_{s}(C_{os}+C_{Ls,\alpha}\alpha_{S})\right]v^{2}
 \]
 
 \end_inset
 
+The moment produced by the stabilizer is: 
+\begin_inset Formula 
+\[
+M_{s}=l_{s}L_{s}=l_{s}\frac{1}{2}\rho S_{s}(C_{os}+C_{Ls,\alpha}\alpha_{S})v^{2}=l_{s}\frac{1}{2}\rho S_{w}\frac{S_{s}}{S_{w}}(C_{os}+C_{Ls,\alpha}\alpha_{S})\left(\frac{v}{v_{b}}\right)^{2}=l_{s}W\frac{S_{s}}{S_{w}}\frac{C_{os}+C_{Ls,\alpha}\alpha_{S}}{C_{ow}}\left(\frac{v}{v_{b}}\right)^{2}=l_{s}W\left(r_{swo}+r_{\alpha s}\alpha_{S}\right)\left(\frac{v}{v_{b}}\right)^{2}
+\]
 
-\end_layout
+\end_inset
 
-\begin_layout Standard
-where L is the glider lift, 
+where
 \begin_inset Formula $l_{s}$
 \end_inset
 
- is the distance between the CG and the center of the stabilizer lift.
+ is the distance between the CG and the center of the stabilizer lift, and
+ 
+\begin_inset Formula $r_{swo}=\frac{S_{s}}{S_{w}}\frac{C_{os}}{C_{ow}}$
+\end_inset
+
+.
+ Because of the downward tilt of the stabilizer 
+\begin_inset Formula $C_{os}$
+\end_inset
+
+ and 
+\begin_inset Formula $r_{swo}$
+\end_inset
+
+ are negative.
+ The moment produced by the wing depends on the position of the center of
+ pressure 
+\begin_inset Formula $x_{p}$
+\end_inset
+
+: 
+\begin_inset Formula 
+\[
+M_{w}=(x_{cg}-x_{cp}(\alpha))L
+\]
+
+\end_inset
+
+where the x's are measured aft from the leading edge.
+ 
+\begin_inset Formula $x_{p}$
+\end_inset
+
+ is calculated in xflr5 at 30 m/s and fit to a 4th order polynomial in alpha.
+ 
+\end_layout
+
+\begin_layout Standard
+So the total moment about the CG is 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-M=-l_{s}Wr_{\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}+M_{e}(t)
+M=(x_{cg}-x_{cp}(\alpha))L-l_{s}Wr_{\alpha s}\alpha\left(\frac{v}{v_{b}}\right)^{2}+M_{e}(t)
 \]
 
 \end_inset
@@ -1226,6 +1260,11 @@ C_{D}=d_{0}+d_{1}\alpha+d_{2}\alpha^{2}+d_{3}\alpha^{3}
 \end_inset
 
  in radians.
+ 
+\begin_inset Formula $C_{D}$
+\end_inset
+
+ changes slowly with v except near stall, so this is a good approximation.
  
 \begin_inset Formula 
 \[
@@ -3596,7 +3635,12 @@ Stabilizer and elevator pitch moments
 \end_layout
 
 \begin_layout Standard
-NACA report 278 the lift slope of the 
+From xflr5, 
+\begin_inset Formula $C_{os}$
+\end_inset
+
+= -0.052, including elevator tilt.
+ the lift slope of the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -3608,12 +3652,8 @@ stabilator
 \begin_inset Formula $\frac{\partial C_{Ls}}{\partial\alpha}=C_{Ls,\alpha}=$
 \end_inset
 
-0.05/deg=3/rad (about half what is expected for a long wing).
+0.069/deg=3.9/rad (about half what is expected for a long wing).
  Then 
-\begin_inset Formula $r_{\alpha s}=\frac{S_{s}}{S_{w}}\frac{C_{Ls,\alpha s}}{C_{o}}\approx0.11*3/rad/(0.49)\approx0.6\text{/rad}.$
-\end_inset
-
- 
 \end_layout
 
 \begin_layout Paragraph
