@@ -733,7 +733,7 @@ class operator:
                     pp = -.0; pd = -0; pint = -0                     
                 else: #all other states and conditions            
                     targetT = self.targetT
-                    pp = -8; pd = -16; pint = -16
+                    pp = -8; pd = -32; pint = -16
                     #overwrite during dip period:
                     if self.throttleType == 'constTdip' and gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
                         targetT = self.dipT
@@ -1133,7 +1133,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 40 # end time for simulation
+tEnd = 65 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
