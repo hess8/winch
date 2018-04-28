@@ -420,23 +420,28 @@ Glider wings are designed to withstand positive wing loads
 \begin_inset Formula $n_{1}g$
 \end_inset
 
-, where 
+, and negative loads of 
+\begin_inset Formula $n_{4}g,$
+\end_inset
+
+ where 
 \begin_inset Formula $n$
 \end_inset
 
  is a load factor.
- This must support the glider weight plus provide for turning acceleration
- and countering the rope tension.
- We ignore negative loads.
  Generally in gliders 
 \begin_inset Formula $n_{1}=5.3$
 \end_inset
 
  (utility) or 
-\begin_inset Formula $n_{1}=7.0$
+\begin_inset Formula $7.0$
 \end_inset
 
- (aerobatic).
+ (aerobatic), and 
+\begin_inset Formula $n_{4}=-2.65$
+\end_inset
+
+ (utility) or -5.0 (aerobatic).
  The stall speed is determined by the weight 
 \begin_inset Formula $W$
 \end_inset
@@ -1166,6 +1171,11 @@ accelerated
 \begin_inset Formula $L.$
 \end_inset
 
+ In severe gusts the glider can pitch down suddenly and steeply, and the
+ wing can stall with negative lift.
+ This stall however is a safety benefit as it helps limit the glider excursion
+ during the gust and helps avoid the negative load limit, so we ignore negative
+ lift in the stall safety margin.
  We can write rewrite 
 \begin_inset Formula $\overline{sm}_{stall}$
 \end_inset

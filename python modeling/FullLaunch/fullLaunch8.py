@@ -332,12 +332,16 @@ class glider:
         # parameters
         if name == 'GrobAstir':
             self.vb = 32              # (m/s)  speed of glider at best glide angle
-            self.alphaStall = rad(8.5)         #  stall angle vs glider zero
+            alphaVbestVsWing = rad(1.25) # deg
+            alphaStallVsWing = rad(9.0)
+            self.alphaStall = alphaStallVsWing - alphaVbestVsWing       #  stall angle vs glider zero
             self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
-    #        self.wStall = rad(.5)      #transition width for post-stall loss
+            alphaNegStallvsWing = rad(-10) #stall angle for negative lift
+            self.alphaNegStall = alphaNegStallvsWing - alphaVbestVsWing
             self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
             self.W = self.m*9.8          #   weight (N)
-            self.n1 = 5.3           # max wing lift factor before danger of structural failure        
+            self.n1 = 5.3           # max wing lift factor before danger of structural failure   
+            self.n4 = 2.65           # max negative wing lift factor before danger of structural failure         
             self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
             self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
     #         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
@@ -346,6 +350,7 @@ class glider:
             self.CLSalphas = 3.0  # CL of stab slope /rad 
             self.CLSdelelev = 1.8  # CL of stab slope /rad 
             self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
+            
             self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
             self.ls = 4.7           # distance(m) between cg and stabilizer center        
             self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
@@ -367,6 +372,7 @@ class glider:
             self.yL = 0.45
             
         elif name == 'ASW27':
+            sys.exit('stop; havent loaded parameters yet')
             self.vb = 32              # (m/s)  speed of glider at best glide angle
             self.alphaStall = rad(8.5)         #  stall angle vs glider zero
             self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
@@ -374,6 +380,7 @@ class glider:
             self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
             self.W = self.m*9.8          #   weight (N)
             self.n1 = 5.3           # max wing lift factor before danger of structural failure        
+            self.n4 = 2.65           # max negative wing lift factor before danger of structural failure    
             self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
             self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
     #         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
@@ -481,7 +488,9 @@ class glider:
         #final drop coefficient
         c = .6
         alphaTrans3 = rad(25)
-        if alpha < alphaTrans:
+        if alpha < self.alphaNegStall:
+            sys.exit('Stop.  Negative lift stall.  Lift not calculated at angle {} deg'.format(deg(alpha)))
+        elif self.alphaNegStall <alpha < alphaTrans:
             L = self.W * (1 + self.ralpha * alpha ) * (v/self.vb)**2
         elif alpha < self.alphaStall:
             L = (Lsteady + A * exp( -(abs((alpha- self.alphaStall))/w)**p2  ) ) * (v/self.vb)**2
@@ -1086,8 +1095,12 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 #                 print 't:{:8.3f} type:{:8s} x:{:8.3f} y:{:8.3f} ygnDelay:{:8.3f} sm:{:8.3f} v:{:8.3f} vball:{:8.3f} gam:{:8.3f} gamball:{:8.3f}  '.format(t,type,gl.x,gl.y,ygainDelay,sm,v,Vball,deg(gamma),deg(gammaBall))
                 if gl.y>0.3 or sm > 0: gl.data[ti.i]['smRecov']  = sm #gl.smRecov(v,L,alpha,gamma,pl)
             ngust = ai.gustLoad(gl,v) 
-            gl.data[ti.i]['smStall']  = (vAirWing/gl.vStall)**2 - Lglider/gl.W - ngust #safety margin vs stall (g's)
-            gl.data[ti.i]['smStruct']  = gl.n1*sqrt((1-gl.mw*gl.yG/gl.m/gl.yL*(1-1/gl.n1))) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
+            if Lglider > 0:
+                gl.data[ti.i]['smStall']  = (vAirWing/gl.vStall)**2 - Lglider/gl.W - ngust #safety margin vs stall (g's)
+                gl.data[ti.i]['smStruct']  = gl.n1*sqrt((1-gl.mw*gl.yG/gl.m/gl.yL*(1-1/gl.n1))) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)   
+            else:
+                gl.data[ti.i]['smStall']  = (vAirWing/gl.vStall)**2 - ngust #safety margin vs stall (g's).  No negative lift is considered.
+                gl.data[ti.i]['smStruct']  = gl.n4*sqrt((1-gl.mw*gl.yG/gl.m/gl.yL*(1-1/gl.n1))) - abs(Lglider)/gl.W - ngust #safety margin vs structural damage (g's)          
 #             gl.data[ti.i]['smStruct']  = gl.n1*(1-0) - Lglider/gl.W - ngust #safety margin vs structural damage (g's)            
 
             gl.data[ti.i]['vgw']  = vgw
@@ -1158,10 +1171,10 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
 # startGust = None
-startGust = '15 s'
+startGust = '30 s'
 # startGust = '20 m'
 widthGust = 9  #m, halfwidth
-vGustPeak = 30 * (widthGust/float(110))**(1/float(6))  #m/s
+vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
 #updraft step function at a single time  
 vupdr = 0 
 hupdr = 1e6 #m At what height to turn the updraft on for testing
@@ -1533,7 +1546,7 @@ plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'tim
 #Specialty plots for presentations
 zoom = True
 if zoom:
-    t1 = 5 ; t2 = 8
+    t1 = 13 ; t2 = 17
     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
             [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)

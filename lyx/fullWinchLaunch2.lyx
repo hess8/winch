@@ -87,7 +87,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -3425,19 +3424,10 @@ Stall while on rope
 \end_layout
 
 \begin_layout Itemize
-This simulation will need to wait until we add roll motion, unless we can
- do some analytic work!!!!
-\end_layout
-
-\begin_layout Itemize
 Need to model the glider during stall (mostly due to wind gusts):
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Loss of lift with nonlinear function 
-\end_layout
-
 \begin_layout Itemize
 pitching up of glider due to stall of wing while elevator has not stalled.
  May need this: See 
@@ -3463,11 +3453,6 @@ referenced to wing chord, in degrees.
 
 \begin_layout Itemize
 stalling of different wings separately to cause rolling?
-\end_layout
-
-\begin_layout Itemize
-But we should still have good control authority because of speed, so recovery
- should be fast 
 \end_layout
 
 \end_deeper
