@@ -328,42 +328,79 @@ class timeinfo:
     
 
 class glider:
-    def __init__(self,theta0,ntime):
+    def __init__(self,name,theta0,ntime):
         # parameters
-        self.vb = 32              # (m/s)  speed of glider at best glide angle
-        self.alphaStall = rad(8.5)         #  stall angle vs glider zero
-        self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
-#        self.wStall = rad(.5)      #transition width for post-stall loss
-        self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
-        self.W = self.m*9.8          #   weight (N)
-        self.n1 = 5.3           # max wing lift factor before danger of structural failure        
-        self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
-        self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
-#         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
-        self.CLmax = self.Co + self.CLalpha * self.alphaStall
-        self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
-        self.CLSalphas = 3.0  # CL of stab slope /rad 
-        self.CLSdelelev = 1.8  # CL of stab slope /rad 
-        self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
-        self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
-        self.ls = 4.7           # distance(m) between cg and stabilizer center        
-        self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
-        self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
-        self.rdelev =  self.SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection
-        self.maxElev = rad(20)   # (rad) maximum elevator deflection
-#         self.de = 0.025        #   drag constant (/m) for elevator moment
-
-        self.Agear = 0.02        # drag area (m^2) of main gear
-        self.CD = [0.0147,0.0021,0.0003,0.000015] #Drag parameters vs alpha IN DEGREES for polynomial about zero. y = 1E-05x3 + 0.0003x2 + 0.0021x + 0.0147
-
-        self.deltar = 0.02  #ground contact force distance of action (m)
-#        self.deltar = 0.05  #ground contact force distance of action (m)
-        self.d_m = 0.25  # distance main wheel to CG (m) 
-        self.d_t = 3.3  # distance tail wheel to CG (m) 
-        self.theta0 = rad(theta0)
-        self.mw = 0.3*self.m
-        self.yG = 0.35
-        self.yL = 0.45
+        if name == 'GrobAstir':
+            self.vb = 32              # (m/s)  speed of glider at best glide angle
+            self.alphaStall = rad(8.5)         #  stall angle vs glider zero
+            self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
+    #        self.wStall = rad(.5)      #transition width for post-stall loss
+            self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
+            self.W = self.m*9.8          #   weight (N)
+            self.n1 = 5.3           # max wing lift factor before danger of structural failure        
+            self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
+            self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
+    #         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
+            self.CLmax = self.Co + self.CLalpha * self.alphaStall
+            self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
+            self.CLSalphas = 3.0  # CL of stab slope /rad 
+            self.CLSdelelev = 1.8  # CL of stab slope /rad 
+            self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
+            self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
+            self.ls = 4.7           # distance(m) between cg and stabilizer center        
+            self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
+            self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
+            self.rdelev =  self.SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection
+            self.maxElev = rad(20)   # (rad) maximum elevator deflection
+    #         self.de = 0.025        #   drag constant (/m) for elevator moment
+    
+            self.Agear = 0.02        # drag area (m^2) of main gear
+            self.CD = [0.0147,0.0021,0.0003,0.000015] #Drag parameters vs alpha IN DEGREES for polynomial about zero. y = 1E-05x3 + 0.0003x2 + 0.0021x + 0.0147
+    
+            self.deltar = 0.02  #ground contact force distance of action (m)
+    #        self.deltar = 0.05  #ground contact force distance of action (m)
+            self.d_m = 0.25  # distance main wheel to CG (m) 
+            self.d_t = 3.3  # distance tail wheel to CG (m) 
+            self.theta0 = rad(theta0)
+            self.mw = 0.3*self.m
+            self.yG = 0.35
+            self.yL = 0.45
+            
+        elif name == 'ASW27':
+            self.vb = 32              # (m/s)  speed of glider at best glide angle
+            self.alphaStall = rad(8.5)         #  stall angle vs glider zero
+            self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
+    #        self.wStall = rad(.5)      #transition width for post-stall loss
+            self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
+            self.W = self.m*9.8          #   weight (N)
+            self.n1 = 5.3           # max wing lift factor before danger of structural failure        
+            self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
+            self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
+    #         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
+            self.CLmax = self.Co + self.CLalpha * self.alphaStall
+            self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
+            self.CLSalphas = 3.0  # CL of stab slope /rad 
+            self.CLSdelelev = 1.8  # CL of stab slope /rad 
+            self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
+            self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
+            self.ls = 4.7           # distance(m) between cg and stabilizer center        
+            self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
+            self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
+            self.rdelev =  self.SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection
+            self.maxElev = rad(20)   # (rad) maximum elevator deflection
+    #         self.de = 0.025        #   drag constant (/m) for elevator moment
+    
+            self.Agear = 0.02        # drag area (m^2) of main gear
+            self.CD = [0.0147,0.0021,0.0003,0.000015] #Drag parameters vs alpha IN DEGREES for polynomial about zero. y = 1E-05x3 + 0.0003x2 + 0.0021x + 0.0147
+    
+            self.deltar = 0.02  #ground contact force distance of action (m)
+    #        self.deltar = 0.05  #ground contact force distance of action (m)
+            self.d_m = 0.25  # distance main wheel to CG (m) 
+            self.d_t = 3.3  # distance tail wheel to CG (m) 
+            self.theta0 = rad(theta0)
+            self.mw = 0.3*self.m
+            self.yG = 0.35
+            self.yL = 0.45            
         
         #variables
 #        self.lastvy = 0
@@ -694,6 +731,8 @@ class operator:
         self.thrmax = thrmax        
         self.tRampUp = tRampUp
         self.angleMax = rad(80) #throttle goes to zero at this rope angle
+        self.thrSlack = 0.1
+        self.vRopeMax = 30 #m/s 60 kts #Dip period starts when a certain rope speed is reached
         #output
         self.SthTarget = 0
        
@@ -705,8 +744,8 @@ class operator:
         self.tSwitch = 0
         self.tSlackEnd = None
         self.tHold = tHold
-        self.thrSlack = 0.1
         self.vSlackEnd = 0  #m/s
+        self.vRopeReachedMax = False
         #data
 #         self.data = zeros(ntime,dtype = [('Sth', float)])
         #state variables
@@ -728,56 +767,27 @@ class operator:
                 if tSlackEnd  <= t <  tEndRamp and gl.state == 'onGnd': #onGnd so that we can test for sim that is airstart
                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)  
                     pp = -1; pd = -1; pint = -2
+                elif gl.state == 'onGnd':
+                    targetT = self.targetT
+                    pp = -8; pd = -32; pint = -16
                 elif gl.state == 'prepRelease':
                     targetT = 0
                     pp = -.0; pd = -0; pint = -0                     
                 else: #all other states and conditions            
                     targetT = self.targetT
-                    pp = -8; pd = -32; pint = -16
+                    pp = -16; pd = -32; pint = -32
                     #overwrite during dip period:
-                    if self.throttleType == 'constTdip' and gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
-                        targetT = self.dipT
-#                         pp = -1; pd = -1; pint = -0                    
+#                   #Dip period starts when a certain rope speed is reached
+                    if not self.vRopeReachedMax:
+                        if wi.v > 33:
+                            self.vRopeReachedMax = True #one-time switch 
+                    if self.vRopeReachedMax and gl.state in ['initClimb']:
+                        targetT = self.dipT                   
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
                 self.SthTarget = Tcontrol #if not controlling rate of change
-                
-#         if self.throttleType == 'constTdip':
-#             '''Dips to a lower tension during the initial climb'''
-#             if gl.xD < self.vSlackEnd: #take out slack
-#                 self.SthTarget = self.thrSlack
-#             else:
-#                 tSlackEnd = self.tSlackEnd                  
-#                 tEndRamp = tSlackEnd + tRampUp
-#                 if  tSlackEnd  <= t <  tEndRamp:
-#                     targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
-#                     pp = -16; pd = -16; pint = -32              
-#                 elif 
-#                 elif gl.state == 'prepRelease':
-#                     targetT = 0
-#                     pp = -.0; pd = -0; pint = -0                     
-#                 else:
-#                     targetT = self.targetT
-#                     if wi.v > 20:
-#                         pp = -16; pd = -16; pint = -32
-#                     else: #avoid throttle oscillations at lower rope speeds
-#                         pp = -4; pd = -4; pint = -8
-#                 c = array([pp,pd,pint]) 
-#                 time = ti.data['t']
-#                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
-#                 self.SthTarget = Tcontrol #if not controlling rate of change
-                
-                #limit the throttle change to 40%/second
-#                 if (t-ti.data[ti.i-1]['t'])>0:
-#                     rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-#                 else: rate = 0
-#                 if en.v > en.vLimit:
-#                     self.SthTarget = 0.9 * self.SthTarget
-#                 elif rate > 0:
-#                     self.SthTarget = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
-#                 else:
-#                     self.SthTarget = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+
         elif self.throttleType == 'preset':
             ### Ramp up, hold, then decrease to steady value
             tSlackEnd = self.tSlackEnd             
@@ -1131,6 +1141,13 @@ tfactor = 16; print 'Time step reduction by factor', tfactor
 # tfactor = 160; print 'Time step reduction by factor', tfactor
 dt = 0.05/float(tfactor) # nominal time step, sec
 
+#glider
+name = 'GrobAstir'
+if name == 'GrobAstir':
+    theta0 = 6   # deg resting angle of glider on ground 
+elif name == 'ASW27':
+    theta0 = 4   # deg resting angle of glider on ground 
+
 #--- time
 tStart = 0
 tEnd = 65 # end time for simulation
@@ -1140,7 +1157,6 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 #headwind
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
-# hGust = 10000.01   #m what height to turn gust on (set to very large to turn off gust)
 startGust = None
 # startGust = '4 s'
 # startGust = '20 m'
@@ -1158,13 +1174,13 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 # loopParams = [2] #If you only want to run one value #Throttle ramp up time
 tRampUp = 2 # time to ramp throttle up
 tHold = 0.5
-targetT = 1.0
-dipT = 0.7
+targetT = 1.2
+dipT = 0.5
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-throttleType = 'constT'
-# throttleType = 'constTdip'
+# throttleType = 'constT'
+throttleType = 'constTdip'
 # throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
@@ -1191,7 +1207,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3 ,3 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [4,4 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','Vd']  # Use '' for none
 # setpoint = [3 ,0 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
@@ -1229,11 +1245,11 @@ for iloop,param in enumerate(loopParams):
     if len(loopParams)>1: 
         setpoint = [param,param,30]  # deg,speed, deg last one is climb angle to transition to final control
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
-    theta0 = 6   # deg resting angle of glider on ground    
+   
     # create the objects we need from classes
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
-    gl = glider(theta0,ntime)
+    gl = glider(name,theta0,ntime)
     ai = air(vhead,vupdr,hupdr,vgustSM,startGust,widthGust,vGustPeak,gl)
     rp = rope(lo,ropeThetaMax,ropeBreakAngle,ropeBreakTime) 
     wi = winch()
@@ -1568,14 +1584,14 @@ else:
 
 # plot loop results
 if loop:
-    heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
+    heightDiff = data['yfinal'] - min(data['yfinal'])#vs minimum in loop
     plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
+    plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightDiff,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec, %',"Relative forces,g's"],\
             ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs initial AoA (2nd Aoa 3.0)')
     #fewer results, for presentation
     plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[data['alphaLoop']]*4,[data['vmax'],heightLoss,data['gammaMax'],data['Lmax']],\
+    plts.xyy(False,[data['alphaLoop']]*4,[data['vmax'],heightDiff,data['gammaMax'],data['Lmax']],\
             [0,0,0,1],'Angle of attack target (deg)',['Velocity (m/s), Angle (deg), Height (m), %',"Relative forces"],\
             [r'$v_{max}$','height diff','climb angle max', r'$L_{max}/W$' ],'Flight vs target angle of attack')
     #With safety margins for presentation

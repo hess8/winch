@@ -719,66 +719,33 @@ class operator:
 #        maxrate = 1000 #basically no limit. 
         if self.tSlackEnd is None and gl.xD > self.vSlackEnd:  #one-time event
             self.tSlackEnd = t
-        if self.throttleType == 'constT':
+        if 'constT' in self.throttleType:
             tSlackEnd = self.tSlackEnd              
             tEndRamp = tSlackEnd + tRampUp
             if gl.xD < self.vSlackEnd: #take out slack
                 self.SthTarget = self.thrSlack
             else:
-                if  tSlackEnd  <= t <  tEndRamp and gl.state == 'onGnd': #onGnd so that we can test for sim that is airstart
-                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
-                    pp = -16; pd = -16; pint = -32              
+                if tSlackEnd  <= t <  tEndRamp and gl.state == 'onGnd': #onGnd so that we can test for sim that is airstart
+                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)  
+                    pp = -1; pd = -1; pint = -2
+                elif gl.state == 'onGnd':
+                    targetT = self.targetT
+                    pp = -8; pd = -32; pint = -16
                 elif gl.state == 'prepRelease':
                     targetT = 0
                     pp = -.0; pd = -0; pint = -0                     
-                else:
+                else: #all other states and conditions            
                     targetT = self.targetT
-                    if wi.v > 20:
-                        pp = -16; pd = -16; pint = -32
-                    else: #avoid throttle oscillations at lower rope speeds
-                        pp = -8; pd = -8; pint = -16
+                    pp = -16; pd = -32; pint = -32
+                    #overwrite during dip period:
+                    if self.throttleType == 'constTdip' and gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
+                        targetT = self.dipT
+#                         pp = -1; pd = -1; pint = -0                    
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
                 self.SthTarget = Tcontrol #if not controlling rate of change
-                
-        if self.throttleType == 'constTdip':
-            '''Dips to a lower tension during the initial climb'''
-            if gl.xD < self.vSlackEnd: #take out slack
-                self.SthTarget = self.thrSlack
-            else:
-                tSlackEnd = self.tSlackEnd                  
-                tEndRamp = tSlackEnd + tRampUp
-                if  tSlackEnd  <= t <  tEndRamp:
-                    targetT =  self.targetT * (t - self.tSlackEnd)/float(tRampUp)   
-                    pp = -16; pd = -16; pint = -32              
-                elif gl.state in ['preClimb','initClimb'] and gl.data[ti.i]['v']>20:
-                    targetT = self.dipT
-                    pp = -4; pd = -4; pint = -8
-                elif gl.state == 'prepRelease':
-                    targetT = 0
-                    pp = -.0; pd = -0; pint = -0                     
-                else:
-                    targetT = self.targetT
-                    if wi.v > 20:
-                        pp = -16; pd = -16; pint = -32
-                    else: #avoid throttle oscillations at lower rope speeds
-                        pp = -4; pd = -4; pint = -8
-                c = array([pp,pd,pint]) 
-                time = ti.data['t']
-                Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
-                self.SthTarget = Tcontrol #if not controlling rate of change
-                
-                #limit the throttle change to 40%/second
-#                 if (t-ti.data[ti.i-1]['t'])>0:
-#                     rate = (Tcontrol - self.data[ti.i]['Sth'])/(t-ti.data[ti.i-1]['t'])
-#                 else: rate = 0
-#                 if en.v > en.vLimit:
-#                     self.SthTarget = 0.9 * self.SthTarget
-#                 elif rate > 0:
-#                     self.SthTarget = self.data[ti.i]['Sth'] + min(maxrate,rate) * (t-ti.data[ti.i-1]['t'])
-#                 else:
-#                     self.SthTarget = self.data[ti.i]['Sth'] + max(-maxrate,rate) * (t-ti.data[ti.i-1]['t'])
+
         elif self.throttleType == 'preset':
             ### Ramp up, hold, then decrease to steady value
             tSlackEnd = self.tSlackEnd             
@@ -823,7 +790,7 @@ class pilot:
         self.tStartClimb = None
         self.pilotStart = None
         self.data = zeros(ntime,dtype = [('err', float),('Me', float),('elev',float)])
-        self.humanT = .5 #sec
+        self.humanT = 1.0 #sec
         self.cOld = [0,0,0] #previous PID coefficiens
         self.recovDelay = recovDelay
         #algebraic function
@@ -842,12 +809,17 @@ class pilot:
             else:
                 if self.tStartClimb is None:
                     self.tStartClimb = t  #one-time switch to climb
-#                 pp = -800; pd = -800; pint = -100
-                pp = -200; pd = -64; pint = -64
+                if gl.state == 'preClimb':
+                    pp = -0; pd = -0; pint = -0
+                elif gl.state == 'initClimb':
+                    pp = -512; pd = -1024; pint = -512
+                elif gl.state == 'mainClimb': 
+                    pp = -1024; pd = -512; pint = -1024
+                elif gl.state == 'prepRelease':
+                    pp = 0; pd = 0; pint = 0 
             c = array([pp,pd,pint]) * gl.I
             if not self.tStartClimb is None:
                 self.cCurr = c
-#                 print 't',t, self.cCurr ,self.cOld,self.tElevClimb
                 cSmooth = self.cCurr - (self.cCurr - self.cOld) * exp(-(t-self.tStartClimb)/self.humanT)
             else:
                 cSmooth = c
@@ -857,7 +829,7 @@ class pilot:
 
         def vDControl(t,time,setpoint,ti,Nint):
             '''Only derivative control, for use with another control'''
-            pp =  0; pd = 32; pint =  0   
+            pp =  0; pd = 256; pint =  0 
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -910,14 +882,14 @@ class pilot:
         ctype = self.ctrltype[self.currCntrl]
         setpoint = self.setpoint[self.currCntrl]
         # determine the moment demanded by the control            
-        if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
+        if ctype == 'vD': # speed derivative control only (damps phugoid) 
             self.MeTarget = vDControl(t,time,setpoint,ti,Nint)
         elif ctype == 'v': #target v with setpoint'
             self.MeTarget = vControl(t,time,setpoint,ti,Nint)
         elif ctype == 'alpha': # control AoA  
             self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
         elif ctype == 'alphaVd': # control AoA  
-            self.MeTarget =  0.1*alphaControl(t,time,rad(setpoint),ti,Nint)
+            self.MeTarget =  0.5*alphaControl(t,time,rad(setpoint),ti,Nint)
             self.MeTarget += vDControl(t,time,0,ti,Nint)
 #             self.MeTarget = vDControl(t,time,0,ti,Nint)
         # implement
@@ -1136,7 +1108,6 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 #headwind
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
-# hGust = 10000.01   #m what height to turn gust on (set to very large to turn off gust)
 startGust = None
 # startGust = '4 s'
 # startGust = '20 m'
@@ -1187,7 +1158,12 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [4 ,4 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [4,4 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['alpha','Vd']  # Use '' for none
+# setpoint = [3 ,0 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+
+# control = ['alpha','v']  # Use '' for none
+# setpoint = [3 ,43 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1553,12 +1529,12 @@ else:
         ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
     #with safety margins
     plts.iColor = 0 #restart color cycle
-    plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+    plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
         ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
 
 # plot loop results
-if len(loopParams) > 1:
+if loop:
     heightLoss = data['yfinal'] - max(data['yfinal'])#vs maximum in loop
     plts.iColor = 0 #restart color cycle
     plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
