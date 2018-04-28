@@ -345,29 +345,27 @@ class glider:
             self.W = self.m*9.8          #   weight (N)
             self.n1 = 5.3           # max wing lift factor before danger of structural failure   
             self.n4 = 2.65           # max negative wing lift factor before danger of structural failure         
-            self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
+            self.Co = 0.521             #   Lift coefficient {} of wing at zero glider AoA
+            
             self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
     #         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
             self.CLmax = self.Co + self.CLalpha * self.alphaStall
             self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
             self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
             #stabilizer
-            self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
+            SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
             self.Cos = -0.052  # stabilizer lift at best glide alpha, tilt already included
             self.CLSalphas = 3.9  # CL of stab slope /rad from xflr directly
             self.CLSdelelev = 1.8  # CL of stab slope /rad 
             self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
             self.ls = 4.7           # distance(m) between cg and stabilizer center  
-            self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
-            self.rsw0 = self.SsSw * self.Cos/self.Co
-            self.rdelev =  self.SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection
-            
+            self.ralphas = SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
+            self.rsw0 = SsSw * self.Cos/self.Co
+            self.rdelev =  SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection           
             self.maxElev = rad(20)   # (rad) maximum elevator deflection
-    #         self.de = 0.025        #   drag constant (/m) for elevator moment
-    
+            #other
             self.Agear = 0.02        # drag area (m^2) of main gear
             self.CD = [0.0147,0.0021,0.0003,0.000015] #Drag parameters vs alpha IN DEGREES for polynomial about zero. y = 1E-05x3 + 0.0003x2 + 0.0021x + 0.0147
-    
             self.deltar = 0.02  #ground contact force distance of action (m)
     #        self.deltar = 0.05  #ground contact force distance of action (m)
             self.d_m = 0.25  # distance main wheel to CG (m) 
@@ -379,41 +377,7 @@ class glider:
             
         elif name == 'ASW27':
             sys.exit('stop; havent loaded parameters yet')
-            self.vb = 32              # (m/s)  speed of glider at best glide angle
-            self.alphaStall = rad(8.5)         #  stall angle vs glider zero
-            self.stallLoss = 0.25     # loss of lift (fraction) post stall, see https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf
-    #        self.wStall = rad(.5)      #transition width for post-stall loss
-            self.m = 650             #650 kg: max load # 600 kg: Grob, 2 pilots vs 400 for PIK20
-            self.W = self.m*9.8          #   weight (N)
-            self.n1 = 5.3           # max wing lift factor before danger of structural failure        
-            self.n4 = 2.65           # max negative wing lift factor before danger of structural failure    
-            self.Co = 0.49             #   Lift coefficient {} at zero glider AoA
-            self.CLalpha = 5.2    # CL slope /rad: A little less than the airfoil's 2 pi because part of the lift is from the elevator.      
-    #         self.Lalpha = self.CLalpha*self.W/self.Co #from xflr5.  
-            self.CLmax = self.Co + self.CLalpha * self.alphaStall
-            self.SsSw = 0.11         # ratio of stabilizer area to wing area (Grob)
-            self.CLSalphas = 3.0  # CL of stab slope /rad 
-            self.CLSdelelev = 1.8  # CL of stab slope /rad 
-            self.vStall =  self.vb*sqrt(self.Co/self.CLmax)   # stall speed fully loaded (m/s)
-            self.I = 1780   #  kg m^2 Grob glider moment of inertia Iyy from xflr5
-            self.ls = 4.7           # distance(m) between cg and stabilizer center        
-            self.ralpha =  self.CLalpha/self.Co    # (1/rad)  * wing lift slope/Co 
-            self.ralphas = self.SsSw * self.CLSalphas/self.Co   #   (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from angle of attack. 
-            self.rdelev =  self.SsSw * self.CLSdelelev/self.Co    # (1/rad) ratio of areas * stab lift slope/Co for air-glider pitch moment from elevator deflection
-            self.maxElev = rad(20)   # (rad) maximum elevator deflection
-    #         self.de = 0.025        #   drag constant (/m) for elevator moment
-    
-            self.Agear = 0.02        # drag area (m^2) of main gear
-            self.CD = [0.0147,0.0021,0.0003,0.000015] #Drag parameters vs alpha IN DEGREES for polynomial about zero. y = 1E-05x3 + 0.0003x2 + 0.0021x + 0.0147
-    
-            self.deltar = 0.02  #ground contact force distance of action (m)
-    #        self.deltar = 0.05  #ground contact force distance of action (m)
-            self.d_m = 0.25  # distance main wheel to CG (m) 
-            self.d_t = 3.3  # distance tail wheel to CG (m) 
-            self.theta0 = rad(theta0)
-            self.mw = 0.3*self.m
-            self.yG = 0.35
-            self.yL = 0.45            
+          
         
         #variables
 #        self.lastvy = 0
