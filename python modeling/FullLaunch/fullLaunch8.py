@@ -841,12 +841,17 @@ class pilot:
             else:
                 if self.tStartClimb is None:
                     self.tStartClimb = t  #one-time switch to climb
-#                 pp = -800; pd = -800; pint = -100
-                pp = -200; pd = -64; pint = -64
+                if gl.state == 'preClimb':
+                    pp = -0; pd = -0; pint = -0
+                elif gl.state == 'initClimb':
+                    pp = -512; pd = -1024; pint = -512
+                elif gl.state == 'mainClimb': 
+                    pp = -1024; pd = -512; pint = -1024
+                elif gl.state == 'prepRelease':
+                    pp = 0; pd = 0; pint = 0 
             c = array([pp,pd,pint]) * gl.I
             if not self.tStartClimb is None:
                 self.cCurr = c
-#                 print 't',t, self.cCurr ,self.cOld,self.tElevClimb
                 cSmooth = self.cCurr - (self.cCurr - self.cOld) * exp(-(t-self.tStartClimb)/self.humanT)
             else:
                 cSmooth = c
@@ -856,7 +861,7 @@ class pilot:
 
         def vDControl(t,time,setpoint,ti,Nint):
             '''Only derivative control, for use with another control'''
-            pp =  0; pd = 32; pint =  0   
+            pp =  0; pd = 256; pint =  0 
             c = array([pp,pd,pint])* gl.I/gl.vb
             varr = gl.data['v']
             return pid(varr,time,setpoint,c,ti.i,Nint)
@@ -909,14 +914,14 @@ class pilot:
         ctype = self.ctrltype[self.currCntrl]
         setpoint = self.setpoint[self.currCntrl]
         # determine the moment demanded by the control            
-        if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
+        if ctype == 'vD': # speed derivative control only (damps phugoid) 
             self.MeTarget = vDControl(t,time,setpoint,ti,Nint)
         elif ctype == 'v': #target v with setpoint'
             self.MeTarget = vControl(t,time,setpoint,ti,Nint)
         elif ctype == 'alpha': # control AoA  
             self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
         elif ctype == 'alphaVd': # control AoA  
-            self.MeTarget =  0.1*alphaControl(t,time,rad(setpoint),ti,Nint)
+            self.MeTarget =  0.5*alphaControl(t,time,rad(setpoint),ti,Nint)
             self.MeTarget += vDControl(t,time,0,ti,Nint)
 #             self.MeTarget = vDControl(t,time,0,ti,Nint)
         # implement
@@ -1128,7 +1133,7 @@ dt = 0.05/float(tfactor) # nominal time step, sec
 
 #--- time
 tStart = 0
-tEnd = 20 # end time for simulation
+tEnd = 40 # end time for simulation
 ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data points saved
 
 #--- air
@@ -1186,7 +1191,12 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [4 ,4 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3 ,3 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+# control = ['alpha','Vd']  # Use '' for none
+# setpoint = [3 ,0 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+
+# control = ['alpha','v']  # Use '' for none
+# setpoint = [3 ,43 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
 #control = ['thetaD','v']  # Use '' for none
 # setpoint = [5 ,40 , 18]  # deg,speed, deg last one is climb angle to transition to final control
