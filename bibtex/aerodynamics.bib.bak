@@ -1,11 +1,25 @@
 % Encoding: UTF-8
 
-@Article{,
+@Article{2013PetrilliNASApostStall,
   author  = {Justin Petrilli, Ryan Paul,Ashok Gopalarathnam, and Neal T. Frink},
   title   = {A CFD Database for Airfoils and Wings at Post-Stall Angles of Attack},
   journal = {NASA Archives},
   year    = {2013},
   url     = {https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140000500.pdf},
+}
+
+@Article{MITTAL20022207,
+  author   = {Sanjay Mittal and Priyank Saxena},
+  title    = {Hysteresis in flow past a NACA 0012 airfoil},
+  journal  = {Computer Methods in Applied Mechanics and Engineering},
+  year     = {2002},
+  volume   = {191},
+  number   = {19},
+  pages    = {2207 - 2217},
+  issn     = {0045-7825},
+  doi      = {https://doi.org/10.1016/S0045-7825(01)00382-6},
+  keywords = {Turbulent flow, Stall, Airfoil, Hysteresis, Finite elements},
+  url      = {http://www.sciencedirect.com/science/article/pii/S0045782501003826},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

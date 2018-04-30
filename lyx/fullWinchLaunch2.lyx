@@ -3454,43 +3454,6 @@ and each is zero when the wheel has risen more than
 \end_layout
 
 \begin_layout Subsection
-Stall while on rope
-\end_layout
-
-\begin_layout Itemize
-Need to model the glider during stall (mostly due to wind gusts):
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-pitching up of glider due to stall of wing while elevator has not stalled.
- May need this: See 
-\begin_inset Quotes eld
-\end_inset
-
-Grob TwinAstir winch launching parameters, gust loads
-\begin_inset Quotes erd
-\end_inset
-
-.
- Fit to center of pressure (using excel) gives x_centerofPressure: 
-\begin_inset Formula $y=6E-05\alpha^{4}-0.0015\alpha^{3}+0.0131\alpha^{2}-0.0656\alpha+0.5023$
-\end_inset
-
-, for 
-\begin_inset Formula $\alpha$
-\end_inset
-
-referenced to wing chord, in degrees.
- 
-\end_layout
-
-\begin_layout Itemize
-stalling of different wings separately to cause rolling?
-\end_layout
-
-\end_deeper
-\begin_layout Subsection
 Parameters 
 \end_layout
 

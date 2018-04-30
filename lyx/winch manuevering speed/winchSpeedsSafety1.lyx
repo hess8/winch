@@ -1115,8 +1115,16 @@ Safety margins in winch launching
 \begin_layout Standard
 There are three safety margins that could apply to all phases of winch launching
  .
- To give them similar form, we write them in terms of load factors (gas).
- First a 
+ To give them similar form, we write them in terms of load factors (g's).
+ 
+\end_layout
+
+\begin_layout Subsection
+Structural safety margin
+\end_layout
+
+\begin_layout Standard
+First a 
 \emph on
 structural
 \emph default
@@ -1129,6 +1137,14 @@ structural
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Subsection
+Stall safety margin
+\end_layout
+
+\begin_layout Standard
 Next the stall safety margin shows how many g's of wing loading we are away
  from stalling the wing at a certain speed.
  
@@ -1191,6 +1207,14 @@ accelerated
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Subsection
+Rope break safety margin
+\end_layout
+
+\begin_layout Standard
 Third, the rope break margin, which shows how close the rope is to breaking,
  is:
 \end_layout
@@ -1778,6 +1802,30 @@ v_{gust,elev}=\frac{v_{gust,peak}}{2}\left(1+cos\frac{\pi(d-l_{s})}{H}\right).
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Results of gust simulations
+\end_layout
+
+\begin_layout Standard
+For Reynolds number of about 1x10
+\begin_inset Formula $^{6}$
+\end_inset
+
+, which is typical in sailplanes, experiments and computation show
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2002_hysteresis_MitalTheoryExpt"
+
+\end_inset
+
+ that the hysteresis in stall is only about 2 degrees.
+ So unlike a stall due to slow airspeed, the lift is restored after stall
+ during a sudden gust because a low angle of attack returns without pilot
+ action, either because the gust ends quickly or because the horizontal
+ stabilier reorients the glider.
+ 
 \end_layout
 
 \begin_layout Section
@@ -3051,28 +3099,6 @@ reference "eq: recovery SM without dive"
 Appendix C: Time delays before start of recovery
 \end_layout
 
-\begin_layout Subsubsection
-Stall recovery
-\end_layout
-
-\begin_layout Standard
-After a stall we must apply downward elevator quickly so that the glider
- points downward to gain speed.
- If the wing loses lift due to a stall the horizontal stabilizer is usually
- still producing negative lift and that will cause the glider to pitch up
- further.
- The air over the elevator slows and if we wait too long to use the elevator,
- we lose elevator authority.
- We could continue to wait until the glider is falling (vertical velocity
- is negative)...the horizontal stabilizer will eventually orient the glider
- along our velocity vector but we might strike the ground or go into a spin
- first
-\end_layout
-
-\begin_layout Subsubsection
-Rope break recovery
-\end_layout
-
 \begin_layout Standard
 There will always be some 
 \begin_inset Formula $t_{delay}$
@@ -3505,7 +3531,7 @@ key "key-4"
 
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,D:/Winch launch physics/winchrep/bibtex/gustDistribModels,D:/Winch launch physics/winchrep/bibtex/georgeMoore"
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,D:/Winch launch physics/winchrep/bibtex/gustDistribModels,D:/Winch launch physics/winchrep/bibtex/georgeMoore,D:/Winch launch physics/winchrep/bibtex/aerodynamics"
 options "plain"
 
 \end_inset
