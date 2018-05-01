@@ -1159,7 +1159,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 #--- throttle and engine
 tRampUp = 2 # time to ramp throttle up
 tHold = 0.5
-targetT = 0.5
+targetT = 1.0
 dipT = 0.5
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
@@ -1191,7 +1191,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [4,4,30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','Vd']  # Use '' for none
 # setpoint = [3 ,0 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
