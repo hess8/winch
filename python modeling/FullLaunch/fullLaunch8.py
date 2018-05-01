@@ -715,7 +715,7 @@ class engine:
 class operator:
     def __init__(self,throttleType,targetT,dipT,thrmax,tRampUp,tHold,ntime):
         #parameters
-        self.humanT = 1.0     
+        self.humanT = 0.5 
         self.targetT = targetT
         self.dipT = dipT
         self.thrmax = thrmax        
@@ -768,11 +768,12 @@ class operator:
                     pp = -16; pd = -32; pint = -32
                     #overwrite during dip period:
 #                   #Dip period starts when a certain rope speed is reached
-                    if not self.vRopeReachedMax:
-                        if wi.v > 33:
-                            self.vRopeReachedMax = True #one-time switch 
-                    if self.vRopeReachedMax and gl.state in ['initClimb']:
-                        targetT = self.dipT                   
+                    if self.throttleType == 'constTdip':
+                        if not self.vRopeReachedMax:
+                            if wi.v > 33:
+                                self.vRopeReachedMax = True #one-time switch 
+                        if self.vRopeReachedMax and gl.state in ['initClimb']:
+                            targetT = self.dipT                   
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
                 Tcontrol = min(self.thrmax,max(0,pid(rp.data['T']/gl.W,time,targetT,c,ti.i,Nint)))
@@ -809,7 +810,6 @@ class operator:
                     self.SthTarget = self.thrSlack + (self.thrmax - self.thrSlack) * (t - tSlackEnd)/float(tRampUp)
                 else:
                     self.SthTarget =  self.thrmax
-        print 't,thrTarget',self.SthTarget
 class pilot:
     def __init__(self,pilotType,ntime,ctrltype,setpoint,recovDelay):
         self.Me = 0
@@ -1159,14 +1159,14 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 #--- throttle and engine
 tRampUp = 2 # time to ramp throttle up
 tHold = 0.5
-targetT = 1.2
+targetT = 0.5
 dipT = 0.5
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
-# throttleType = 'constT'
+throttleType = 'constT'
 # throttleType = 'constTdip'
-throttleType = 'constThr'
+# throttleType = 'constThr'
 #throttleType = 'preset'
 if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
@@ -1191,7 +1191,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3,3 , 30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [4,4,30]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','Vd']  # Use '' for none
 # setpoint = [3 ,0 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
