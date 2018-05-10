@@ -1123,7 +1123,7 @@ smoothed = False
 path = 'D:\\Winch launch physics\\results\\test1000m'
 if not os.path.exists(path): os.mkdir(path)
 #--- loop
-loopWhich = 0 #which setpoint element to change in loop
+loopWhich = 1 #which setpoint element to change in loop
 #--- logging
 sys.stdout = logger(path,loopWhich) #log screen output to file log.dat
 
