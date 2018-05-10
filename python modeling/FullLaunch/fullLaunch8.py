@@ -402,9 +402,9 @@ class glider:
         gd = self.data[ti.i]
         #One-time switches:
         minHeightRotate = 2
-        if self.state != 'onGnd' and self.y > minHeightRotate and not self.vypeaked and self.thetaD < 0:
-#            print 'vy first peaked at t {:6.2f}'.format(t)            
-            self.vypeaked = True 
+        if not self.vypeaked and self.state != 'onGnd' and self.y > minHeightRotate and self.yD > 10 and self.thetaD < 0:
+            print 'vy first peaked at t {:6.2f}'.format(t)            
+            self.vypeaked = True #one-time switch
         #state
         if self.y < minHeightRotate and gd['L'] < self.W:
             self.state = 'onGnd'
@@ -416,7 +416,6 @@ class glider:
             self.state = 'mainClimb'  
         elif rp.data[ti.i]['theta'] >= rp.thetaCutThr :
             self.state = 'prepRelease'
-#        self.lastvy = gl.yD 
         if self.state != self.oldState:
             print 'Glider state : {} at {:3.1f} s'.format(self.state,t)
             self.oldState = self.state
@@ -735,7 +734,7 @@ class operator:
         self.tSlackEnd = None
         self.tHold = tHold
         self.vSlackEnd = 0  #m/s
-        self.vRopeReachedMax = False
+        self.vRopeReachedTrig = False
         #data
 #         self.data = zeros(ntime,dtype = [('Sth', float)])
         #state variables
@@ -769,10 +768,12 @@ class operator:
                     #overwrite during dip period:
 #                   #Dip period starts when a certain rope speed is reached
                     if self.throttleType == 'constTdip':
-                        if not self.vRopeReachedMax:
-                            if wi.v > 33:
-                                self.vRopeReachedMax = True #one-time switch 
-                        if self.vRopeReachedMax and gl.state in ['initClimb']:
+                        vDipTrigger = 1.2 *gl.vStall #m/s
+                        if not self.vRopeReachedTrig:
+                            if wi.v > vDipTrigger:
+                                print 'vRope reached dip trigger of {} m/s at time {} s'.format(vDipTrigger,t)
+                                self.vRopeReachedTrig = True #one-time switch 
+                        if self.vRopeReachedTrig and gl.state in ['preClimb','initClimb']:
                             targetT = self.dipT                   
                 c = array([pp,pd,pint]) 
                 time = ti.data['t']
@@ -843,7 +844,7 @@ class pilot:
                 if self.tStartClimb is None:
                     self.tStartClimb = t  #one-time switch to climb
                 if gl.state == 'preClimb':
-                    pp = -0; pd = -0; pint = -0
+                    pp = -512; pd = -1024; pint = -512
                 elif gl.state == 'initClimb':
                     pp = -512; pd = -1024; pint = -512
                 elif gl.state == 'mainClimb': 
@@ -923,7 +924,7 @@ class pilot:
             self.MeTarget =  alphaControl(t,time,rad(setpoint),ti,Nint)  
         elif ctype == 'alphaVd': # control AoA  
             self.MeTarget =  0.5*alphaControl(t,time,rad(setpoint),ti,Nint)
-            self.MeTarget += vDControl(t,time,0,ti,Nint)
+            self.MeTarget += 3.0*vDControl(t,time,0,ti,Nint)
 #             self.MeTarget = vDControl(t,time,0,ti,Nint)
         # implement
         if self.type =='elevControl': 
@@ -933,7 +934,7 @@ class pilot:
             self.Me = limiter(self.MeTarget,maxMe)
             self.elev = self.Me/Mdelev
         pl.data[ti.i]['Me'] = self.Me  
-        pl.data[ti.i]['elev'] = self.elev           
+        pl.data[ti.i]['elev'] = self.elev  
 
 def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
     '''First derivative of the state vector'''          
@@ -1160,7 +1161,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 tRampUp = 2 # time to ramp throttle up
 tHold = 0.5
 targetT = 1.0
-dipT = 0.5
+dipT = 0.8
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
 # tcUsed = False  #delivers a torque to the winch determined by Sthr*Pmax/omega
@@ -1192,6 +1193,9 @@ recovDelay = 0.5
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
 setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
+
+# control = ['alpha','alpha']  # Use '' for none
+# setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
 # control = ['alpha','Vd']  # Use '' for none
 # setpoint = [3 ,0 , 30]  # deg,speed, deg last one is climb angle to transition to final control
 
@@ -1504,7 +1508,7 @@ plts.xy(False,[t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),d
 plts.xy(False,[tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
         'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
 #torques
-plts.xy(False,[tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer','elevator','ground'],'Torques')
+plts.xy(False,[tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer+wing','elevator','ground'],'Torques')
 #Engine, rope and winch
 plts.xy(False,[t,t,tData,tData,t],[env,wiv,vgw,deg(ropeTheta),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
 #-British units-
@@ -1576,26 +1580,27 @@ if vGustPeak > 0 and not startGust is None:
             ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins expanded',t1,t2) 
 else:
     #without safety margins
-    plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
-        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
     if zoom:
         plts.iColor = 0 #restart color cycle
         plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
         [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
         ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch expanded',t1,t2)
 
-    #with safety margins
     plts.iColor = 0 #restart color cycle
-    plts.xyy(not loop and not zoom,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
-        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
+    plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
+        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+        ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
+
+    #with safety margins
     if zoom:
         plts.iColor = 0 #restart color cycle
         plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
             ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins expanded',t1,t2)
+    plts.iColor = 0 #restart color cycle
+    plts.xyy(not loop and not zoom,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
 
 # plot loop results
 if loop:
