@@ -48,6 +48,18 @@ def writefile(lines,filepath): #need to have \n's inserted already
     file1.writelines(lines) 
     file1.close()
     return
+
+def downsample(arr,maxN):
+    if len(arr)/float(maxN) < 2:
+        return arr
+    else:
+        intDown = int(floor(len(arr)/float(maxN)))
+        indx = 0
+        keep = []
+        while indx < len(arr) - 1:
+            keep.append(arr[indx])
+            indx += intDown      
+        return array(keep)
  
 def stateSplitMat(S,gl,rp,wi,tc,en,op,pl):
     '''Splits the formal state matrix S (each row a different time) into the various state variables'''
@@ -157,25 +169,26 @@ def smooth(data,time,N):
     smoothedList = []
     for ism in range(N): #smooth any number of times.
         for i,t in enumerate(time):
-             if tsmooth/2  < t < tfinal - tsmooth/2:
-                 smoothedList.append(i)
-                 dsum = 0
-                 totweight = 0
-                 iearly = where( time < t - tsmooth/2)[0][-1] 
-                 ilater = where( time > t + tsmooth/2)[0][0]                 
-                 for it in range(iearly,ilater+1): 
-                     weight = (time[it]-time[it-1])*(1-abs(time[it]-t)/(tsmooth/2))
-                     dsum += smoothed[it] * weight
-                     totweight += weight            
-                 smoothed[i] = dsum/totweight
-             else:
-                 toExtrapolate.append(i)
-    for i in toExtrapolate[1:]: #leave the first alone...it's initial condition
-        ## find slope 
-        if i < smoothedList[0]: #extrapolate from zero linearly.  
-            smoothed[i] = smoothed[0] + time[i]/time[smoothedList[0]] * (smoothed[smoothedList[0]] - smoothed[0])
-        else:
-            smoothed[i] = smoothed[smoothedList[-1]] 
+            if t > tsmooth/2 and t < tfinal - tsmooth/2:
+                iearly = where( time < t - tsmooth/2)[0][-1]
+                ilater = where( time > t + tsmooth/2)[0][0] 
+            elif t < tsmooth/2: # don't include as many points in average
+                iearly = 1 #start here because we need time[iearly-1]
+                deli = where( time > t + tsmooth/2)[0][0] - iearly + 1 #+1 to avoid div/zero
+                ilater = iearly + int(deli * (t/(tsmooth/2)))
+            elif t > tfinal - tsmooth/2:
+                ilater = len(data) - 2
+                deli = ilater - where( time < t - tsmooth/2)[0][-1] + 1
+                iearly = ilater - int(deli * ((tfinal - t)/(tsmooth/2)))
+            dsum = 0; totweight = 0 
+            for it in range(iearly,ilater+1): 
+                weight = (time[it]-time[it-1])*(1-abs(time[it]-t)/(tsmooth/2))
+                dsum += smoothed[it] * weight
+                totweight += weight  
+#             if totweight == 0.0:
+#                 'pause'                    
+            smoothed[i] = dsum/totweight 
+            
     return smoothed
         
 class plots:
@@ -1200,7 +1213,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to final control
 
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1306,7 +1319,8 @@ for iloop,param in enumerate(loopParams):
     #Shorten state data
     t = t[:itr] #shorten
     tmax = t[-1]
-    
+    print 'Length of integrator time array:', len(t)
+    print 'Length of data arrays:', ti.i    
 #     sys.exit('stop')
     
 # where(gl.yD < negvyTrigger/2)[0]    
@@ -1323,53 +1337,55 @@ for iloop,param in enumerate(loopParams):
 #     else:
         
     #Shortened labels and arrays for results
-    tData = ti.data[:ti.i]['t']
-    gData = gl.data[:ti.i]
-    wData = wi.data[:ti.i]
-    pData = pl.data[:ti.i]
-    eData = en.data[:ti.i]
+    maxSmoothSize = 1000 #downsample because we don't need more than this for plotting, so plotting and smoothing will go faster
+    tData = downsample(ti.data[:ti.i]['t'],maxSmoothSize)
+    gData = downsample(gl.data[:ti.i],maxSmoothSize)
+    wData = downsample(wi.data[:ti.i],maxSmoothSize)
+    pData = downsample(pl.data[:ti.i],maxSmoothSize)
+    eData = downsample(en.data[:ti.i],maxSmoothSize)
 #     oData = op.data[:ti.i]
-    rData = rp.data[:ti.i]
-    aData = ai.data[:ti.i]
+    rData = downsample(rp.data[:ti.i],maxSmoothSize)
+    aData = downsample(ai.data[:ti.i],maxSmoothSize)
 
     if smoothed:
     #define smoothed data arrays before plotting
         print '\nSmoothing data'
-        x = smooth(gl.x[:itr],t,1)
-        y = smooth(gl.y[:itr],t,1)
-        xD = smooth(gl.xD[:itr],t,1)
-        yD = smooth(gl.yD[:itr],t,1)
+        t = downsample(t,maxSmoothSize)
+        x = smooth(downsample(gl.x[:itr],maxSmoothSize),t,1)
+        y = smooth(downsample(gl.y[:itr],maxSmoothSize),t,1)
+        xD = smooth(downsample(gl.xD[:itr],maxSmoothSize),t,1)
+        yD = smooth(downsample(gl.yD[:itr],maxSmoothSize),t,1)
         v = smooth(gData['v'],tData,1)
         vD = smooth(gData['vD'],tData,1) 
         alpha = smooth(gData['alpha'],tData,1)
-        theta = smooth(gl.theta[:itr],t,1)
-        thetaD= smooth(gl.thetaD[:itr],t,1)
+        theta = smooth(downsample(gl.theta[:itr],maxSmoothSize),t,1)
+        thetaD= smooth(downsample(gl.thetaD[:itr],maxSmoothSize),t,1)
         gamma = smooth(gData['gamma'],tData,1)
-        elev = smooth(pData['elev'],tData,1)
-        Sth = smooth(op.Sth[:itr],t,2)
-        wiv = smooth(wi.v[:itr],t,1)
-        env = smooth(en.v[:itr],t,1)
+        elev = smooth(pData['elev'],tData,3)
+        Sth = smooth(downsample(op.Sth[:itr],maxSmoothSize),t,2)
+        wiv = smooth(downsample(wi.v[:itr],maxSmoothSize),t,2)
+        env = smooth(downsample(en.v[:itr],maxSmoothSize),t,2)
         L = smooth(gData['L'],tData,1)
-        D = smooth(gData['D'],tData,2)
-        T = smooth(rp.T[:itr],t,1)
+        D = smooth(gData['D'],tData,1)
+        T = smooth(downsample(rp.T[:itr],maxSmoothSize),t,1)
         Tg = smooth(rData['Tglider'],tData,1)
         vgw = smooth(gData['vgw'],tData,1)
         Malpha = smooth(gData['Malpha'],tData,1)
         Me = smooth(pData['Me'],tData,1)
-        engP = smooth(eData['Pdeliv'],tData,1)
-        engTorq = smooth(eData['torq'],tData,1)
-        winP = smooth(wData['Pdeliv'],tData,1)
-        ropP = smooth(rData['Pdeliv'],tData,1)
+        engP = smooth(eData['Pdeliv'],tData,2)
+        engTorq = smooth(eData['torq'],tData,2)
+        winP = smooth(wData['Pdeliv'],tData,2)
+        ropP = smooth(rData['Pdeliv'],tData,2)
         gliP = smooth(gData['Pdeliv'],tData,1)
         gndTorq = smooth(gData['gndTorq'],tData,1)
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
-        #don't smooth safety margins
-        smRope = rData['sm'] 
-        smStall = gData['smStall'] 
-        smStruct = gData['smStruct'] 
-        smRecov = gData['smRecov']
-        vGust = aData['vGust']
+        #don't smooth safety margins more than once!
+        smRope = smooth(rData['sm'],tData,1) 
+        smStall =smooth(gData['smStall'],tData,1) 
+        smStruct = smooth(gData['smStruct'],tData,1) 
+        smRecov = smooth(gData['smRecov'],tData,1)
+        vGust = smooth(aData['vGust'],tData,1)
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]
@@ -1407,9 +1423,9 @@ for iloop,param in enumerate(loopParams):
         smRecov = gData['smRecov']
         vGust = aData['vGust']
     #ground roll
-    if max(gl.y) >gl.deltar:
-        iEndRoll = where(gl.y > gl.deltar)[0][0]
-        xRoll = gl.x[iEndRoll]
+    if max(y) >gl.deltar:
+        iEndRoll = where(y > gl.deltar)[0][0]
+        xRoll = x[iEndRoll]
         tRoll = t[iEndRoll]
         iEndRollData =  where(ti.data['t']>tRoll)[0][0]
     else:
@@ -1436,10 +1452,10 @@ for iloop,param in enumerate(loopParams):
     gammaMax = max(gamma)
     # sm minimum values taken when glider is 1m or more above the ground 
     minHeight = 1 #m to be airborne
-    iminHeight = where(gl.y > minHeight)[0][0]
+    iminHeight = where(y > minHeight)[0][0]
     tminHeight = t[iminHeight]
     iminHeightData = where(ti.data['t']>tminHeight)[0][0]
-    smRopeMin  = min(smRope[iminHeightData:])
+    smRopeMin = min(smRope[iminHeightData:])
     smStallMin = min(smStall[iminHeightData:])
     smStructMin = min(smStruct[iminHeightData:])
     smRecovMin = min(smRecov[iminHeightData:])
@@ -1455,7 +1471,7 @@ for iloop,param in enumerate(loopParams):
     print 'Average tension factor: {:3.1f}'.format(Tavg)
     print 'Maximum angle of attack: {:3.1f} deg'.format(deg(alphaMax))
     print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
-    if abs(t[-1] - ti.data[ti.i]['t']) > 5*dt:
+    if abs(t[-1] - ti.data[ti.i]['t']) > 0.05: #sec
         print '\nWarning...the integrator struggled with this model.'
         print '\tIf some of the plots have a time axis that is too short vs others, '
         print '\t...try making smoother controls.'

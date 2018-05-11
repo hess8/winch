@@ -1137,7 +1137,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 lo = 1000                 # m initial rope length
 
 #--- plotting
-smoothed = True
+smoothed = False
 path = 'D:\\Winch launch physics\\results\\test{}m'.format(lo)
 if not os.path.exists(path): os.mkdir(path)
 #--- loop
@@ -1213,7 +1213,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to final control
 
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1471,7 +1471,7 @@ for iloop,param in enumerate(loopParams):
     print 'Average tension factor: {:3.1f}'.format(Tavg)
     print 'Maximum angle of attack: {:3.1f} deg'.format(deg(alphaMax))
     print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
-    if abs(t[-1] - ti.data[ti.i]['t']) > 5*dt:
+    if abs(t[-1] - ti.data[ti.i]['t']) > 0.05: #sec
         print '\nWarning...the integrator struggled with this model.'
         print '\tIf some of the plots have a time axis that is too short vs others, '
         print '\t...try making smoother controls.'
