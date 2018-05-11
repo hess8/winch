@@ -1615,7 +1615,7 @@ key "Hills2007SafetyBGA"
 \end_layout
 
 \begin_layout Section
-Simulations of winch launches and safety factors
+Simulations of winch launches
 \end_layout
 
 \begin_layout Standard
@@ -1668,6 +1668,62 @@ In these results we model a fully loaded two-seat 17m glider, in particular
  the Grob Twin Astir, but our results should not depend much on the particular
  glider.
  
+\end_layout
+
+\begin_layout Standard
+After the glider is off the ground, and during the initial climb the pilot
+ simply targets a constant angle of attack via elevator control.
+ The main climb begins when the vertical velocity starts to drop, and during
+ this time the pilot targets a constant angle of attack, while damping changes
+ in velocity.
+ The glider releases at a rope angle of 75
+\begin_inset Formula $^{\circ}.$
+\end_inset
+
+ Of course most pilots don't have an angle-of-attack indicator, but the
+ angle of attack corresponds to how aggressive the pilot is with the elevator.
+ An angle of attack of zero is almost no elevator control.
+ 
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 0.5
+\end_layout
+
+\begin_layout Standard
+Here the winch operator adusts the throttle to maintain a nearly constant
+ tension of half the glider's weight.
+ The throttle ramps up from zero to the necessary value in about 2 sec.
+ To lower the tension at release, the throttle is set to zero when the rope
+ angle reaches 80% of the release angle 
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 0.6 launch
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 0.7 launch
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 0.8 launch
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 0.9 launch
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 1.0 launch
+\end_layout
+
+\begin_layout Subsection
+Constant throttle launch with maximum T/W = 1.0
+\end_layout
+
+\begin_layout Section
+Safety factors in simulations
 \end_layout
 
 \begin_layout Section

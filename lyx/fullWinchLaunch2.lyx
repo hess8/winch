@@ -87,7 +87,6 @@ Bret Hess
 \end_layout
 
 \begin_layout Author Email
-
 bret_hess@byu.edu
 \end_layout
 
@@ -3285,7 +3284,7 @@ v_{wg}=\dot{d}_{wg}=l_{o}\left(\frac{1}{YA}-\frac{\partial}{\partial T}\frac{\le
  for it to be important, which will never happen.
  So the 
 \bar under
-sag due to friction is stiffer than the rope
+sag due to friction is much stiffer than the rope
 \bar default
 , and we only need to consider the elasticity of the rope.
  Likewise the small mass sag is also too stiff, even at the beginning of

@@ -4,3 +4,11 @@
 *.lyx#
 *.lyx#
 lyx/engine-winch-spring-glider8.lyx
+python modeling/temp0longer.py
+python modeling/temp1longer.py
+python modeling/tempBoth.py
+python modeling/tempBothLonger
+python modeling/temp.py
+python modeling/temp.py
+python modeling/tempBothLonger.py
+python modeling/temp.py

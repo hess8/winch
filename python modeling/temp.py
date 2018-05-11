@@ -1118,12 +1118,17 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 ##########################################################################
 #                         Main script
 ##########################################################################                        
+#--- rope lenght
+# lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
+lo = 1000                 # m initial rope length
+
 #--- plotting
 smoothed = False
-path = 'D:\\Winch launch physics\\results\\test1000m'
+path = 'D:\\Winch launch physics\\results\\test{}m'.format(lo)
 if not os.path.exists(path): os.mkdir(path)
 #--- loop
 loopWhich = 1 #which setpoint element to change in loop
+# loopWhich = 'both'
 #--- logging
 sys.stdout = logger(path,loopWhich) #log screen output to file log.dat
 
@@ -1177,9 +1182,7 @@ if throttleType == 'constThr': print 'Constant throttle',thrmax
 elif 'constT' in throttleType: print 'targetT',targetT
 if 'dip' in throttleType: print 'dipT',dipT
 
-#--- rope
-# lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-lo = 1000                 # m initial rope length
+#--- rope other
 ropeThetaMax = 75 #release angle degrees
 ropeBreakAngle = 100 #rope angle for break
 ropeBreakTime = 100 #sec
@@ -1241,6 +1244,9 @@ for iloop,param in enumerate(loopParams):
         elif loopWhich == 1:
             resultsDir = path + '\\loop1--3,{:3.1f}'.format(param)
             setpoint = [3,param,30]  # deg,speed, deg last one is climb angle to transition to final control
+        elif loopWhich == 'both':
+            resultsDir = path + '\\loop01--{:3.1f},{:3.1f}'.format(param,param)
+            setpoint = [param,param,30]  # deg,speed, deg last one is climb angle to transition to final control
         if not os.path.exists(resultsDir): os.mkdir(resultsDir)
     else:
         resultsDir = path       
@@ -1477,152 +1483,152 @@ for iloop,param in enumerate(loopParams):
         data[iloop]['smStructMin'] = smStructMin
         data[iloop]['smRecovMin'] = smRecovMin
         
-# plot results for last one
-close('all')
-plts = plots(resultsDir)   
-
-#plts.xy([tData],[xD,yD,v],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time') 
-#plts.xy([t],[deg(theta,deg(gamma,deg(alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
-#plts.xy([t],[env,wiv],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
-#plts.xy([tData],[L/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
-#plts.xy([tData],],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
-#plts.xy([t],[T/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
-#plts.xy([tData],[Sth],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
-
-#plot engine power and torque curves from model parameters
-engvel = linspace(0,1.1*en.vpeakP,100)
-rpm = engvel/wi.rdrum*60/2/pi*en.diff*en.gear
-omegaEng = [r_pm *2*pi/60 for r_pm in rpm]
-powr = [en.Pavail(engv)/750 for engv in engvel] #in HP
-torq = zeros(len(engvel),dtype = float)
-for i in range(1,len(engvel)):
-    torq[i] = en.Pavail(engvel[i])/omegaEng[i]*0.74 #leave zero speed at zero torque
-torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero speed torq calculation by extrapolating
-plts.xy(False,[rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
-
-##plot lift curve vs alpha at v_best
-alphaList = linspace(-20,80,100)
-lift = array([gl.Lnl(gl.vb,rad(alph),rad(alph)) for alph in alphaList])
-plts.xy(False,[alphaList],[lift/gl.W],\
-        'Angle of attack (deg)','Lift/Weight',[''],'Lift vs angle of attack')
-
-#glider position vs time
-plts.xy(False,[t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
-plts.xy(False,[x],[y],'x (m)','y (m)',[''],'Glider y vs x')
-#glider speed and angles
-#plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[xD,yD,v,deg(alpha,deg(theta,deg(gamma,deg(pl.elev[:itr],deg(theta,gData['L/D']],\
-#        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
-plts.xy(False,[t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
-        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
-
-# plts.iColor = 0 #restart color cycle
-# plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,divide(L,D),deg(alpha),deg(gamma),deg(thetaD)],\
-#         [0,0,1,1,1,0,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg), L/D','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'L/D','angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
-#Forces
-plts.xy(False,[tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
-        'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
-#torques
-plts.xy(False,[tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer+wing','elevator','ground'],'Torques')
-#Engine, rope and winch
-plts.xy(False,[t,t,tData,tData,t],[env,wiv,vgw,deg(ropeTheta),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
-#-British units-
-plts.xy(False,[t,tData,tData,t,tData,t],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTorq*0.74,wiv*1.94,vgw*1.94,100*Sth],\
-    'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/10', 'pistons HP', 'pistons torque (ftlbs)','rope speed','glider radial speed','throttle'],'Engine British units')        
-#Energy,Power
-plts.xy(False,[tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
-plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
-#zoom in on a time range same plot as above
-#Specialty plots for presentations
-# zoom = True
-# if zoom:
-#     t1 = 6 ; t2 = 17
-#     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-#             [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-#             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
-#     plts.iColor = 0 #restart color cycle
-#     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
-#             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
-#             ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins',t1,t2)
-# plts.iColor = 0 #restart color cycle
-# plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
-#         [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
-#         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
-# plts.iColor = 0 #restart color cycle
-# plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
-#         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
-#         ['v','height/10','climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
-# Imperial units:
-# if vGustPeak > 0 and ymax >  hGust:
-#     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305, 1.94*vGust*10],\
-#         [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
-#         ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
-# else:
-#     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
-#         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
-#         ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
-
-#metric units
-zoom = True
-
-if zoom and not startGust is None and 's' in startGust:
-    t1 = float(startGust.split()[0])-0.5
-    t2 = t1 + 2*widthGust/25.0 + 2.0 -1.5
-else:
-    t1 = 5
-    t2 = 7
+    # plot results for each one
+    close('all')
+    plts = plots(resultsDir)   
     
-if vGustPeak > 0 and not startGust is None:
-    #without safety margins  
-    plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[tData,t,tData,tData,t,tData],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W,vGust*10],\
-        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','T/W','vel gust x10'],'Winch launch')
-    if zoom:
+    #plts.xy([tData],[xD,yD,v],'time (sec)','Velocity (m/s)',['vx','vy','v'],'Glider velocity vs time') 
+    #plts.xy([t],[deg(theta,deg(gamma,deg(alpha],'time (sec)','angle (deg)',['pitch','climb','AoA'],'flight angles')  
+    #plts.xy([t],[env,wiv],'time (sec)','effective speed (m/s)',['engine','winch'],'Engine and winch speeds')
+    #plts.xy([tData],[L/gl.W,gData['D']/gl.W],'time (sec)','Force/W',['lift','drag'],'Aerodynamic forces')
+    #plts.xy([tData],],'time (sec)','Torque (Nm) ',['rope','alpha'],'Torques on glider')
+    #plts.xy([t],[T/gl.W,Few[:itr]/gl.W],'time (sec)','Force/weight',['tension','TC-winch force'],'Forces between objects')
+    #plts.xy([tData],[Sth],'time (sec)','Throttle setting',['Throttle ',' '],'Throttle')
+    
+    #plot engine power and torque curves from model parameters
+    engvel = linspace(0,1.1*en.vpeakP,100)
+    rpm = engvel/wi.rdrum*60/2/pi*en.diff*en.gear
+    omegaEng = [r_pm *2*pi/60 for r_pm in rpm]
+    powr = [en.Pavail(engv)/750 for engv in engvel] #in HP
+    torq = zeros(len(engvel),dtype = float)
+    for i in range(1,len(engvel)):
+        torq[i] = en.Pavail(engvel[i])/omegaEng[i]*0.74 #leave zero speed at zero torque
+    torq[0] = torq[1] - (torq[2] - torq[1])*rpm[1]/(rpm[2] - rpm[1]) #Avoid zero speed torq calculation by extrapolating
+    plts.xy(False,[rpm],[powr,torq],'Engine speed (rpm)','Power (HP), Torque(Ftlbs)',['Pistons power','Pistons torque'],'Engine curves')
+    
+    ##plot lift curve vs alpha at v_best
+    alphaList = linspace(-20,80,100)
+    lift = array([gl.Lnl(gl.vb,rad(alph),rad(alph)) for alph in alphaList])
+    plts.xy(False,[alphaList],[lift/gl.W],\
+            'Angle of attack (deg)','Lift/Weight',[''],'Lift vs angle of attack')
+    
+    #glider position vs time
+    plts.xy(False,[t],[x,y],'time (sec)','position (m)',['x','y'],'Glider position vs time')
+    plts.xy(False,[x],[y],'x (m)','y (m)',[''],'Glider y vs x')
+    #glider speed and angles
+    #plts.xy([tData,tData,tData,tData,t,t,t,t,tData],[xD,yD,v,deg(alpha,deg(theta,deg(gamma,deg(pl.elev[:itr],deg(theta,gData['L/D']],\
+    #        'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)','L/D'],'Glider velocities and angles')
+    plts.xy(False,[t,t,tData,tData,t,tData,tData,t],[xD,yD,v,deg(alpha),deg(theta),deg(gamma),deg(elev),deg(thetaD)],\
+            'time (sec)','Velocity (m/s), Angles (deg)',['vx','vy','v','angle of attack','pitch','climb','elevator','pitch rate (deg/sec)'],'Glider velocities and angles')
+    
+    # plts.iColor = 0 #restart color cycle
+    # plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,t],[v,wiv,y/rp.lo,Tg/gl.W,L/gl.W,divide(L,D),deg(alpha),deg(gamma),deg(thetaD)],\
+    #         [0,0,1,1,1,0,0,0,0],'time (sec)',['Velocity (m/s), Angles (deg), L/D','Relative forces and height'],['v (glider)',r'$v_r$ (rope)','height/'+ r'$\l_o $','T/W at glider', 'L/W', 'L/D','angle of attack','climb angle','rot. rate (deg/sec)'],'Glider and rope')
+    #Forces
+    plts.xy(False,[tData,tData,t,tData,t],[L/gl.W,D/gl.W,T/gl.W,Tg/gl.W,Few/gl.W],\
+            'time (sec)','Forces/Weight',['lift','drag','tension at winch','tension at glider','TC-winch'],'Forces')
+    #torques
+    plts.xy(False,[tData],[ropeTorq,Malpha,Me,gndTorq],'time (sec)','Torque (Nm)',['rope','stablizer+wing','elevator','ground'],'Torques')
+    #Engine, rope and winch
+    plts.xy(False,[t,t,tData,tData,t],[env,wiv,vgw,deg(ropeTheta),100*Sth],'time (sec)','Speeds (effective: m/s), Angle (deg), Throttle %',['engine speed','rope speed','glider radial speed','rope angle','throttle'],'Engine and rope')        
+    #-British units-
+    plts.xy(False,[t,tData,tData,t,tData,t],[env/wi.rdrum*60/2/pi*en.diff*en.gear/10,engP/750,engTorq*0.74,wiv*1.94,vgw*1.94,100*Sth],\
+        'time (sec)','Speeds (rpm,kts), Torque (ft-lbs), Throttle %',['eng rpm/10', 'pistons HP', 'pistons torque (ftlbs)','rope speed','glider radial speed','throttle'],'Engine British units')        
+    #Energy,Power
+    plts.xy(False,[tData],[eData['Edeliv']/1e6,wData['Edeliv']/1e6,rData['Edeliv']/1e6,gData['Edeliv']/1e6,gData['Emech']/1e6],'time (sec)','Energy (MJ)',['to engine','to winch','to rope','to glider','in glider'],'Energy delivered and kept')        
+    plts.xy(False,[tData],[engP/en.Pmax,winP/en.Pmax,ropP/en.Pmax,gliP/en.Pmax],'time (sec)','Power/Pmax',['to engine','to winch','to rope','to glider'],'Power delivered')        
+    #zoom in on a time range same plot as above
+    #Specialty plots for presentations
+    # zoom = True
+    # if zoom:
+    #     t1 = 6 ; t2 = 17
+    #     plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+    #             [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+    #             ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine expanded',t1,t2)
+    #     plts.iColor = 0 #restart color cycle
+    #     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
+    #             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
+    #             ['v','height','Climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins',t1,t2)
+    # plts.iColor = 0 #restart color cycle
+    # plts.xyy(False,[tData,t,t,tData,tData,tData,tData,tData,tData,t,t],[1.94*v,1.94*wiv,y/0.305/10,Tg/gl.W,L/gl.W,10*deg(alpha),10*deg(gData['alphaStall']),deg(gamma),10*deg(elev),Sth,env/wi.rdrum*60/2/pi*en.diff*en.gear/100],\
+    #         [0,0,0,1,1,0,0,0,0,1,0],'time (sec)',['Velocity (kts), Height/10 (ft), Angle (deg)','Relative forces'],\
+    #         ['v (glider)',r'$v_r$ (rope)','height/10','T/W', 'L/W', 'angle of attack x10','stall angle x10','climb angle','elev deflection x10','throttle','rpm/100'],'Glider and engine')
+    # plts.iColor = 0 #restart color cycle
+    # plts.xyy(True,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305/10,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305/10],\
+    #         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
+    #         ['v','height/10','climb angle','L/W','Struct margin','Stall margin','Rope margin','Recovery margin'],'Glider and safety margins')
+    # Imperial units:
+    # if vGustPeak > 0 and ymax >  hGust:
+    #     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305, 1.94*vGust*10],\
+    #         [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
+    #         ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Glider and safety margins')
+    # else:
+    #     plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[1.94*v,y/0.305,deg(gamma),L/gl.W,smStruct,smStall,smRope,smRecov/0.305],\
+    #         [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (kts), Height (ft), Angle (deg)',"Relative forces"],\
+    #         ['velocity','height','climb angle','L/W','struct margin','stall margin','rope margin','recovery margin'],'Glider and safety margins')
+    
+    #metric units
+    zoom = True
+    
+    if zoom and not startGust is None and 's' in startGust:
+        t1 = float(startGust.split()[0])-0.5
+        t2 = t1 + 2*widthGust/25.0 + 2.0 -1.5
+    else:
+        t1 = 5
+        t2 = 7
+        
+    if vGustPeak > 0 and not startGust is None:
+        #without safety margins  
         plts.iColor = 0 #restart color cycle
         plts.xyy(False,[tData,t,tData,tData,t,tData],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W,vGust*10],\
             [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-            ['velocity x10','height','climb angle x10','L/W','T/W','vel gust x10'],'Winch launch expanded',t1,t2)    
-    #with safety margins (T/W is redundant)
-    plts.iColor = 0 #restart color cycle
-    plts.xyy(not loop and not zoom,[tData,t,tData,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
-        [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins')
-    if zoom:
+            ['velocity x10','height','climb angle x10','L/W','T/W','vel gust x10'],'Winch launch')
+        if zoom:
+            plts.iColor = 0 #restart color cycle
+            plts.xyy(False,[tData,t,tData,tData,t,tData],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W,vGust*10],\
+                [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+                ['velocity x10','height','climb angle x10','L/W','T/W','vel gust x10'],'Winch launch expanded',t1,t2)    
+        #with safety margins (T/W is redundant)
         plts.iColor = 0 #restart color cycle
-        plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
+        plts.xyy(not loop and not zoom,[tData,t,tData,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
             [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-            ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins expanded',t1,t2) 
-else:
-    #without safety margins
-    if zoom:
+            ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins')
+        if zoom:
+            plts.iColor = 0 #restart color cycle
+            plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov, vGust*10],\
+                [0,0,0,1,1,1,1,0,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+                ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin','vel gust x10'],'Winch launch and safety margins expanded',t1,t2) 
+    else:
+        #without safety margins
+        if zoom:
+            plts.iColor = 0 #restart color cycle
+            plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
+            [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+            ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch expanded',t1,t2)
+    
         plts.iColor = 0 #restart color cycle
         plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
-        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch expanded',t1,t2)
-
-    plts.iColor = 0 #restart color cycle
-    plts.xyy(False,[tData,t,tData,tData,t],[v*10,y,deg(gamma)*10,L/gl.W,T/gl.W],\
-        [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
-
-    #with safety margins
-    if zoom:
+            [0,0,0,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+            ['velocity x10','height','climb angle x10','L/W','T/W'],'Winch launch')
+    
+        #with safety margins
+        if zoom:
+            plts.iColor = 0 #restart color cycle
+            plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+                [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+                ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins expanded',t1,t2)
         plts.iColor = 0 #restart color cycle
-        plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+        plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-            ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins expanded',t1,t2)
-    plts.iColor = 0 #restart color cycle
-    plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
-        [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
-        ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
-
-# plot loop results
+            ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
+    
+# plot loop results (saved in last parameter's folder
 if loop:
     heightDiff = data['yfinal'] - min(data['yfinal'])#vs minimum in loop
     plts.iColor = 0 #restart color cycle
     plts.xyy(False,[data['alphaLoop']]*12,[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightDiff,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
             [0,0,0,0,0,1,1,1,1,0,0,0],'Angle of attack setting (deg)',['Velocity (m/s), Angles (deg), m, sec, %',"Relative forces,g's"],\
-            ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs initial AoA (2nd Aoa 3.0)')
+            ['x gnd roll', 't gnd roll x 10','height/rope %','height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight (all) vs target angle of attack')
     #fewer results, for presentation
     plts.iColor = 0 #restart color cycle
     plts.xyy(False,[data['alphaLoop']]*4,[data['vmax'],heightDiff,data['gammaMax'],data['Lmax']],\
