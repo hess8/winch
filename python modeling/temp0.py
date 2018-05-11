@@ -1213,7 +1213,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [4.1,3.0,30]  # deg,speed, deg last one is climb angle to transition to final control
 
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1241,7 +1241,7 @@ setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to f
 # Loop over parameters for study, optimization
 loop = True
 if loop:
-    loopParams = linspace(0,8,30) #Alpha\
+    loopParams = linspace(0,8,45) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #
@@ -1349,7 +1349,7 @@ for iloop,param in enumerate(loopParams):
 
     if smoothed:
     #define smoothed data arrays before plotting
-        print '\nSmoothing data'
+        print '\nSmoothing data\n'
         t = downsample(t,maxSmoothSize)
         x = smooth(downsample(gl.x[:itr],maxSmoothSize),t,1)
         y = smooth(downsample(gl.y[:itr],maxSmoothSize),t,1)
@@ -1381,6 +1381,8 @@ for iloop,param in enumerate(loopParams):
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
         #don't smooth safety margins more than once!
+        if param >4:
+            'pause'
         smRope = smooth(rData['sm'],tData,1) 
         smStall =smooth(gData['smStall'],tData,1) 
         smStruct = smooth(gData['smStruct'],tData,1) 

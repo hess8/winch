@@ -1241,7 +1241,7 @@ setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to f
 # Loop over parameters for study, optimization
 loop = True
 if loop:
-    loopParams = linspace(0,8,30) #Alpha\
+    loopParams = linspace(0,8,45) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #

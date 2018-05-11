@@ -1137,7 +1137,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 lo = 1000                 # m initial rope length
 
 #--- plotting
-smoothed = False
+smoothed = True
 path = 'D:\\Winch launch physics\\results\\test{}m'.format(lo)
 if not os.path.exists(path): os.mkdir(path)
 #--- loop
@@ -1239,9 +1239,9 @@ setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to f
 # setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
-loop = False
+loop = True
 if loop:
-    loopParams = linspace(0,8,30) #Alpha\
+    loopParams = linspace(5,8,20) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #
@@ -1265,9 +1265,8 @@ for iloop,param in enumerate(loopParams):
     else:
         resultsDir = path       
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
-   
-    # create the objects we need from classes
-    t = linspace(tStart,tEnd,num=ntime)    
+    t = linspace(tStart,tEnd,num=ntime)   
+    # create the objects we need from classes 
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(name,theta0,ntime)
     ai = air(vhead,vupdr,hupdr,vgustSM,startGust,widthGust,vGustPeak,gl)
@@ -1349,7 +1348,7 @@ for iloop,param in enumerate(loopParams):
 
     if smoothed:
     #define smoothed data arrays before plotting
-        print '\nSmoothing data'
+        print '\nSmoothing data\n'
         t = downsample(t,maxSmoothSize)
         x = smooth(downsample(gl.x[:itr],maxSmoothSize),t,1)
         y = smooth(downsample(gl.y[:itr],maxSmoothSize),t,1)
@@ -1427,7 +1426,7 @@ for iloop,param in enumerate(loopParams):
         iEndRoll = where(y > gl.deltar)[0][0]
         xRoll = x[iEndRoll]
         tRoll = t[iEndRoll]
-        iEndRollData =  where(ti.data['t']>tRoll)[0][0]
+        iEndRollData =  where(tData>tRoll)[0][0]
     else:
         xRoll = 0  #didn't get off ground
         tRoll = 0
@@ -1435,7 +1434,7 @@ for iloop,param in enumerate(loopParams):
     #misc results 
     vrel =wiv/(env + 1e-6)
     Few = (2-vrel)*tc.invK(vrel) * env**2 / float(wi.rdrum)**3
-    Tavg = mean(rp.data[iEndRollData:ti.i]['T'])/gl.W
+    Tavg = mean(T[iEndRollData:])/gl.W
     # final values     
     yfinal = y[-1]
     yDfinal  = yD[-1]
@@ -1454,7 +1453,7 @@ for iloop,param in enumerate(loopParams):
     minHeight = 1 #m to be airborne
     iminHeight = where(y > minHeight)[0][0]
     tminHeight = t[iminHeight]
-    iminHeightData = where(ti.data['t']>tminHeight)[0][0]
+    iminHeightData = where(tData>tminHeight)[0][0]
     smRopeMin = min(smRope[iminHeightData:])
     smStallMin = min(smStall[iminHeightData:])
     smStructMin = min(smStruct[iminHeightData:])
@@ -1471,7 +1470,7 @@ for iloop,param in enumerate(loopParams):
     print 'Average tension factor: {:3.1f}'.format(Tavg)
     print 'Maximum angle of attack: {:3.1f} deg'.format(deg(alphaMax))
     print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
-    if abs(t[-1] - ti.data[ti.i]['t']) > 0.05: #sec
+    if abs(t[-1] - tData[-1]) > 0.05: #sec
         print '\nWarning...the integrator struggled with this model.'
         print '\tIf some of the plots have a time axis that is too short vs others, '
         print '\t...try making smoother controls.'
