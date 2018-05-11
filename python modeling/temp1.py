@@ -1123,7 +1123,7 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 lo = 1000                 # m initial rope length
 
 #--- plotting
-smoothed = False
+smoothed = True
 path = 'D:\\Winch launch physics\\results\\test{}m'.format(lo)
 if not os.path.exists(path): os.mkdir(path)
 #--- loop
@@ -1227,7 +1227,7 @@ setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to f
 # Loop over parameters for study, optimization
 loop = True
 if loop:
-    loopParams = linspace(0,9,30) #Alpha\
+    loopParams = linspace(0,8,30) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #
@@ -1327,7 +1327,7 @@ for iloop,param in enumerate(loopParams):
     wData = wi.data[:ti.i]
     pData = pl.data[:ti.i]
     eData = en.data[:ti.i]
-#     oData = op.data[:ti.i]
+    oData = op.data[:ti.i]
     rData = rp.data[:ti.i]
     aData = ai.data[:ti.i]
 
@@ -1340,35 +1340,35 @@ for iloop,param in enumerate(loopParams):
         yD = smooth(gl.yD[:itr],t,1)
         v = smooth(gData['v'],tData,1)
         vD = smooth(gData['vD'],tData,1) 
-        alpha = smooth(gData['alpha'],tData,3)
-        theta = smooth(gl.theta[:itr],t,2)
-        thetaD= smooth(gl.thetaD[:itr],t,3)
+        alpha = smooth(gData['alpha'],tData,1)
+        theta = smooth(gl.theta[:itr],t,1)
+        thetaD= smooth(gl.thetaD[:itr],t,1)
         gamma = smooth(gData['gamma'],tData,1)
         elev = smooth(pData['elev'],tData,1)
-        Sth = smooth(op.Sth[:itr],t,1)
-        wiv = smooth(wi.v[:itr],t,3)
-        env = smooth(en.v[:itr],t,3)
-        L = smooth(gData['L'],tData,3)
-        D = smooth(gData['D'],tData,2)
-        T = smooth(rp.T[:itr],t,3)
-        Tg = smooth(rData['Tglider'],tData,3)
+        Sth = smooth(op.Sth[:itr],t,2)
+        wiv = smooth(wi.v[:itr],t,1)
+        env = smooth(en.v[:itr],t,1)
+        L = smooth(gData['L'],tData,1)
+        D = smooth(gData['D'],tData,1)
+        T = smooth(rp.T[:itr],t,1)
+        Tg = smooth(rData['Tglider'],tData,1)
         vgw = smooth(gData['vgw'],tData,1)
         Malpha = smooth(gData['Malpha'],tData,1)
         Me = smooth(pData['Me'],tData,1)
-        engP = smooth(eData['Pdeliv'],tData,3)
-        engTorq = smooth(eData['torq'],tData,3)
-        Sth = smooth(oData['Sth'],tData,3)
+        engP = smooth(eData['Pdeliv'],tData,1)
+        engTorq = smooth(eData['torq'],tData,1)
         winP = smooth(wData['Pdeliv'],tData,1)
         ropP = smooth(rData['Pdeliv'],tData,1)
         gliP = smooth(gData['Pdeliv'],tData,1)
         gndTorq = smooth(gData['gndTorq'],tData,1)
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
-        smRope = smooth(rData['sm'],tData,1)
-        smStall = smooth(gData['smStall'],tData,1)
-        smStruct = smooth(gData['smStruct'],tData,1)
-        smRecov = smooth(gData['smRecov'],tData,1)
-        vGust = smooth(aData['vgust'],tData,1)
+        #don't smooth safety margins
+        smRope = rData['sm'] 
+        smStall = gData['smStall'] 
+        smStruct = gData['smStruct'] 
+        smRecov = gData['smRecov']
+        vGust = aData['vGust']
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]
