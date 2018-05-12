@@ -196,9 +196,11 @@ class plots:
         self.iColor = 0 #counter for plots, so each variable has a different color
         self.path = path
         self.linew = 3.0
-        self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', 
-        u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'violet',
-        u'#CC79A7',  u'#0072B2', u'#30a2da',u'#009E73','peru','slateblue',u'#8b8b8b',] # u'#F0E442',u'#467821','slateblue'      u'#56B4E9',
+#         self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', 
+#         u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'violet',
+#           u'#0072B2', u'#CC79A7',u'#30a2da',u'#009E73','peru','slateblue',u'#8b8b8b',] # u'#F0E442',u'#467821', u'#56B4E9',
+        self.colorsList = ['palevioletred', 'dodgerblue','green', 'darkorange', 'darkviolet','blue', 'red','orange', 
+                   'limegreen', 'brown','mediumaquamarine',  'violet','lightcoral', 'olive','tomato','teal','peru','mediumorchid','slateblue','crimson']
         return 
     
     def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
@@ -218,17 +220,20 @@ class plots:
                 self.iColor = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbl)
-        ax0.grid(color='k', linestyle='--', linewidth=1)
+        ax0.grid(color='lightgray', linestyle='-', linewidth=1)
         ax0.legend(loc ='lower right',framealpha=0.5)
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ax0.set_ylim([ymin,ymax])
         #Set x limits
-        if not xmin is None or not xmax is None:
-            ax0.set_xlim([xmin,xmax])
+        if xmin is None or xmax is None:
+            xmin = min(xs[0]); xmax = max(xs[0])
+        ax0.set_xlim([xmin,xmax])
+        #Draw zero line
+        ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready'
+        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
         show(block = holdOpen)
 #         show()
         
@@ -250,7 +255,7 @@ class plots:
             if 'margin' in legendLabels[iy]:
                 lstyle = '--'
             if 'recovery' in legendLabels[iy].lower():
-                lstyle = ':'
+                lstyle = '-.'
             if 'vel gust' in legendLabels[iy].lower():
                 lstyle = '-'
                 colorCurve = 'k'
@@ -267,8 +272,10 @@ class plots:
                 self.iColor = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbls[0])
-        ax0.grid(color='k', linestyle='--', linewidth=1)
-        ax1.grid(color='k', linestyle='--', linewidth=1)
+#         ax0.grid(b=None)
+#         ax1.grid(b=None)
+        ax0.grid(color='lightgray', linestyle='-', linewidth=1)
+        ax1.grid(color='lightgray', linestyle='-', linewidth=1)
         ax1.set_ylabel(ylbls[1])
         #Set y limits: force the zeros on both sides to be the same
         
@@ -304,8 +311,12 @@ class plots:
         ax0.set_ylim([ymin0,max0])
         ax1.set_ylim([ymin1,max1])
         #Set x limits
-        if not xmin is None or not xmax is None:
-            ax0.set_xlim([xmin,xmax])
+        #Set x limits
+        if xmin is None or xmax is None:
+            xmin = min(xs[0]); xmax = max(xs[0])
+        ax0.set_xlim([xmin,xmax])
+        #Draw zero line
+        ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  
         ax0.legend(loc ='upper left',framealpha=0.5)
         ax1.legend(loc ='upper right',framealpha=0.5)
 #        legend(loc ='upper left')
@@ -313,7 +324,7 @@ class plots:
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready'
+        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
         show(block = holdOpen)  
 #         show()  
 
@@ -929,7 +940,7 @@ class pilot:
         if self.currCntrl == 0 and (gl.y>1 and (gamma > crossAngle or gl.data[ti.i]['yDD']<0)):  #switch to 2nd control # or gl.thetaD < rad(10)  
             self.currCntrl = 1 #switches only once
             self.tSwitch = t
-            print 'Second control ({},{:3.1f}) turned on  at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
+            print 'Second control ({},{:3.1f}) turned on at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
         ctype = self.ctrltype[self.currCntrl]
         setpoint = self.setpoint[self.currCntrl]
         # determine the moment demanded by the control            
@@ -1239,7 +1250,7 @@ setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to f
 # setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
-loop = True
+loop = False
 if loop:
     loopParams = linspace(5,8,20) #Alpha\
 else:
@@ -1634,10 +1645,21 @@ for iloop,param in enumerate(loopParams):
                 [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
                 ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins expanded',t1,t2)
         plts.iColor = 0 #restart color cycle
-        plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+        plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
             ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
-    
+
+        #safety margins alone
+        if zoom:
+            plts.iColor = 6 #choose color cycle start
+            plts.xyy(False,[tData,tData,tData,tData],[smStruct,smStall,smRope,smRecov],\
+                [1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+                ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins expanded',t1,t2)
+        plts.iColor = 6 #choose color cycle start
+        plts.xyy(not loop,[tData,tData,tData,tData],[smStruct,smStall,smRope,smRecov],\
+            [1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+            ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins')
+
 # plot loop results (saved in last parameter's folder
 if loop:
     heightDiff = data['yfinal'] - min(data['yfinal'])#vs minimum in loop
@@ -1655,5 +1677,4 @@ if loop:
     plts.xyy(True,[data['alphaLoop']]*4,[data['smStructMin'],data['smStallMin'],data['smRopeMin'],data['smRecovMin']],\
             [1,1,1,0],'Target angle of attack (deg)',['Recovery height margin (m)',"Safety margin (g's)"],\
             ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins vs target angle of attack')
-    
 print 'Done'

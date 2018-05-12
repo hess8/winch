@@ -196,9 +196,11 @@ class plots:
         self.iColor = 0 #counter for plots, so each variable has a different color
         self.path = path
         self.linew = 3.0
-        self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', 
-        u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'violet',
-        u'#CC79A7',  u'#0072B2', u'#30a2da',u'#009E73','peru','slateblue',u'#8b8b8b',] # u'#F0E442',u'#467821','slateblue'      u'#56B4E9',
+#         self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', 
+#         u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'violet',
+#           u'#0072B2', u'#CC79A7',u'#30a2da',u'#009E73','peru','slateblue',u'#8b8b8b',] # u'#F0E442',u'#467821', u'#56B4E9',
+        self.colorsList = ['palevioletred', 'dodgerblue','green', 'darkorange', 'darkviolet','blue', 'red','orange', 
+                   'limegreen', 'brown','mediumaquamarine',  'violet','lightcoral', 'olive','tomato','teal','peru','mediumorchid','slateblue','crimson']
         return 
     
     def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
@@ -218,17 +220,20 @@ class plots:
                 self.iColor = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbl)
-        ax0.grid(color='k', linestyle='--', linewidth=1)
+        ax0.grid(color='lightgray', linestyle='-', linewidth=1)
         ax0.legend(loc ='lower right',framealpha=0.5)
 #        legend(loc ='upper left')
         ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
         ax0.set_ylim([ymin,ymax])
         #Set x limits
-        if not xmin is None or not xmax is None:
-            ax0.set_xlim([xmin,xmax])
+        if xmin is None or xmax is None:
+            xmin = min(xs[0]); xmax = max(xs[0])
+        ax0.set_xlim([xmin,xmax])
+        #Draw zero line
+        ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready'
+        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
         show(block = holdOpen)
 #         show()
         
@@ -250,7 +255,7 @@ class plots:
             if 'margin' in legendLabels[iy]:
                 lstyle = '--'
             if 'recovery' in legendLabels[iy].lower():
-                lstyle = ':'
+                lstyle = '-.'
             if 'vel gust' in legendLabels[iy].lower():
                 lstyle = '-'
                 colorCurve = 'k'
@@ -267,8 +272,10 @@ class plots:
                 self.iColor = 0
         ax0.set_xlabel(xlbl)
         ax0.set_ylabel(ylbls[0])
-        ax0.grid(color='k', linestyle='--', linewidth=1)
-        ax1.grid(color='k', linestyle='--', linewidth=1)
+#         ax0.grid(b=None)
+#         ax1.grid(b=None)
+        ax0.grid(color='lightgray', linestyle='-', linewidth=1)
+        ax1.grid(color='lightgray', linestyle='-', linewidth=1)
         ax1.set_ylabel(ylbls[1])
         #Set y limits: force the zeros on both sides to be the same
         
@@ -304,8 +311,12 @@ class plots:
         ax0.set_ylim([ymin0,max0])
         ax1.set_ylim([ymin1,max1])
         #Set x limits
-        if not xmin is None or not xmax is None:
-            ax0.set_xlim([xmin,xmax])
+        #Set x limits
+        if xmin is None or xmax is None:
+            xmin = min(xs[0]); xmax = max(xs[0])
+        ax0.set_xlim([xmin,xmax])
+        #Draw zero line
+        ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  
         ax0.legend(loc ='upper left',framealpha=0.5)
         ax1.legend(loc ='upper right',framealpha=0.5)
 #        legend(loc ='upper left')
@@ -313,7 +324,7 @@ class plots:
 #        ylim([ymin,ymax])
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready'
+        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
         show(block = holdOpen)  
 #         show()  
 
@@ -929,7 +940,7 @@ class pilot:
         if self.currCntrl == 0 and (gl.y>1 and (gamma > crossAngle or gl.data[ti.i]['yDD']<0)):  #switch to 2nd control # or gl.thetaD < rad(10)  
             self.currCntrl = 1 #switches only once
             self.tSwitch = t
-            print 'Second control ({},{:3.1f}) turned on  at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
+            print 'Second control ({},{:3.1f}) turned on at {:3.1f} s.'.format(self.ctrltype[1],float(self.setpoint[1]),t)
         ctype = self.ctrltype[self.currCntrl]
         setpoint = self.setpoint[self.currCntrl]
         # determine the moment demanded by the control            
@@ -1213,7 +1224,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [4.1,3.0,30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to final control
 
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1241,7 +1252,7 @@ setpoint = [4.1,3.0,30]  # deg,speed, deg last one is climb angle to transition 
 # Loop over parameters for study, optimization
 loop = True
 if loop:
-    loopParams = linspace(0,8,45) #Alpha\
+    loopParams = linspace(5,8,20) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #
@@ -1265,9 +1276,8 @@ for iloop,param in enumerate(loopParams):
     else:
         resultsDir = path       
     print '\nInitial pilot control: ({},{:4.1f})'.format(control[0],setpoint[0])    
-   
-    # create the objects we need from classes
-    t = linspace(tStart,tEnd,num=ntime)    
+    t = linspace(tStart,tEnd,num=ntime)   
+    # create the objects we need from classes 
     ti = timeinfo(tStart,tEnd,ntime) 
     gl = glider(name,theta0,ntime)
     ai = air(vhead,vupdr,hupdr,vgustSM,startGust,widthGust,vGustPeak,gl)
@@ -1381,8 +1391,6 @@ for iloop,param in enumerate(loopParams):
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
         #don't smooth safety margins more than once!
-        if param >4:
-            'pause'
         smRope = smooth(rData['sm'],tData,1) 
         smStall =smooth(gData['smStall'],tData,1) 
         smStruct = smooth(gData['smStruct'],tData,1) 
@@ -1429,7 +1437,7 @@ for iloop,param in enumerate(loopParams):
         iEndRoll = where(y > gl.deltar)[0][0]
         xRoll = x[iEndRoll]
         tRoll = t[iEndRoll]
-        iEndRollData =  where(ti.data['t']>tRoll)[0][0]
+        iEndRollData =  where(tData>tRoll)[0][0]
     else:
         xRoll = 0  #didn't get off ground
         tRoll = 0
@@ -1437,7 +1445,7 @@ for iloop,param in enumerate(loopParams):
     #misc results 
     vrel =wiv/(env + 1e-6)
     Few = (2-vrel)*tc.invK(vrel) * env**2 / float(wi.rdrum)**3
-    Tavg = mean(rp.data[iEndRollData:ti.i]['T'])/gl.W
+    Tavg = mean(T[iEndRollData:])/gl.W
     # final values     
     yfinal = y[-1]
     yDfinal  = yD[-1]
@@ -1456,7 +1464,7 @@ for iloop,param in enumerate(loopParams):
     minHeight = 1 #m to be airborne
     iminHeight = where(y > minHeight)[0][0]
     tminHeight = t[iminHeight]
-    iminHeightData = where(ti.data['t']>tminHeight)[0][0]
+    iminHeightData = where(tData>tminHeight)[0][0]
     smRopeMin = min(smRope[iminHeightData:])
     smStallMin = min(smStall[iminHeightData:])
     smStructMin = min(smStruct[iminHeightData:])
@@ -1473,7 +1481,7 @@ for iloop,param in enumerate(loopParams):
     print 'Average tension factor: {:3.1f}'.format(Tavg)
     print 'Maximum angle of attack: {:3.1f} deg'.format(deg(alphaMax))
     print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
-    if abs(t[-1] - ti.data[ti.i]['t']) > 0.05: #sec
+    if abs(t[-1] - tData[-1]) > 0.05: #sec
         print '\nWarning...the integrator struggled with this model.'
         print '\tIf some of the plots have a time axis that is too short vs others, '
         print '\t...try making smoother controls.'
@@ -1637,10 +1645,21 @@ for iloop,param in enumerate(loopParams):
                 [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
                 ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins expanded',t1,t2)
         plts.iColor = 0 #restart color cycle
-        plts.xyy(not loop,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
+        plts.xyy(False,[tData,t,tData,tData,tData,tData,tData,tData],[v*10,y,deg(gamma)*10,L/gl.W,smStruct,smStall,smRope,smRecov],\
             [0,0,0,1,1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
             ['velocity x10','height','climb angle x10','L/W','struct margin','stall margin','rope margin','recovery margin'],'Winch launch and safety margins')
-    
+
+        #safety margins alone
+        if zoom:
+            plts.iColor = 6 #choose color cycle start
+            plts.xyy(False,[tData,tData,tData,tData],[smStruct,smStall,smRope,smRecov],\
+                [1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+                ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins expanded',t1,t2)
+        plts.iColor = 6 #choose color cycle start
+        plts.xyy(not loop,[tData,tData,tData,tData],[smStruct,smStall,smRope,smRecov],\
+            [1,1,1,0],'time (sec)',['Velocity (m/s), Height (m), Angle (deg)',"Relative forces"],\
+            ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins')
+
 # plot loop results (saved in last parameter's folder
 if loop:
     heightDiff = data['yfinal'] - min(data['yfinal'])#vs minimum in loop
@@ -1658,5 +1677,4 @@ if loop:
     plts.xyy(True,[data['alphaLoop']]*4,[data['smStructMin'],data['smStallMin'],data['smRopeMin'],data['smRecovMin']],\
             [1,1,1,0],'Target angle of attack (deg)',['Recovery height margin (m)',"Safety margin (g's)"],\
             ['struct margin','stall margin','rope margin','recovery margin'],'Safety margins vs target angle of attack')
-    
 print 'Done'

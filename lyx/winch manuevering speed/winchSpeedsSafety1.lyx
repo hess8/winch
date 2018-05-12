@@ -4,8 +4,13 @@
 \begin_header
 \save_transient_properties true
 \origin unavailable
-\textclass achemso
+\textclass revtex4
 \use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
 \maintain_unincluded_children false
 \language english
 \language_package default
@@ -83,7 +88,8 @@ Bret Hess
 Physics Department, Brigham Young University, Provo, Utah
 \end_layout
 
-\begin_layout Email
+\begin_layout Author Email
+
 bret_hess@byu.edu
 \end_layout
 
@@ -104,8 +110,7 @@ We define structural, stall rope break and post-break recovery safety margins
 
 (which in most cases appears to have been arbitrarily assigned).
  Using a new simulation, we plot the safety margins vs time in winch launches
- for little, optimal and aggressive elevator deflection.
- We simulate gusts dynamically, and find that 
+ 
 \end_layout
 
 \begin_layout Section
@@ -1189,9 +1194,9 @@ accelerated
 
  In severe gusts the glider can pitch down suddenly and steeply, and the
  wing can stall with negative lift.
- This stall however is a safety benefit as it helps limit the glider excursion
- during the gust and helps avoid the negative load limit, so we ignore negative
- lift in the stall safety margin.
+ A negative-g stall during a gust however is a safety benefit as it helps
+ limit the glider excursion during the gust and helps avoid the negative
+ load limit, so we ignore negative lift in the stall safety margin.
  We can write rewrite 
 \begin_inset Formula $\overline{sm}_{stall}$
 \end_inset
@@ -1670,52 +1675,116 @@ In these results we model a fully loaded two-seat 17m glider, in particular
  
 \end_layout
 
-\begin_layout Standard
-After the glider is off the ground, and during the initial climb the pilot
- simply targets a constant angle of attack via elevator control.
- The main climb begins when the vertical velocity starts to drop, and during
- this time the pilot targets a constant angle of attack, while damping changes
- in velocity.
- The glider releases at a rope angle of 75
-\begin_inset Formula $^{\circ}.$
-\end_inset
-
- Of course most pilots don't have an angle-of-attack indicator, but the
- angle of attack corresponds to how aggressive the pilot is with the elevator.
- An angle of attack of zero is almost no elevator control.
- 
-\end_layout
-
 \begin_layout Subsection
-Constant T/W = 0.5
+Constant T/W = 1.0 launch
 \end_layout
 
 \begin_layout Standard
 Here the winch operator adusts the throttle to maintain a nearly constant
- tension of half the glider's weight.
+ tension equal to the glider's weight.
  The throttle ramps up from zero to the necessary value in about 2 sec.
  To lower the tension at release, the throttle is set to zero when the rope
  angle reaches 80% of the release angle 
 \end_layout
 
-\begin_layout Subsection
-Constant T/W = 0.6 launch
+\begin_layout Standard
+After the glider is off the ground, and during the initial climb the pilot
+ simply targets a constant angle of attack (AoA) via elevator control.
+ The main climb begins when the vertical velocity starts to drop, and during
+ this time the pilot attempts to keep a roughly constant AoA, while partially
+ damping changes in velocity.
+ The glider releases at a rope angle of 75
+\begin_inset Formula $^{\circ}.$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Of course most pilots don't have an AoA indicator, but the AoA corresponds
+ to how aggressive the pilot is with the elevator.
+ An angle of attack of zero is almost no elevator control.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Initial AoA 3 deg, main climb AoA 2 deg
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="1">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a) 
+\begin_inset Graphics
+	filename flight vs init AoA T=1.pdf
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Flight characteristics vs angle of attack
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
-Constant T/W = 0.7 launch
+Constant T/W = 0.75 launch
 \end_layout
 
 \begin_layout Subsection
-Constant T/W = 0.8 launch
-\end_layout
-
-\begin_layout Subsection
-Constant T/W = 0.9 launch
-\end_layout
-
-\begin_layout Subsection
-Constant T/W = 1.0 launch
+Constant T/W = 0.5 launch 
 \end_layout
 
 \begin_layout Subsection
@@ -3587,7 +3656,7 @@ key "key-4"
 
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/safeFlightSpeedsForRecovery,D:/Winch launch physics/winchrep/bibtex/gustDistribModels,D:/Winch launch physics/winchrep/bibtex/georgeMoore,D:/Winch launch physics/winchrep/bibtex/aerodynamics"
+bibfiles "D:/Winch launch physics/winchrep/bibtex/winchAccidents,D:/Winch launch physics/winchrep/bibtex/wingStressesLiftCG,D:/Winch launch physics/winchrep/bibtex/regulations,D:/Winch launch physics/winchrep/bibtex/fullPhysSims,D:/Winch launch physics/winchrep/bibtex/flight&trainingGuidelines,D:/Winch launch physics/winchrep/bibtex/gustDistribModels,D:/Winch launch physics/winchrep/bibtex/georgeMoore,D:/Winch launch physics/winchrep/bibtex/aerodynamics"
 options "plain"
 
 \end_inset
