@@ -1074,8 +1074,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
     #             print 'pause'          
     #        print t, 't:{:8.3f}| x:{:8.3f}| xD:{:8.3f}| y:{:8.3f}| yD:{:8.3f}| D/L:{:8.3f}|, L/D :{:8.3f}|'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,elev',t,deg(pl.elev)           
-            if t>4000:
-                pl.elev = rad(20)
+            if t>5000:
+                pl.elev = gl.maxElev
                 print 'FORCING ELEVATOR TO FULL!!'
                 
             if not save is None and t > save[1] and not os.path.exists(statefile):
@@ -1145,13 +1145,14 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
 ##########################################################################                        
 #--- rope lenght
 # lo = 6500 * 0.305         #  6500 ft to meters initial rope length (m)
-lo = 1000                 # m initial rope length
+lo = 1000                 # m initial rope length  
 
 #--- plotting
 smoothed = True
 path = 'D:\\Winch launch physics\\results\\test{}m'.format(lo)
 if not os.path.exists(path): os.mkdir(path)
 #--- loop
+loop = False
 loopWhich = 0 #which setpoint element to change in loop
 # loopWhich = 'both'
 #--- logging
@@ -1180,10 +1181,10 @@ ntime = int((tEnd - tStart)/dt) + 1  # number of time steps to allow for data po
 vhead = 0
 #standard 1-cosine dynamic gust perpendicular to glider path
 startGust = None
-# startGust = '7 s'
+# startGust = '25 s'
 # startGust = '20 m'
-widthGust = 12  #m, halfwidth
-vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s
+widthGust = 110  #m, halfwidth
+vGustPeak = 15 * (widthGust/float(110))**(1/float(6))  #m/s Leave this alone (standard) 
 #updraft step function at a single time  
 vupdr = 0 
 hupdr = 1e6 #m At what height to turn the updraft on for testing
@@ -1224,7 +1225,7 @@ recovDelay = 0.5
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3 ,3 , 90]  # deg,speed, deg last one is climb angle to transition to final control
 control = ['alpha','alphaVd']  # Use '' for none
-setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to final control
+setpoint = [6,6,30]  # deg,speed, deg last one is climb angle to transition to final control
 
 # control = ['alpha','alpha']  # Use '' for none
 # setpoint = [3,3,30]  # deg,speed, deg last one is climb angle to transition to final control
@@ -1250,9 +1251,8 @@ setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to f
 # setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
 
 # Loop over parameters for study, optimization
-loop = False
 if loop:
-    loopParams = linspace(5,8,20) #Alpha\
+    loopParams = linspace(0,8,50) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #
@@ -1390,12 +1390,12 @@ for iloop,param in enumerate(loopParams):
         gndTorq = smooth(gData['gndTorq'],tData,1)
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
-        #don't smooth safety margins more than once!
-        smRope = smooth(rData['sm'],tData,1) 
-        smStall =smooth(gData['smStall'],tData,1) 
-        smStruct = smooth(gData['smStruct'],tData,1) 
-        smRecov = smooth(gData['smRecov'],tData,1)
-        vGust = smooth(aData['vGust'],tData,1)
+        #don't smooth safety margins!
+        smRope = smooth(rData['sm'],tData,0) 
+        smStall =smooth(gData['smStall'],tData,0) 
+        smStruct = smooth(gData['smStruct'],tData,0) 
+        smRecov = smooth(gData['smRecov'],tData,0)
+        vGust = smooth(aData['vGust'],tData,0)
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]

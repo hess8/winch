@@ -89,6 +89,7 @@ Physics Department, Brigham Young University, Provo, Utah
 \end_layout
 
 \begin_layout Author Email
+
 bret_hess@byu.edu
 \end_layout
 
@@ -111,66 +112,10 @@ We define structural, stall rope break and post-break recovery safety margins
  Using a new simulation, we plot the safety margins vs time in winch launches.
 \end_layout
 
-\begin_layout Section
-Sims scheme
-\end_layout
-
-\begin_layout Standard
-1000m
-\end_layout
-
-\begin_layout Enumerate
-No gusts
-\end_layout
-
-\begin_deeper
-\begin_layout Enumerate
-find safest and highest launches at Tdip = 1.
+\begin_layout Abstract
+We also simulate dynamically the interaction of the glider with wind gusts
+ while on the winch.
  
-\end_layout
-
-\end_deeper
-\begin_layout Enumerate
-gusts: take safest as reference.
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Enumerate
-rotation: at rotation speed in reference
-\end_layout
-
-\begin_layout Enumerate
-max climb angle; at VAw
-\end_layout
-
-\begin_layout Enumerate
-just before release 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Wing breaking from vertical gust: L>Lmax
-\end_layout
-
-\begin_layout Itemize
-Rope break: not dangerous
-\end_layout
-
-\begin_layout Standard
-Risks during rotation:
-\end_layout
-
-\begin_layout Itemize
-stall from acceleration:
-\end_layout
-
-\begin_layout Itemize
-stall from gust
-\end_layout
-
-\begin_layout Itemize
-rope break
 \end_layout
 
 \begin_layout Section
@@ -1678,10 +1623,6 @@ Constant T/W = 1.0 launch
 \end_layout
 
 \begin_layout Standard
-!!!!!!!!!!!!!!!!!!!!! SYNCH WITH THE shr VERSION....
-\end_layout
-
-\begin_layout Standard
 Here the winch operator adusts the throttle to maintain a nearly constant
  tension equal to the glider's weight.
  The throttle ramps up from zero to the necessary value in about 2 sec.
@@ -1835,7 +1776,8 @@ reference "fig:T=1, (3,2)"
 \end_inset
 
 b.
- Here the greater the safety margin (SM), the better.
+ Here the greater the safety margin (SM), the less risk, and SM <0 means
+ that the flight is unacceptable (and possibly harmful) .
  Because T/W is about 1.0 and the weak link is rated at T
 \begin_inset Formula $_{max}=1.3$
 \end_inset
@@ -1851,14 +1793,24 @@ W, the rope SM (green) is about 0.3 g through much of hte launch.
 \end_layout
 
 \begin_layout Standard
-Why was this set of AoAs: (3,2) deg chosen first for presentation? 
+This set of AoAs: (3,2) was chosen for the first detailed examination because,
+ as fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Flight-characteristics-vs AoA loop"
+
+\end_inset
+
+) shows, the height gain is almost at maximum for these values, without
+ large (agressive) angles of attack.
+ 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Tabular
@@ -1906,6 +1858,13 @@ b)
 
 \begin_layout Plain Layout
 Flight characteristics vs angle of attack
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Flight-characteristics-vs AoA loop"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1922,8 +1881,36 @@ Flight characteristics vs angle of attack
 
 \end_layout
 
-\begin_layout Subsection
-Constant T/W = 0.5 launch 
+\begin_layout Subsubsection
+Initial AoA 6 deg, main climb AoA 6 deg
+\end_layout
+
+\begin_layout Standard
+We now show a launch with aggressively controlled elevator at T/W = 1, with
+ the pilot targeting angles of attack (6,6) degrees for initial and main
+ launch phases, seen in fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:T=1, (6,6)"
+
+\end_inset
+
+.
+ Now the climb angle reaches 48 degrees, and the maximum speeds are lower.
+ Despite the lower speeds ( this is a more dangerous launch because the
+ stall margin drops to about 0.5 g when the glider is only 40 m above the
+ ground.
+ This illustrates our point that the safer speed is closer to our proposed
+ 
+\begin_inset Formula $V_{AW}$
+\end_inset
+
+ than to the manufacturer's limit of 
+\begin_inset Formula $V_{A}$
+\end_inset
+
+ in many cases.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1931,6 +1918,104 @@ Constant T/W = 0.5 launch
 wide false
 sideways false
 status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="1">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a) 
+\begin_inset Graphics
+	filename Winch launch6,6T=1.pdf
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\begin_inset Graphics
+	filename SMs6,6T=1.pdf
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Simulation results for T/W = 1 with 1000 m rope, and aggressive AoAs (6,6)
+ deg for initial and main launch phases
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:T=1, (6,6)"
+
+\end_inset
+
+.
+ a) Key launch values b) Safety margins
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Constant T/W = 0.5 launch 
+\end_layout
+
+\begin_layout Standard
+We now drop the tension by a factor of two to T/W = 0.5, and go back to the
+ moderate AoAs (3,2) deg for initial and main launch phases.
+ Of course the speeds are lower than the T/W = 1.0 case and there is a much
+ lower height reached (260 m).
+ But what's interesting is that the structural, stall and recovery safety
+ margins essentially do not change between the T/W =1.0 and 0.5 cases when
+ these moderate angles of attack are used.
+ The launch happens later, but the loads and safety margins do not depend
+ on rope tension in this range.
+ .
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Tabular
@@ -2011,10 +2096,32 @@ Constant throttle launch with maximum T/W = 1.25
 \end_layout
 
 \begin_layout Standard
+Again because of the power curve characteristics of the engine at high rope
+ speed, the tension drops significantly between 3 and 7 seconds, during
+ the rotation and intial climb, which avoids overspeed.
+ This reduction is convenienly the type of tension dip proposed by Moore
+\begin_inset CommandInset citation
+LatexCommand citep
+key "2012MooreConstAoaTdip"
+
+\end_inset
+
+ at high tensions during rotation and initial climb to maintain almost constant
+ angle of attack without overspeed.
+ For T/W = 1.25, the tension is very close to the weak link maximum (1.3 W),
+ so the tension safety factor is low during much of the launch,.
+ But becuase of the dip in tension during rotation and initial climb, the
+ tension safety factor doesn't drop to low values until a height of about
+ 60m, a fairly safe height because of the higher 40 m/s speed which gives
+ a recovery safety margin of 100m.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Tabular
@@ -2229,22 +2336,7 @@ Results of gust simulations
 \end_layout
 
 \begin_layout Standard
-For Reynolds number of about 1x10
-\begin_inset Formula $^{6}$
-\end_inset
-
-, which is typical in sailplanes, experiments and computation show
-\begin_inset CommandInset citation
-LatexCommand citep
-key "2002_hysteresis_MitalTheoryExpt"
-
-\end_inset
-
- that the hysteresis in stall is only about 2 degrees.
- So unlike a stall due to slow airspeed, the lift is restored after stall
- during a sudden gust because a low angle of attack returns without pilot
- action, either because the gust ends quickly or because the horizontal
- stabilier reorients the glider.
+Still testing this.
  
 \end_layout
 

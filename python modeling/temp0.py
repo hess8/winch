@@ -1074,8 +1074,8 @@ def stateDer(S,t,gl,ai,rp,wi,tc,en,op,pl,save):
     #             print 'pause'          
     #        print t, 't:{:8.3f}| x:{:8.3f}| xD:{:8.3f}| y:{:8.3f}| yD:{:8.3f}| D/L:{:8.3f}|, L/D :{:8.3f}|'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
 #            print 't,elev',t,deg(pl.elev)           
-            if t>4000:
-                pl.elev = rad(20)
+            if t>5000:
+                pl.elev = gl.maxElev
                 print 'FORCING ELEVATOR TO FULL!!'
                 
             if not save is None and t > save[1] and not os.path.exists(statefile):
@@ -1194,7 +1194,7 @@ if abs(vupdr) > 0: print 'Updraft of {} m/s, starting at {} m'.format(vupdr,hupd
 #--- throttle and engine
 tRampUp = 2 # time to ramp throttle up
 tHold = 0.5
-targetT = 1.0
+targetT = 1.25
 dipT = 0.8
 thrmax =  1.0
 tcUsed = True   # uses the torque controller
@@ -1252,7 +1252,7 @@ setpoint = [3,2,30]  # deg,speed, deg last one is climb angle to transition to f
 # Loop over parameters for study, optimization
 loop = True
 if loop:
-    loopParams = linspace(5,8,20) #Alpha\
+    loopParams = linspace(0,8,70) #Alpha\
 else:
     loopParams = [setpoint[0]]
 #
@@ -1390,12 +1390,12 @@ for iloop,param in enumerate(loopParams):
         gndTorq = smooth(gData['gndTorq'],tData,1)
         ropeTheta = smooth(rData['theta'],tData,1)
         ropeTorq = smooth(rData['torq'],tData,1)
-        #don't smooth safety margins more than once!
-        smRope = smooth(rData['sm'],tData,1) 
-        smStall =smooth(gData['smStall'],tData,1) 
-        smStruct = smooth(gData['smStruct'],tData,1) 
-        smRecov = smooth(gData['smRecov'],tData,1)
-        vGust = smooth(aData['vGust'],tData,1)
+        #don't smooth safety margins!
+        smRope = smooth(rData['sm'],tData,0) 
+        smStall =smooth(gData['smStall'],tData,0) 
+        smStruct = smooth(gData['smStruct'],tData,0) 
+        smRecov = smooth(gData['smRecov'],tData,0)
+        vGust = smooth(aData['vGust'],tData,0)
     else:
         #Shorten labels before plotting
         x = gl.x[:itr]
