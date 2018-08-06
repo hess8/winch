@@ -23,14 +23,14 @@ def writefile(lines,filepath): #need to have \n's inserted already
 
 class readData:
     '''Reads data from files downloaded from https://mesonet.agron.iastate.edu/request/awos/1min.php.  Collates them into one file with 
-    the format: day (starting from first datapoint), time, wind(m/s), gust(m/s)
+    the format: day (starting from first datapoint), time, wind(kts), gust(kts)
     '''
     
     def __init__(self):
         return 
     
     def readVar(self,inPath,type):
-        '''Reads date, time and wind or gust speed into an array
+        '''Reads date, time and wind *or* gust speed into an array
         Format BNW BOONE MUNI 1995-01-01 01:34 15'''
         dtFormat = "%Y-%m-%d %H:%M"
         out = []
@@ -50,12 +50,12 @@ class readData:
                     var = info[5]
                 else:
                     var = ''
-                    print 'Line {} in type {} has a length of only {}.'.format(i,type,len(info))
+                    print 'Line {} in type {} has a length of only {}.'.format(i,type,len(info)),info
                 d = datetime.strptime(date+' '+hrmin, dtFormat)
                 secs = int(time.mktime(d.timetuple()))
                 out.append([date,hrmin,secs,var])
             else:
-                print 'Line {} in type {} does not have complete time and date:'.format(len(info),type),info
+                print 'Line {} in type {} does not have complete time and date:'.format(i,type),info
                 sys.exit('Stop!')
         print
         return out

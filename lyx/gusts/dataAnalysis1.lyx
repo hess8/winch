@@ -127,7 +127,7 @@ to the nearest
 \end_inset
 
  by one.
- The relative frequen is 
+ The relative frequeny is 
 \begin_inset Formula 
 \[
 f(v_{b,j})=f(j)=\frac{n(j)}{N}
@@ -242,7 +242,160 @@ has been
 :
 \begin_inset Formula 
 \[
-P(\{v'\}_{max}\ge v_{2},t_{2}|\{v\}_{max}\le v_{1},t_{obs})
+P(\{v'\}_{max}\ge v_{2},t_{2}|\{v\}_{max}=v_{1},t_{1})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Frequency in time correlations
+\end_layout
+
+\begin_layout Standard
+We simply test the data for the cases: 
+\end_layout
+
+\begin_layout Subsubsection
+set 
+\begin_inset Formula $t_{1}$
+\end_inset
+
+(about 30 min) and 
+\begin_inset Formula $t_{2}$
+\end_inset
+
+ (about 5min).
+ 
+\series medium
+For each 
+\begin_inset Formula $t_{i}\ge t_{1}$
+\end_inset
+
+, we measure the past 
+\begin_inset Formula $\{v\}_{max}$
+\end_inset
+
+ from the period 
+\begin_inset Formula $t_{i}-t_{1}$
+\end_inset
+
+ to 
+\begin_inset Formula $t_{i},$
+\end_inset
+
+ and the 
+\begin_inset Quotes eld
+\end_inset
+
+future
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset Formula $\{v'\}_{max}$
+\end_inset
+
+ from the period 
+\begin_inset Formula $t_{i+1}$
+\end_inset
+
+ to 
+\begin_inset Formula $t_{i+1}+t_{2}.$
+\end_inset
+
+ We increment by 1 the entry 
+\begin_inset Formula $k,l$
+\end_inset
+
+ that correspond closest to 
+\begin_inset Formula $\{v\}_{max}$
+\end_inset
+
+ and 
+\begin_inset Formula $\{v'\}_{max}$
+\end_inset
+
+ in the counting matrix 
+\begin_inset Formula $n$
+\end_inset
+
+, even if 
+\begin_inset Formula $\{v'\}_{max}\le\{v\}_{max}$
+\end_inset
+
+ .
+ The total number of 
+\begin_inset Quotes eld
+\end_inset
+
+events
+\begin_inset Quotes erd
+\end_inset
+
+ tested should be 
+\begin_inset Formula $\Sigma_{k}n_{l,k}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Conditional probablility 
+\end_layout
+
+\begin_layout Standard
+The relative frequency of the event 
+\begin_inset Formula $\{v'\}_{max}|\{v\}_{max}$
+\end_inset
+
+ that yields 
+\begin_inset Formula $l,k$
+\end_inset
+
+ is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f(\{v'\}_{max},t_{2}|\{v\}_{max},t_{1})=f_{l,k}=\frac{n_{l,k}}{\Sigma_{i,j}n_{i,j}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which is proportional to the probability that we would find the event 
+\begin_inset Formula $\{v'\}_{max}|\{v\}_{max}$
+\end_inset
+
+ when sampling 
+\begin_inset Formula $t_{1},t_{2}$
+\end_inset
+
+ randomly.
+\end_layout
+
+\begin_layout Standard
+But we want a conditional probability that involves an inequality on the
+ final gust speed.
+ 
+\begin_inset Formula $\{v\}_{max}=v_{1}$
+\end_inset
+
+ is already specified, so the probability of that occuring is 1, so it involves
+ only the 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+P(\{v'\}_{max}\ge v_{k},t_{2}|\{v\}_{max}=v_{l},t_{1})=P(k|l)=P_{l,k}=\frac{\Sigma_{j>k}n_{l,j}}{\Sigma_{all\,j}n_{l,j}}
 \]
 
 \end_inset
