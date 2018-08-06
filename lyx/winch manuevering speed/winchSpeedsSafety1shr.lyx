@@ -1794,15 +1794,22 @@ W, the rope SM (green) is about 0.3 g through much of hte launch.
 
 \begin_layout Standard
 This set of AoAs: (3,2) was chosen for the first detailed examination because,
- as fig 
+ as figs 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "fig:Flight-characteristics-vs AoA loop"
+reference "fig:Flight-characteristics-vs initial AoA loop"
 
 \end_inset
 
-) shows, the height gain is almost at maximum for these values, without
- large (agressive) angles of attack.
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Flight-characteristics-vs main AoA loop"
+
+\end_inset
+
+show, the height gain is almost at maximum for these values, without large
+ (agressive) angles of attack.
  
 \end_layout
 
@@ -1824,7 +1831,7 @@ status open
 \begin_layout Plain Layout
 a) 
 \begin_inset Graphics
-	filename flight vs init AoA T=1.pdf
+	filename Flight T=1 vs Aoa (x,3).pdf
 	scale 50
 
 \end_inset
@@ -1841,6 +1848,13 @@ a)
 
 \begin_layout Plain Layout
 b)
+\begin_inset Graphics
+	filename SMs T=1 vs Aoa (x,3).pdf
+	scale 50
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1857,15 +1871,76 @@ b)
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Flight characteristics vs angle of attack
+a) Flight characteristics vs intial angle of attack,, while the main climb
+ AoA is held at 3.0 deg.
+ b) Safety margins
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:Flight-characteristics-vs AoA loop"
+name "fig:Flight-characteristics-vs initial AoA loop"
 
 \end_inset
 
 
 \end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="1">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a) 
+\begin_inset Graphics
+	filename Flight T=1 vs Aoa (3,x).pdf
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+b)
+\begin_inset Graphics
+	filename SMs T=1 vs Aoa (3,x).pdf
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
 
 \end_inset
 
@@ -1873,6 +1948,24 @@ name "fig:Flight-characteristics-vs AoA loop"
 \end_layout
 
 \begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+a) Flight characteristics vs main climb angle of attack, while the initial
+ AoA is held at 3.0 deg.
+ .
+ b) Safety margins
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Flight-characteristics-vs main AoA loop"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
@@ -1886,9 +1979,9 @@ Initial AoA 6 deg, main climb AoA 6 deg
 \end_layout
 
 \begin_layout Standard
-We now show a launch with aggressively controlled elevator at T/W = 1, with
- the pilot targeting angles of attack (6,6) degrees for initial and main
- launch phases, seen in fig 
+We now show details of a launch with aggressively controlled elevator at
+ T/W = 1, with the pilot targeting angles of attack (6,6) degrees for initial
+ and main launch phases, seen in fig 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:T=1, (6,6)"
@@ -1897,11 +1990,16 @@ reference "fig:T=1, (6,6)"
 
 .
  Now the climb angle reaches 48 degrees, and the maximum speeds are lower.
- Despite the lower speeds ( this is a more dangerous launch because the
- stall margin drops to about 0.5 g when the glider is only 40 m above the
- ground.
- This illustrates our point that the safer speed is closer to our proposed
- 
+ Despite the lower speeds this is a 
+\emph on
+more
+\emph default
+ dangerous launch because the stall margin drops to about 0.25 g at rotation,
+ and the recovery margin height is only 6m then.
+ In contrast for AoA of (3,3) the stall margin is 0.7g, and the recovery
+ margin is a much safer 11m.
+ This illustrates our point that in many cases the safer speed is closer
+ to our proposed 
 \begin_inset Formula $V_{AW}$
 \end_inset
 
@@ -1909,7 +2007,7 @@ reference "fig:T=1, (6,6)"
 \begin_inset Formula $V_{A}$
 \end_inset
 
- in many cases.
+.
  
 \end_layout
 
@@ -2005,7 +2103,7 @@ We now drop the tension by a factor of two to T/W = 0.5, and go back to the
  But what's interesting is that the structural, stall and recovery safety
  margins essentially do not change between the T/W =1.0 and 0.5 cases when
  these moderate angles of attack are used.
- The launch happens later, but the loads and safety margins do not depend
+ The takeoff happens later, but the loads and safety margins do not depend
  on rope tension in this range.
  .
  
@@ -2015,7 +2113,7 @@ We now drop the tension by a factor of two to T/W = 0.5, and go back to the
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Tabular

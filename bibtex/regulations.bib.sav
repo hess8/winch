@@ -1,0 +1,9 @@
+% Encoding: UTF-8
+
+@Misc{CS-22GliderAirworthiness,
+  author = {EASA},
+  title  = {CS-22 Sailplanes and Powered Sailplanes},
+  url    = {https://www.easa.europa.eu/certification-specifications/cs-22-sailplanes-and-powered-sailplanes},
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}
