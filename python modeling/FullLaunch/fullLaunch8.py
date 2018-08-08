@@ -196,9 +196,6 @@ class plots:
         self.iColor = 0 #counter for plots, so each variable has a different color
         self.path = path
         self.linew = 3.0
-#         self.colorsList = ['palevioletred', u'#fc4f30', u'#6d904f','darkorange', 'darkviolet', 
-#         u'#348ABD', u'#e5ae38', u'#A60628', u'#7A68A6', 'mediumaquamarine', u'#D55E00', 'violet',
-#           u'#0072B2', u'#CC79A7',u'#30a2da',u'#009E73','peru','slateblue',u'#8b8b8b',] # u'#F0E442',u'#467821', u'#56B4E9',
         self.colorsList = ['palevioletred', 'dodgerblue','green', 'darkorange', 'darkviolet','blue', 'red','orange', 
                    'limegreen', 'brown','mediumaquamarine',  'violet','lightcoral', 'olive','tomato','teal','peru','mediumorchid','slateblue','crimson']
         return 
@@ -326,8 +323,7 @@ class plots:
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
         if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
         show(block = holdOpen)  
-#         show()  
-
+ 
 class logger:
     def __init__(self,path,loopWhich):
         self.terminal = sys.stdout
