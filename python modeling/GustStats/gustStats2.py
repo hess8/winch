@@ -85,6 +85,42 @@ class readData:
         print
         return idata,data
     
+class independent:
+    def __init__(self):
+        return    
+    
+    def nEventsCount(self,t2,dt,nData,data):
+        '''For each data point find vmax during the time t2 past this point'''
+        print 'Countingfuture wind and gust events'
+        gustmax = max(data['gust']) #this is an integer in knots
+        nWindEvents = zeros((gustmax+1),dtype = int32)
+        nGustEvents = zeros((gustmax+1),dtype = int32)
+        n2 = int(rint(t2/float(dt)))
+        for i in range(nData):
+            if mod(i,10000)==0:
+                print '{} '.format(i),
+            if mod(i,100000)==0:
+                print
+            # check that there are no time skips in the region of t-t1 to t+t2:
+            index2 = i + n2
+            if index2 <= nData - 1:
+                if data[index2]['totmin'] != data[i]['totmin'] + t2:
+                    print 'Skips near data point {}: indexed time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  
+                else: #all OK
+                    maxWindfut =  max(data[i+1:index2]['wind'])
+                    nWindEvents[maxWindfut] += 1
+                    maxGustfut =  max(data[i+1:index2]['gust'])
+                    nGustEvents[maxGustfut] += 1                  
+        return nWindEvents,nGustEvents,gustmax
+    
+    def probNextHigherThan(self,nMat,gustmax):
+        '''Probability that maximum speed in the next t_2 minutes will be greater than v_ (index j), independent of previous velocity'''
+        prob = zeros((gustmax+1),dtype = float32)
+        arrayCount = sum(nMat)
+        for i in range(gustmax+1):
+            prob[i] = sum(nMat[i,j:])/float(arrayCount)                        
+        return prob  
+    
 class correlate:
     
     def __init__(self):
@@ -118,9 +154,7 @@ class correlate:
                     nWindEvents[maxWindpast,maxWindfut] += 1
                     maxGustpast = max(data[index1:i]['gust'])
                     maxGustfut =  max(data[i+1:index2]['gust'])
-                    nGustEvents[maxGustpast,maxGustfut] += 1  
-#                     if maxGustpast == 0 and maxGustfut == 15:
-#                         print 'pause'                   
+                    nGustEvents[maxGustpast,maxGustfut] += 1                   
         return nWindEvents,nGustEvents,gustmax
     
     def probNextHigherThan(self,nMat,gustmax):
@@ -134,8 +168,6 @@ class correlate:
                 for j in range(gustmax+1):
                     prob[i,j] = sum(nMat[i,j:])/float(rowCount)                
         return prob,rowCounts
-            
-
 
 class plots:
     
@@ -146,16 +178,24 @@ rdData = readData()
 inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt',
            'C:\\Users\\owner\\Downloads\\knx01-05onemin.txt',
             'C:\\Users\\owner\\Downloads\\knx06-10onemin.txt']
-inPaths = ['C:\\Users\\owner\\Downloads\\knxOneMonthTest.txt']
+# inPaths = ['C:\\Users\\owner\\Downloads\\knxOneMonthTest.txt']
 # inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt']
 outPath = 'C:\\Users\\owner\\Downloads\\'
 nData,data = rdData.readAll(inPaths)
 print 'number of complete datapoints',nData
-### correlations ### 
-corr = correlate() #instance
+
 t1 = 30 #min 
 t2 = 5  #min
 dt = 1 #min; the data sampling period
+### independent events probability ###
+#count the events where gusts greater than v occur in a time t2 ahead of ti
+ind = independent()
+nWindEvents,nGustEvents,gustmax = ind.nEventsCount(t2,dt,nData,data)
+probNextWindHigherThan = ind.probNextHigherThan(nWindEvents,gustmax)
+
+
+### correlations ### 
+corr = correlate() #instance
 nWindEvents,nGustEvents,gustmax = corr.nEventsCount(t1,t2,dt,nData,data)
 print 'Number of wind events {}; skipped {}'.format(sum(nWindEvents), nData - sum(nWindEvents))
 print 'Number of gust events: {}'.format(sum(nWindEvents))
@@ -176,11 +216,11 @@ fig2 = matshow(log10(nGustEventsDispl+1));colorbar();title('Gust Correlation'),y
 # show(fig1)
 # show(fig2)
 
-### probability ###
+### correlated probability ###
 print 'probabilities:' 
 #note if a row (velocity) has no events in it, it's given probability of zero
-probNextWindHigherThan,rowCountw = corr.probNextHigherThan(nWindEventsDispl,gustmax)
-probNextGustHigherThan,rowCountg = corr.probNextHigherThan(nGustEventsDispl,gustmax)
+probNextWindHigherThan,rowCountw = corr.probNextHigherThan(nWindEvents,gustmax)
+probNextGustHigherThan,rowCountg = corr.probNextHigherThan(nGustEvents,gustmax)
 factor1 = 100
 minWprob = min(probNextWindHigherThan[where(probNextWindHigherThan>0)]) 
 minGprob = min(probNextGustHigherThan[where(probNextGustHigherThan>0)]) 
@@ -197,5 +237,8 @@ for i in range(gustmax+1):
 fig3 = matshow(log10(relProbNextWindHigherThanDispl));colorbar();title('Wind probability (relative)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-min max speed (kts)'.format(t2))
 fig4 = matshow(log10(relProbNextGustHigherThanDispl));colorbar();title('Gust probability (relative)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-min max speed (kts)'.format(t2)) 
 show(fig1); show(fig2);show(fig3);show(fig4)
+
+
+
 
 print 'Done'
