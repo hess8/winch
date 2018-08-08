@@ -233,10 +233,10 @@ class plots:
 ### read data ###  
 close('all')         
 rdData = readData()
-# inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt',
-#            'C:\\Users\\owner\\Downloads\\knx01-05onemin.txt',
-#             'C:\\Users\\owner\\Downloads\\knx06-10onemin.txt']
-inPaths = ['C:\\Users\\owner\\Downloads\\knxOneMonthTest.txt']
+inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt',
+           'C:\\Users\\owner\\Downloads\\knx01-05onemin.txt',
+            'C:\\Users\\owner\\Downloads\\knx06-10onemin.txt']
+# inPaths = ['C:\\Users\\owner\\Downloads\\knxOneMonthTest.txt']
 # inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt']
 outPath = 'C:\\Users\\owner\\Downloads\\'
 nData,data = rdData.readAll(inPaths)
@@ -245,7 +245,7 @@ print 'number of complete datapoints',nData
 t1 = 30 #min 
 t2 = 5  #min
 dt = 1 #min; the data sampling period
-probFloor = 1e-6
+probFloor = 1e-9
 ### independent events probability ###
 #count the events where gusts >= v occur in a time t2 ahead of ti
 ind = independent(probFloor)
@@ -290,9 +290,10 @@ xs = [range(gustmax+1)]*3
 ys = [log10(probNextWindGTEind),log10(probNextGustGTEind),log10(probNextWindGETcomb),log10(probNextGustGETcomb)]
 titlestr = 'Probabilities of wind max in next {} minutes'.format(t2)
 xlbl = 'Future wind speed (kts)'
-ylbl = 'Probability'
-strConditional = 'after {} min with winds >= {} kts'.format(t1,vPastCap)
-legendLabels = ['Wind: independent','Gust: independent', 'Wind: {}'.format(strConditional),'Gust: {}'.format(strConditional) ]
+ylbl = 'Probability (log10)'
+strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
+strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
+legendLabels = ['Wind: independent','Gust: independent', 'Wind: {}'.format(strConditionalW),'Gust: {}'.format(strConditionalG) ]
 pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
 
 # plot(probNextWindGTE); title('Wind probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
