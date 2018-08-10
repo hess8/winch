@@ -86,46 +86,6 @@ class readData:
                    # sys.exit('Stop!')
         print
         return idata,data
-    
-class independent:
-    def __init__(self,probFloor):
-        self.probFloor = probFloor
-        return    
-    
-    def nEventsCount(self,t2,dt,nData,data):
-        '''For each data point find vmax during the time t2 past this point'''
-        print 'Countingfuture wind and gust events'
-        gustmax = max(data['gust']) #this is an integer in knots
-        nWindEvents = zeros((gustmax+1),dtype = int32)
-        nGustEvents = zeros((gustmax+1),dtype = int32)
-        n2 = int(rint(t2/float(dt)))
-        for i in range(nData):
-#         for i in range(1000):
-            if mod(i,10000)==0:
-                print '{} '.format(i),
-            if mod(i,100000)==0:
-                print
-            # check that there are no time skips in the region of ti+t2:
-            index2 = i + n2
-            if index2 <= nData - 1:
-                if data[index2]['totmin'] != data[i]['totmin'] + t2:
-                    print 'Skips near data point {}: final time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  
-                else: #all OK
-                    
-                    maxWindfut =  max(data[i+1:index2]['wind'])
-                    nWindEvents[maxWindfut] += 1
-                    maxGustfut =  max(data[i+1:index2]['gust'])
-                    nGustEvents[maxGustfut] += 1  
-#                     print i, maxWindfut,maxGustfut               
-        return nWindEvents,nGustEvents,gustmax
-    
-    def probNextGTE(self,nMat,gustmax):
-        '''Probability that maximum speed in the next t_2 minutes will be >= vi, independent of previous velocity'''
-        prob = zeros((gustmax+1),dtype = float32)
-        arrayCount = sum(nMat)
-        for i in range(gustmax+1):
-            prob[i] = sum(nMat[i:])/float(arrayCount)                        
-        return prob + self.probFloor
 
 class correlate:   
     def __init__(self,probFloor):
@@ -246,13 +206,7 @@ t1 = 30 #min
 t2 = 5  #min
 dt = 1 #min; the data sampling period
 probFloor = 1e-9
-### independent events probability ###
-#count the events where gusts >= v occur in a time t2 ahead of ti
-ind = independent(probFloor)
-nWindEvents,nGustEvents,gustmax = ind.nEventsCount(t2,dt,nData,data)
-probNextWindGTEind = ind.probNextGTE(nWindEvents,gustmax)
-probNextGustGTEind = ind.probNextGTE(nGustEvents,gustmax)
-show(block = False)
+
 ### correlations ### 
 corr = correlate(probFloor) #instance
 nWindEvents,nGustEvents,gustmax = corr.nEventsCount(t1,t2,dt,nData,data)
@@ -261,7 +215,6 @@ print 'Number of gust events: {}'.format(sum(nWindEvents))
 for i in range(gustmax+1):
     for j in range(gustmax+1):
         print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
-
 nWindEventsDispl = nWindEvents
 nWindEventsDispl[0,0] = 0
 nGustEventsDispl = nGustEvents
@@ -272,7 +225,7 @@ fig2 = matshow(log10(nGustEventsDispl+1));colorbar();title('Gust Correlation'),y
 
 ### correlated probability ###
 print 'probabilities:' 
-#note if a row (velocity) has no events in it, it's given probability of zero
+#note if a row (velocity) has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
 probNextWindGTE,rowCountw = corr.probNextGTE(nWindEvents,gustmax) 
 probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,gustmax)
 fig3 = matshow(log10(probNextWindGTE));colorbar();title('Wind probability (log10)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-min max speed (kts)'.format(t2))
@@ -284,10 +237,15 @@ vPastCap = 15
 rows = range(vPastCap+1)
 probNextWindGETcomb,rowsCount = corr.probNextGTECombine(nWindEvents,rows,gustmax)
 probNextGustGETcomb,rowsCount = corr.probNextGTECombine(nGustEvents,rows,gustmax)
+# Independent probability...simply sum over all intial states
+vPastCap = gustmax
+rows = range(vPastCap+1)
+probNextWindInd,rowsCount = corr.probNextGTECombine(nWindEvents,rows,gustmax)
+probNextGustInd,rowsCount = corr.probNextGTECombine(nGustEvents,rows,gustmax)
 # Plots
 pl=plots(outPath) #instance
 xs = [range(gustmax+1)]*3
-ys = [log10(probNextWindGTEind),log10(probNextGustGTEind),log10(probNextWindGETcomb),log10(probNextGustGETcomb)]
+ys = [log10(probNextWindInd),log10(probNextGustInd),log10(probNextWindGETcomb),log10(probNextGustGETcomb)]
 titlestr = 'Probabilities of wind max in next {} minutes'.format(t2)
 xlbl = 'Future wind speed (kts)'
 ylbl = 'Probability (log10)'

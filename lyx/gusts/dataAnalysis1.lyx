@@ -88,65 +88,74 @@ bret_hess@byu.edu
 \end_layout
 
 \begin_layout Section
-Independent gust distribution
+Data
 \end_layout
 
 \begin_layout Standard
-The wind and is recorded at a fixed period 
+The wind is recorded at a fixed period 
 \begin_inset Formula $\Delta t_{s},$
 \end_inset
 
- and N samples are taken over time T, at times 
+ and N samples are taken at times 
 \begin_inset Formula $t_{i}$
 \end_inset
 
- , forming a set and form a set 
+ , and form an array
 \begin_inset Formula $\{v_{i}\}$
 \end_inset
 
-of size N.
+ of size N.
  The gust is the maximum wind speed (if over some minimum) during 
 \begin_inset Formula $\Delta t_{s}.$
 \end_inset
 
  The speeds are given by the nearest integer (but we could bin them further).
  The possible binning speeds are 
-\begin_inset Formula $\{v_{b,j}\}.$
+\begin_inset Formula $\{v_{,j}\}.$
 \end_inset
 
- For the N samples, we assign 
-\begin_inset Formula $v_{i}$
-\end_inset
-
-to the nearest 
-\begin_inset Formula $v_{b,j}$
-\end_inset
-
-, and increase 
-\begin_inset Formula $n_{b,j}$
-\end_inset
-
- by one.
- The relative frequeny is 
-\begin_inset Formula 
-\[
-f(v_{b,j})=f(j)=\frac{n(j)}{N}
-\]
-
-\end_inset
-
-
+ 
 \end_layout
 
 \begin_layout Standard
-The probability of seeing a gust within the bin 
-\begin_inset Formula $v_{b,j}$
+We count events and probabilities for the wind and the gust arrays separately.
+ In all cases we count an event only if it has no missing datapoints in
+ the event time period.
+ 
+\end_layout
+
+\begin_layout Section
+Independent gust distribution
+\end_layout
+
+\begin_layout Standard
+For each datapoint 
+\begin_inset Formula $i$
 \end_inset
 
- for a single observation is 
+, we find the maximum (wind,gust) 
+\begin_inset Formula $v_{max,i}$
+\end_inset
+
+ during the next time period of length 
+\begin_inset Formula $t_{2}$
+\end_inset
+
+ and increase the count of the corresponding index in the (wind, gust) event
+ counting array 
+\begin_inset Formula $n_{,j}$
+\end_inset
+
+ by one.
+ 
+\end_layout
+
+\begin_layout Standard
+After the event counting array is fully populated, the relative frequency
+ (probability of independent events) is calculated from
 \begin_inset Formula 
 \[
-P(v_{b,j})=\frac{n(j)}{N}
+f(v_{j})=f(j)=P_{ind}(v_{j})=\frac{n(j)}{N}=\frac{n(j)}{\Sigma_{k}n(k)}
 \]
 
 \end_inset
@@ -159,10 +168,14 @@ The probability of seeing a gust within the range
 \begin_inset Formula $v\ge v_{b,j}$
 \end_inset
 
- for a single observation is 
+ for a single observation is of duration 
+\begin_inset Formula $t_{2}$
+\end_inset
+
+ is:
 \begin_inset Formula 
 \[
-P(v\ge v_{b,j})=\Sigma_{j}^{j_{max}}\frac{n(k)}{N}
+P_{ind}(v\ge v_{b,j})=\frac{\Sigma_{l=j}^{l=j_{max}}n(l)}{N}=\frac{\Sigma_{j}^{j_{max}}n(l)}{\Sigma_{k}n(k)}
 \]
 
 \end_inset
@@ -185,30 +198,7 @@ seeing a gust below
 \begin_layout Standard
 \begin_inset Formula 
 \[
-P(v\le v_{b,j})=\Sigma_{0}^{j-1}\frac{n(k)}{N}=1-\Sigma_{j}^{j_{max}}\frac{n(k)}{N}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The probability of seing no gusts within the range 
-\begin_inset Formula $v\ge v_{b,j}$
-\end_inset
-
- for a time period 
-\begin_inset Formula $t$
-\end_inset
-
- is 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\left[P(v\le v_{b,j})\right]^{\frac{t}{\Delta t_{s}}}
+P_{ind}(v\le v_{b,j})=\Sigma_{0}^{j-1}\frac{n(k)}{N}=1-\Sigma_{j}^{j_{max}}\frac{n(k)}{N}
 \]
 
 \end_inset
@@ -235,14 +225,14 @@ We are interested in the time correlations between gusts.
 \begin_inset Formula $t_{1}$
 \end_inset
 
-has been 
+has been less than
 \begin_inset Formula $v_{1}$
 \end_inset
 
 :
 \begin_inset Formula 
 \[
-P(\{v'\}_{max}\ge v_{2},t_{2}|\{v\}_{max}=v_{1},t_{1})
+P(\{v'\}_{max}\ge v_{2},t_{2}|\{v\}_{max}\le v_{1},t_{1})
 \]
 
 \end_inset
@@ -255,7 +245,12 @@ Frequency in time correlations
 \end_layout
 
 \begin_layout Standard
-We simply test the data for the cases: 
+We first simply find in the data the event that occurs near each time point
+ 
+\begin_inset Formula $t_{i}$
+\end_inset
+
+ :
 \end_layout
 
 \begin_layout Subsubsection
@@ -322,11 +317,7 @@ future
 \begin_inset Formula $n$
 \end_inset
 
-, even if 
-\begin_inset Formula $\{v'\}_{max}\le\{v\}_{max}$
-\end_inset
-
- .
+, regardless of which v is greater.
  The total number of 
 \begin_inset Quotes eld
 \end_inset
@@ -335,7 +326,7 @@ events
 \begin_inset Quotes erd
 \end_inset
 
- tested should be 
+ tested is 
 \begin_inset Formula $\Sigma_{k}n_{l,k}$
 \end_inset
 
@@ -347,7 +338,7 @@ Conditional probablility
 \end_layout
 
 \begin_layout Standard
-The relative frequency of the event 
+The relative frequency of the event (probability of independent event) 
 \begin_inset Formula $\{v'\}_{max}|\{v\}_{max}$
 \end_inset
 
@@ -361,7 +352,7 @@ The relative frequency of the event
 \begin_layout Standard
 \begin_inset Formula 
 \[
-f(\{v'\}_{max},t_{2}|\{v\}_{max},t_{1})=f_{l,k}=\frac{n_{l,k}}{\Sigma_{i,j}n_{i,j}}
+f(\{v'\}_{max},t_{2}|\{v\}_{max},t_{1})=f_{l,k}=P_{ind}(=k|=l)=\frac{n_{l,k}}{\Sigma_{i,j}n_{i,j}}
 \]
 
 \end_inset
@@ -383,24 +374,48 @@ which is proportional to the probability that we would find the event
 
 \begin_layout Standard
 But we want a conditional probability that involves an inequality on the
- final gust speed.
+ final gust speed and the intial.
  
 \begin_inset Formula $\{v\}_{max}=v_{1}$
 \end_inset
 
- is already specified, so the probability of that occuring is 1, so it involves
- only the 
+ is already specified, so the probability of that occuring is 1, and the
+ sum is 
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \[
-P(\{v'\}_{max}\ge v_{k},t_{2}|\{v\}_{max}=v_{l},t_{1})=P(k|l)=P_{l,k}=\frac{\Sigma_{j>k}n_{l,j}}{\Sigma_{all\,j}n_{l,j}}
+P(\{v'\}_{max}\ge v_{k},t_{2}|\{v\}_{max}=v_{l},t_{1})=P(\ge k|=l)=P_{l,k}=\frac{\Sigma_{j\ge k}n_{l,j}}{\Sigma_{all\,j}n_{l,j}}
 \]
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+P(\{v'\}_{max}\ge v_{k},t_{2}|\{v\}_{max}\le v_{l},t_{1})=P(\ge k|\le l)=P_{l,k}=\frac{\Sigma_{j\ge k}n_{l,j}}{\Sigma_{all\,j}n_{l,j}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Why the conditional and independent MUST converge for the highest speeds:
+ eventually we reach a final speed in which there is only one event recorded,
+ and all other speeds are less than it.
+ Then 
+\begin_inset Formula $P_{l,k}=\frac{\Sigma_{j\ge k}n_{l,j}}{\Sigma_{all\,j}n_{l,j}}=\frac{1}{\Sigma_{all\,j}n_{l,j}}=P_{ind}(k)$
+\end_inset
+
+.
+ SO WE NEED TO INCREASE THE DATA AND LOOK FOR CONVERGENCE AT EACH V.
+ 
 \end_layout
 
 \begin_layout Section
