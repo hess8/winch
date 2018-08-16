@@ -95,9 +95,10 @@ class correlate:
         '''For each data point with time greater than t1, find vmax during the past t1 (label _l).  
         Then during the time t2 past this point, find vmax (label _k)'''
         print 'Counting past and future wind and gust events'
-        gustmax = max(data['gust']) #this is an integer in knots
-        nWindEvents = zeros((gustmax+1,gustmax+1),dtype = int32)
-        nGustEvents = zeros((gustmax+1,gustmax+1),dtype = int32)
+        gustmaxInData = max(data['gust'])
+        gustmaxInFut = 0
+        nWindEvents = zeros((gustmaxInData+1,gustmaxInData+1),dtype = int32)
+        nGustEvents = zeros((gustmaxInData+1,gustmaxInData+1),dtype = int32)
         n1 = int(rint(t1/float(dt)))
         n2 = int(rint(t2/float(dt)))
         for i in range(nData):
@@ -119,8 +120,10 @@ class correlate:
                     nWindEvents[maxWindpast,maxWindfut] += 1
                     maxGustpast = max(data[index1:i]['gust'])
                     maxGustfut =  max(data[i+1:index2]['gust'])
-                    nGustEvents[maxGustpast,maxGustfut] += 1                   
-        return nWindEvents,nGustEvents,gustmax
+                    if maxGustfut > gustmaxInFut: gustmaxInFut = maxGustfut  #
+                    nGustEvents[maxGustpast,maxGustfut] += 1  
+                         
+        return nWindEvents[:gustmaxInFut+1],nGustEvents[:gustmaxInFut+1],gustmaxInFut  # partial sum is to take care of case where maximum gust was in data that was thrown out of events
     
     def probNextGTE(self,nMat,gustmax):
         '''Probability that maximum speed in the next t_2 minutes will be >= v_ (index j), given that the last t1 min had a max of v (index i)'''
@@ -153,8 +156,6 @@ class plots:
         self.colorsList = ['palevioletred', 'dodgerblue','green', 'darkorange', 'darkviolet','blue', 'red','orange', 
                    'limegreen', 'brown','mediumaquamarine',  'violet','lightcoral', 'olive','tomato','teal','peru','mediumorchid','slateblue','crimson']
         return 
-
-        
     def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
         '''To allow different time (x) arrays, we require the xs to be a list'''
         matplotlib.rcParams.update({'font.size': 14})
@@ -187,23 +188,25 @@ class plots:
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
         if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
         show(block = holdOpen)
-#         show()
-
         return
+    
 ### read data ###  
 close('all')         
-rdData = readData()
-inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt',
-           'C:\\Users\\owner\\Downloads\\knx01-05onemin.txt',
-            'C:\\Users\\owner\\Downloads\\knx06-10onemin.txt']
+
+# inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt',
+#            'C:\\Users\\owner\\Downloads\\knx01-05onemin.txt',
+#             'C:\\Users\\owner\\Downloads\\knx06-10onemin.txt']
 # inPaths = ['C:\\Users\\owner\\Downloads\\knxOneMonthTest.txt']
 # inPaths = ['C:\\Users\\owner\\Downloads\\knx95-00onemin.txt']
+inPaths = ['C:\\Users\\owner\\Downloads\\knx01-05onemin.txt']
+# inPaths = ['C:\\Users\\owner\\Downloads\\knx06-10onemin.txt']
 outPath = 'C:\\Users\\owner\\Downloads\\'
+rdData = readData() #instance
 nData,data = rdData.readAll(inPaths)
 print 'number of complete datapoints',nData
 
 t1 = 30 #min 
-t2 = 5  #min
+t2 = 30  #min
 dt = 1 #min; the data sampling period
 probFloor = 1e-9
 
@@ -220,12 +223,12 @@ nWindEventsDispl[0,0] = 0
 nGustEventsDispl = nGustEvents
 nGustEventsDispl[0,0] = 0
 #for display, log(1+arr) takes the log of 1+array to give contrast and avoid log(0)
-fig1 = matshow(log10(nWindEventsDispl+1));colorbar();title('Wind Correlation'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next -minutes, v max >= speed (kts)'.format(t2))
-fig2 = matshow(log10(nGustEventsDispl+1));colorbar();title('Gust Correlation'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next -minutes, v max >= speed (kts)'.format(t2)) 
+fig1 = matshow(log10(nWindEventsDispl+1));colorbar();title('Wind Correlation (log N+1 events)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2))
+fig2 = matshow(log10(nGustEventsDispl+1));colorbar();title('Gust Correlation (log N+1 events)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)) 
 
 ### correlated probability ###
 print 'probabilities:' 
-#note if a row (velocity) has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
+#note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
 probNextWindGTE,rowCountw = corr.probNextGTE(nWindEvents,gustmax) 
 probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,gustmax)
 fig3 = matshow(log10(probNextWindGTE));colorbar();title('Wind probability (log10)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-min max speed (kts)'.format(t2))
@@ -238,25 +241,23 @@ rows = range(vPastCap+1)
 probNextWindGETcomb,rowsCount = corr.probNextGTECombine(nWindEvents,rows,gustmax)
 probNextGustGETcomb,rowsCount = corr.probNextGTECombine(nGustEvents,rows,gustmax)
 # Independent probability...simply sum over all intial states
-vPastCap = gustmax
-rows = range(vPastCap+1)
+rows = range(gustmax+1)
 probNextWindInd,rowsCount = corr.probNextGTECombine(nWindEvents,rows,gustmax)
 probNextGustInd,rowsCount = corr.probNextGTECombine(nGustEvents,rows,gustmax)
 # Plots
 pl=plots(outPath) #instance
 xs = [range(gustmax+1)]*3
-ys = [log10(probNextWindInd),log10(probNextGustInd),log10(probNextWindGETcomb),log10(probNextGustGETcomb)]
+ys = [log10(probNextWindInd),log10(probNextWindGETcomb),log10(probNextGustInd),log10(probNextGustGETcomb)]
 titlestr = 'Probabilities of wind max in next {} minutes'.format(t2)
 xlbl = 'Future wind speed (kts)'
 ylbl = 'Probability (log10)'
 strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
 strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
-legendLabels = ['Wind: independent','Gust: independent', 'Wind: {}'.format(strConditionalW),'Gust: {}'.format(strConditionalG) ]
+legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG) ]
 pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
 
 # plot(probNextWindGTE); title('Wind probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
 # plot(probNextGustGTE); title('Gust probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}--minutes, v max >= speed (kts)'.format(t2)); 
 # plot(probNextWindGETcomb); title('Wind probability for {} kt mean intitial max v'.format(mean(rows))),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
-
 
 print 'Done'
