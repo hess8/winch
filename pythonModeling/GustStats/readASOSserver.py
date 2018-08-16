@@ -55,12 +55,16 @@ def get_stations_from_filelist(filename):
 def get_stations_from_networks():
     """Build a station list by using a bunch of IEM networks."""
     stations = []
-#     states = """AK AL AR AZ CA CO CT DE FL GA HI IA ID IL IN KS KY LA MA MD ME
-#      MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA RI SC SD TN TX UT VA VT
-#      WA WI WV WY"""
-    states = """UT"""
+    stateList = []
+    states = """AK AL AR AZ CA CO CT DE FL GA HI IA ID IL IN KS KY LA MA MD ME
+     MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA RI SC SD TN TX UT VA VT
+     WA WI WV WY"""
+#     states = """PA"""
+#     states = """IA"""
+#     states = """UT"""
     # IEM quirk to have Iowa AWOS sites in its own labeled network
-    networks = ['AWOS']
+#     networks = ['AWOS']
+    networks = []
     for state in states.split():
         print (state,),
         networks.append("%s_ASOS" % (state,))
@@ -73,7 +77,8 @@ def get_stations_from_networks():
         jdict = json.load(data)
         for site in jdict['features']:
             stations.append(site['properties']['sid'])
-    return stations
+            stateList.append(network.split('_')[0])
+    return stations,stateList
 
 def main():
     """Our main method"""
@@ -82,26 +87,27 @@ def main():
     saveDir = 'I:\\gustsDataRaw\\'
     os.chdir(saveDir)
     startts = datetime.datetime(2000, 1, 1)
-    endts = datetime.datetime(2000, 12, 31)
-
-#     service = SERVICE + "data=all&tz=Etc/UTC&format=space&latlon=yes&"
-    service = SERVICE + "data=sknt&data=drct&data=gust&tz=Etc/UTC&format=space&latlon=no&"
+    endts = datetime.datetime(2017, 12, 31)
+#     endts = datetime.datetime(2017, 1, 2)
+    service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
+#     service = SERVICE + "data=sknt&data=drct&data=gust&tz=Etc/UTC&format=comma&latlon=no&"
 
     service += startts.strftime('year1=%Y&month1=%m&day1=%d&')
     service += endts.strftime('year2=%Y&month2=%m&day2=%d&')
 
     # Two examples of how to specify a list of stations
-    stations = get_stations_from_networks()
+    stations,stateList = get_stations_from_networks()
     # stations = get_stations_from_filelist("mystations.txt")
-    for station in stations:
+    for i, station in enumerate(stations):
         uri = '%s&station=%s' % (service, station)
         print('Downloading: %s' % (station, ))
         data = download_data(uri)
-        outfn = '%s_%s_%s.txt' % (station, startts.strftime("%Y%m%d%H%M"),
+        outfn = '%s_%s_%s_%s.txt' % (stateList[i],station, startts.strftime("%Y%m%d%H%M"),
                                   endts.strftime("%Y%m%d%H%M"))
         out = open(outfn, 'w')
         out.write(data)
         out.close()
+    print("Done")
 
 if __name__ == '__main__':
     main()

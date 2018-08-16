@@ -11,6 +11,7 @@ from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabe
    
 from datetime import datetime
 import time
+import readASOSserver
 
 def readfile(filepath):
     file1 = open(filepath,'r')
