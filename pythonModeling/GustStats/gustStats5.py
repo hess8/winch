@@ -13,9 +13,8 @@ from datetime import datetime
 import time
 
 def readfile(filepath):
-    file1 = open(filepath,'r')
-    lines = file1.readlines()
-    file1.close()
+    with open(filepath) as f:
+        lines = f.read().splitlines() #strips the lines of \n
     return lines
 
 def writefile(lines,filepath): #need to have \n's inserted already
@@ -78,14 +77,13 @@ class correlate:
     def __init__(self,probFloor):
         self.probFloor = probFloor
      
-    def nEventsCount(self,t1,t2,dt,nData,data):
+    def nEventsCount(self,t1,t2,dt,nData,data,vmax):
         '''For each data point with time greater than t1, find vmax during the past t1 (label _l).  
         Then during the time t2 past this point, find vmax (label _k)'''
         print 'Counting past and future wind and gust events'
-        gustmaxInData = max(data['gust'])
         gustmaxInFut = 0
-        nWindEvents = zeros((gustmaxInData+1,gustmaxInData+1),dtype = int32)
-        nGustEvents = zeros((gustmaxInData+1,gustmaxInData+1),dtype = int32)
+        nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
+        nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
         n1 = int(rint(t1/float(dt)))
         n2 = int(rint(t2/float(dt)))
         for i in range(nData):
@@ -102,15 +100,13 @@ class correlate:
                 elif data[index2]['totmin'] != data[i]['totmin'] + t2:
                     print 'Skips near data point {}: final time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  
                 else: #all OK
-                    maxWindpast = max(data[index1:i]['wind'])
-                    maxWindfut =  max(data[i+1:index2]['wind'])
+                    maxWindpast = min(vmax,max(data[index1:i]['wind']))
+                    maxWindfut =  min(vmax,max(data[i+1:index2]['wind']))
                     nWindEvents[maxWindpast,maxWindfut] += 1
-                    maxGustpast = max(data[index1:i]['gust'])
-                    maxGustfut =  max(data[i+1:index2]['gust'])
-                    if maxGustfut > gustmaxInFut: gustmaxInFut = maxGustfut  #
-                    nGustEvents[maxGustpast,maxGustfut] += 1  
-                         
-        return nWindEvents[:gustmaxInFut+1],nGustEvents[:gustmaxInFut+1],gustmaxInFut  # partial sum is to take care of case where maximum gust was in data that was thrown out of events
+                    maxGustpast =  min(vmax,max(data[index1:i]['gust']))
+                    maxGustfut =   min(vmax,max(data[i+1:index2]['gust']))
+                    nGustEvents[maxGustpast,maxGustfut] += 1                      
+        return nWindEvents,nGustEvents
     
     def probNextGTE(self,nMat,gustmax):
         '''Probability that maximum speed in the next t_2 minutes will be >= v_ (index j), given that the last t1 min had a max of v (index i)'''
@@ -178,29 +174,54 @@ class plots:
     
 ### read data ###  
 close('all')         
-rdData = readData() #instance
 inPath = 'I:\\gustsDataRaw\\'
 outPath = 'I:\\gustsDataRaw\\'
 t1 = 30 #min 
 t2 = 30  #min
 dt = 1 #min; the data sampling period
 probFloor = 1e-9
+vmax = 100 #kts
+rdData = readData() #instance
+corr = correlate(probFloor) #instance
 # states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
 #           'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
 #           'WA','WI','WV','WY']
 states = ['AK']
+analysisDir = '{}\\analysis'.format(outPath)
+if not os.path.exists(analysisDir):
+    os.mkdir(analysisDir)
+stationsAnalyzed = []
 for state in states:
+    print '==========',state,'=========='; sys.stdout.flush()
+    analyzedFile = '{}\\{}_analyzed'.format(analysisDir,state)
+    if os.path.exists(analyzedFile):
+        stationsAnalyzed += readfile(analyzedFile)
+    nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
+    nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
     statePaths = rdData.readStatePaths(inPath,state)
     for stationPath in statePaths:
-        nData,data = rdData.readStationData(stationPath)
-    
-    
-    
+        station = stationPath.split('_')[0]
+        if station not in stationsAnalyzed:
+            print station,; sys.stdout.flush()
+            nData,data = rdData.readStationData(stationPath)
+            newWindEvents, newGustEvents = corr.nEventsCount(t1,t2,dt,nData,data)
+            nWindEvents += newWindEvents
+            nGustEvents += newGustEvents
+            #record station as analyzed
+            line = '{}\n'.format(station)
+            if os.path.exists(analyzedFile):
+                fd = open(analyzedFile,'a')
+            else:
+                fd = open(analyzedFile,'w') #creates file
+            fd.write(line)
+            fd.close() 
+            #write state events counter to file. 
 
+        
     nData,data = rdData.readAll(inPath,state)
-    print 'number of complete datapoints',nData
+
     ### correlations ### 
-    corr = correlate(probFloor) #instance
+    
     nWindEvents,nGustEvents,gustmax = corr.nEventsCount(t1,t2,dt,nData,data)
     print 'Number of wind events {}; skipped {}'.format(sum(nWindEvents), nData - sum(nWindEvents))
     print 'Number of gust events: {}'.format(sum(nWindEvents))
