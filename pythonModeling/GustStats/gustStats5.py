@@ -151,8 +151,11 @@ class correlate:
         for irow in rowsList:
             rowsCount += sum(nMat[irow,:])
             for j in range(vmax+1):
-                prob[j] += sum(nMat[irow,j:])              
-        return prob/float(rowsCount) + self.probFloor, rowsCount
+                prob[j] += sum(nMat[irow,j:]) 
+        if rowsCount>0:             
+            return prob/float(rowsCount) + self.probFloor, rowsCount
+        else: 
+            return zeros((vmax+1),dtype = float32)+self.probFloor, rowsCount
 
 class plots:
     def __init__(self,path):
@@ -170,6 +173,7 @@ class plots:
             xs = [xs[0] for y in ys] 
         if len(legendLabels) != len(ys):
             sys.exit('Stop: number of legend labels and curves do not match for curve {}'.format(titlestr))
+        print 'titlestr',titlestr
         for iy,y in enumerate(ys):
             if len(xs[iy]) != len(y):
                 sys.exit('Stop: curve {} on plot "{}" has x with dimensions different from y.'.format(iy+1,titlestr))            
@@ -198,8 +202,8 @@ class plots:
     
 ### read data ###  
 close('all')         
-inPath = 'I:\\temp\\temp2'
-# inPath = 'I:\\temp\\'
+# inPath = 'I:\\temp\\temp2'
+inPath = 'I:\\temp\\'
 outPath = inPath
 t1 = 5 #min 
 t2 = 5  #min
@@ -258,7 +262,7 @@ for state in states:
 #     for i in range(vmax+1):
 #         for j in range(vmax+1):
 #             print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
-    if sum(newWindEvents)>0:
+    if sum(nWindEvents)>0:
         nWindEventsDispl = nWindEvents
         nWindEventsDispl[0,0] = 0
         nGustEventsDispl = nGustEvents
@@ -295,7 +299,7 @@ for state in states:
         strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
         strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
         legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG) ]
-        pl.xy(False,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
+        pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
         
         # plot(probNextWindGTE); title('Wind probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
         # plot(probNextGustGTE); title('Gust probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}--minutes, v max >= speed (kts)'.format(t2)); 
