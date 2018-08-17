@@ -6,7 +6,7 @@ D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\readASOSserver2.py
 """
 # from __future__ import print_function
 import json
-import time,os
+import time,os,sys
 import datetime
 # Python 2 and 3: alternative 4
 try:
@@ -18,7 +18,6 @@ except ImportError:
 MAX_ATTEMPTS = 6
 # HTTPS here can be problematic for installs that don't have Lets Encrypt CA
 SERVICE = "http://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?"
-
 
 def download_data(uri):
     """Fetch the data from the IEM
@@ -54,13 +53,9 @@ def get_stations_from_filelist(filename):
         stations.append(line.strip())
     return stations
 
-
 def get_stations_from_network(network):
     """Build a station list"""
     stations = []
-#     states = """PA"""
-#     states = """IA"""
-#     states = """UT"""
     # IEM quirk to have Iowa AWOS sites in its own labeled network
 #     networks = ['AWOS']
     # Get metadata
@@ -72,40 +67,35 @@ def get_stations_from_network(network):
         stations.append(site['properties']['sid'])
     return stations
 
-def main():
-    """Our main method"""
-    # timestamps in UTC to request data for
+#########  Main script #############
 #     saveDir = 'C:\\Users\\owner\\Downloads\\'
-    saveDir = 'I:\\gustsDataRaw\\'
-    os.chdir(saveDir)
-    startts = datetime.datetime(2017, 1, 1)
-    endts = datetime.datetime(2017, 12, 31)
+print 'Starting'
+saveDir = 'I:\\gustsDataRaw\\'
+os.chdir(saveDir)
+startts = datetime.datetime(2000, 1, 1)
+endts = datetime.datetime(2000, 1, 31)
 #     endts = datetime.datetime(2017, 1, 2)
-    service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
+service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
 #     service = SERVICE + "data=sknt&data=drct&data=gust&tz=Etc/UTC&format=comma&latlon=no&"
-
-    service += startts.strftime('year1=%Y&month1=%m&day1=%d&')
-    service += endts.strftime('year2=%Y&month2=%m&day2=%d&')
-
-    # Two examples of how to specify a list of stations
-#     states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
-#               'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
-#               'WA','WI','WV','WY']
-    states = ['UT']
-    for state in states:
-        print state
-        stations = get_stations_from_network(state)
-    # stations = get_stations_from_filelist("mystations.txt")
-        for station in stations:
-            uri = '%s&station=%s' % (service, station)
-            print('Downloading: %s' % (station, ))
-            data = download_data(uri)
-            outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
-                                      endts.strftime("%Y%m%d%H%M"))
-            out = open(outfn, 'w')
-            out.write(data)
-            out.close()
-    print("Done")
-
-if __name__ == '__main__':
-    main()
+service += startts.strftime('year1=%Y&month1=%m&day1=%d&')
+service += endts.strftime('year2=%Y&month2=%m&day2=%d&')
+states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
+          'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
+          'WA','WI','WV','WY']
+#     states = ['PA']
+#     states = ['IA']
+#     states = ['UT']
+for state in states:
+    print state; sys.stdout.flush()
+    stations = get_stations_from_network(state)
+# stations = get_stations_from_filelist("mystations.txt")
+    for station in stations:
+        uri = '%s&station=%s' % (service, station)
+        print('Downloading: %s' % (station, ))
+        data = download_data(uri)
+        outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
+                                  endts.strftime("%Y%m%d%H%M"))
+        out = open(outfn, 'w')
+        out.write(data)
+        out.close()
+print("Done")
