@@ -36,11 +36,11 @@ def download_data(uri):
             if data is not None and not data.startswith('ERROR'):
                 return data
         except Exception as exp:
-            print("download_data(%s) failed with %s" % (uri, exp))
+            print "download_data({}) failed with{}".format(uri, exp)
             time.sleep(5)
         attempt += 1
 
-    print("Exhausted attempts to download, returning empty data")
+    print "Exhausted attempts to download, returning empty data" 
     return ""
 
 
@@ -72,8 +72,8 @@ def get_stations_from_network(network):
 print 'Starting'
 saveDir = 'I:\\gustsDataRaw\\'
 os.chdir(saveDir)
-startts = datetime.datetime(2000, 1, 1)
-endts = datetime.datetime(2000, 1, 31)
+startts = datetime.datetime(1980, 1, 1)
+endts = datetime.datetime(2017, 12, 31)
 #     endts = datetime.datetime(2017, 1, 2)
 service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
 #     service = SERVICE + "data=sknt&data=drct&data=gust&tz=Etc/UTC&format=comma&latlon=no&"
@@ -84,14 +84,14 @@ states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL',
           'WA','WI','WV','WY']
 #     states = ['PA']
 #     states = ['IA']
-#     states = ['UT']
+# states = ['UT']
 for state in states:
-    print state; sys.stdout.flush()
+    print '==========',state,'=========='; sys.stdout.flush()
     stations = get_stations_from_network(state)
 # stations = get_stations_from_filelist("mystations.txt")
     for station in stations:
         uri = '%s&station=%s' % (service, station)
-        print('Downloading: %s' % (station, ))
+        print 'Downloading:', state, station; sys.stdout.flush()
         data = download_data(uri)
         outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
                                   endts.strftime("%Y%m%d%H%M"))
