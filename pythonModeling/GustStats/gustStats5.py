@@ -4,7 +4,7 @@ Statistical analysis of gust and wind speeds and extreme gust probabilities
 '''
 import os,sys
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,rint,where,\
-    amin,amax,argmin,argmax,exp,mean,mod,int32,sum,log,log10,log1p,float32,transpose
+    amin,amax,argmin,argmax,exp,mean,mod,int32,sum,log,log10,log1p,float32,transpose,savetxt,loadtxt
 import matplotlib
 from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabel,clf,close,xlim,ylim,\
     legend,title,grid,matshow,colorbar
@@ -81,7 +81,6 @@ class correlate:
         '''For each data point with time greater than t1, find vmax during the past t1 (label _l).  
         Then during the time t2 past this point, find vmax (label _k)'''
         print 'Counting past and future wind and gust events'
-        gustmaxInFut = 0
         nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
         nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
         n1 = int(rint(t1/float(dt)))
@@ -196,8 +195,16 @@ for state in states:
     analyzedFile = '{}\\{}_analyzed'.format(analysisDir,state)
     if os.path.exists(analyzedFile):
         stationsAnalyzed += readfile(analyzedFile)
-    nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
-    nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
+    nWindFile = '{}\\{}_nWindEvents'.format(analysisDir,state)
+    nGustFile = '{}\\{}_nGustEvents'.format(analysisDir,state)
+    if os.path.exists(nWindFile) and os.path.exists(nGustFile):
+        nWindEvents = loadtxt(nWindFile, dtype=int32)
+        nGustEvents = loadtxt(nGustFile, dtype=int32)
+#         nWindEvents = [int(i) for i in readfile(nWindFile)]
+#         nGustEvents = [int(i) for i in readfile(nGustFile)]
+    else:
+        nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
+        nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
     statePaths = rdData.readStatePaths(inPath,state)
     for stationPath in statePaths:
         station = stationPath.split('_')[0]
@@ -215,19 +222,15 @@ for state in states:
                 fd = open(analyzedFile,'w') #creates file
             fd.write(line)
             fd.close() 
-            #write state events counter to file. 
+            #write state events counter to file
+            savetxt(nWindFile,nWindEvents,fmt='%10d')
 
-        
-    nData,data = rdData.readAll(inPath,state)
-
-    ### correlations ### 
-    
-    nWindEvents,nGustEvents,gustmax = corr.nEventsCount(t1,t2,dt,nData,data)
-    print 'Number of wind events {}; skipped {}'.format(sum(nWindEvents), nData - sum(nWindEvents))
-    print 'Number of gust events: {}'.format(sum(nWindEvents))
-    for i in range(gustmax+1):
-        for j in range(gustmax+1):
-            print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
+    ### correlations for each state ### 
+    print 'Number of wind events {}'.format(sum(nWindEvents))
+    print 'Number of gust events: {}'.format(sum(nGustEvents))
+#     for i in range(vmax+1):
+#         for j in range(vmax+1):
+#             print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
     nWindEventsDispl = nWindEvents
     nWindEventsDispl[0,0] = 0
     nGustEventsDispl = nGustEvents
