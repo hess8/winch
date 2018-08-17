@@ -67,9 +67,16 @@ def get_stations_from_network(network):
         stations.append(site['properties']['sid'])
     return stations
 
+def readStationsDone(saveDir):
+    '''Read all stations done from the filenames in the output directory'''
+    dirList = os.listdir(saveDir)
+    stationsDone = []
+    for dirTxt in dirList:
+        stationsDone.append(dirTxt.split('_')[1])
+    return stationsDone
+
 #########  Main script #############
 #     saveDir = 'C:\\Users\\owner\\Downloads\\'
-print 'Starting'
 saveDir = 'I:\\gustsDataRaw\\'
 os.chdir(saveDir)
 startts = datetime.datetime(1980, 1, 1)
@@ -82,6 +89,7 @@ service += endts.strftime('year2=%Y&month2=%m&day2=%d&')
 states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
           'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
           'WA','WI','WV','WY']
+stationsDone = readStationsDone(saveDir)
 #     states = ['PA']
 #     states = ['IA']
 # states = ['UT']
@@ -90,12 +98,13 @@ for state in states:
     stations = get_stations_from_network(state)
 # stations = get_stations_from_filelist("mystations.txt")
     for station in stations:
-        uri = '%s&station=%s' % (service, station)
-        print 'Downloading:', state, station; sys.stdout.flush()
-        data = download_data(uri)
-        outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
-                                  endts.strftime("%Y%m%d%H%M"))
-        out = open(outfn, 'w')
-        out.write(data)
-        out.close()
+        if station not in stationsDone:
+            uri = '%s&station=%s' % (service, station)
+            print 'Downloading:', state, station; sys.stdout.flush()
+            data = download_data(uri)
+            outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
+                                      endts.strftime("%Y%m%d%H%M"))
+            out = open(outfn, 'w')
+            out.write(data)
+            out.close()
 print("Done")
