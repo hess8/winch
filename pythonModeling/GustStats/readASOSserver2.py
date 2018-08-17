@@ -1,10 +1,10 @@
 """
 Example script that scrapes data from the IEM ASOS download service
 
-D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\readASOSserver.py
+D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\readASOSserver2.py
 
 """
-from __future__ import print_function
+# from __future__ import print_function
 import json
 import time,os
 import datetime
@@ -55,33 +55,22 @@ def get_stations_from_filelist(filename):
     return stations
 
 
-def get_stations_from_networks():
-    """Build a station list by using a bunch of IEM networks."""
+def get_stations_from_network(network):
+    """Build a station list"""
     stations = []
-    stateList = []
-#     states = """AK AL AR AZ CA CO CT DE FL GA HI IA ID IL IN KS KY LA MA MD ME
-#      MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA RI SC SD TN TX UT VA VT
-#      WA WI WV WY"""
 #     states = """PA"""
 #     states = """IA"""
-    states = """UT"""
+#     states = """UT"""
     # IEM quirk to have Iowa AWOS sites in its own labeled network
 #     networks = ['AWOS']
-    networks = []
-    for state in states.split():
-        print (state,),
-        networks.append("%s_ASOS" % (state,))
-
-    for network in networks:
-        # Get metadata
-        uri = ("https://mesonet.agron.iastate.edu/"
-               "geojson/network/%s.geojson") % (network,)
-        data = urlopen(uri)
-        jdict = json.load(data)
-        for site in jdict['features']:
-            stations.append(site['properties']['sid'])
-            stateList.append(network.split('_')[0])
-    return stations,stateList
+    # Get metadata
+    uri = ("https://mesonet.agron.iastate.edu/"
+               "geojson/network/{}_ASOS.geojson".format(network))
+    data = urlopen(uri)
+    jdict = json.load(data)
+    for site in jdict['features']:
+        stations.append(site['properties']['sid'])
+    return stations
 
 def main():
     """Our main method"""
@@ -89,7 +78,7 @@ def main():
 #     saveDir = 'C:\\Users\\owner\\Downloads\\'
     saveDir = 'I:\\gustsDataRaw\\'
     os.chdir(saveDir)
-    startts = datetime.datetime(2000, 1, 1)
+    startts = datetime.datetime(2017, 1, 1)
     endts = datetime.datetime(2017, 12, 31)
 #     endts = datetime.datetime(2017, 1, 2)
     service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
@@ -99,17 +88,23 @@ def main():
     service += endts.strftime('year2=%Y&month2=%m&day2=%d&')
 
     # Two examples of how to specify a list of stations
-    stations,stateList = get_stations_from_networks()
+#     states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
+#               'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
+#               'WA','WI','WV','WY']
+    states = ['UT']
+    for state in states:
+        print state
+        stations = get_stations_from_network(state)
     # stations = get_stations_from_filelist("mystations.txt")
-    for i, station in enumerate(stations):
-        uri = '%s&station=%s' % (service, station)
-        print('Downloading: %s' % (station, ))
-        data = download_data(uri)
-        outfn = '%s_%s_%s_%s.txt' % (stateList[i],station, startts.strftime("%Y%m%d%H%M"),
-                                  endts.strftime("%Y%m%d%H%M"))
-        out = open(outfn, 'w')
-        out.write(data)
-        out.close()
+        for station in stations:
+            uri = '%s&station=%s' % (service, station)
+            print('Downloading: %s' % (station, ))
+            data = download_data(uri)
+            outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
+                                      endts.strftime("%Y%m%d%H%M"))
+            out = open(outfn, 'w')
+            out.write(data)
+            out.close()
     print("Done")
 
 if __name__ == '__main__':
