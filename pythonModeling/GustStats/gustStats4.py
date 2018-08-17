@@ -55,7 +55,7 @@ class readData:
             print 'Reading from file {}'.format(inPath)
 #             print 'Gust defined by max(wind,gust) reported'
             lines = readfile(inPath)
-            for i,line in enumerate(lines[1:]):
+            for line in lines[1:]:
                 if mod(idata,10000)==0:
                     print '{} '.format(idata),
                 if mod(idata,100000)==0:
@@ -84,7 +84,7 @@ class readData:
                     idata += 1 
                 else:
                     print 'Data line {} has a length of only {}; skipped'.format(idata,len(info)),info
-                   # sys.exit('Stop!')
+                    # sys.exit('Stop!')
         print
         return idata,data
 
