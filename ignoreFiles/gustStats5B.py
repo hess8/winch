@@ -240,7 +240,7 @@ corr = correlate(probFloor) #instance
 #           'WA','WI','WV','WY']
 # states = ['WY']
 # states = ['UT','WY']
-states = ['AL']
+states = ['AK']
 analysisDir = '{}\\analysis{},{}'.format(outPath,t1,t2)
 if not os.path.exists(analysisDir):
     os.mkdir(analysisDir)

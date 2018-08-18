@@ -224,7 +224,7 @@ close('all')
 # inPath = 'I:\\temp\\'
 inPath ='I:\\gustsDataRaw\\'
 outPath = inPath
-t1 = 5 #min 
+t1 = 30 #min 
 t2 = 5  #min
 dt = 5 #min; the data sampling period
 probFloor = 1e-9
@@ -240,7 +240,7 @@ corr = correlate(probFloor) #instance
 #           'WA','WI','WV','WY']
 # states = ['WY']
 # states = ['UT','WY']
-states = ['AL']
+states = ['AK']
 analysisDir = '{}\\analysis{},{}'.format(outPath,t1,t2)
 if not os.path.exists(analysisDir):
     os.mkdir(analysisDir)

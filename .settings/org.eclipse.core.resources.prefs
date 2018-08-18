@@ -1,4 +1,10 @@
 eclipse.preferences.version=1
+encoding//ignoreFiles/gustStats5A.py=utf-8
+encoding//ignoreFiles/gustStats5B.py=utf-8
+encoding//ignoreFiles/gustStats5C.py=utf-8
+encoding//ignoreFiles/gustStats5D.py=utf-8
+encoding//ignoreFiles/gustStats5E.py=utf-8
+encoding//pythonModeling/GustStats/analysisLoop.py=utf-8
 encoding//pythonModeling/GustStats/gustStats1.py=utf-8
 encoding//pythonModeling/GustStats/gustStats2.py=utf-8
 encoding//pythonModeling/GustStats/gustStats3.py=utf-8

@@ -1,7 +1,37 @@
 # -*- coding: utf-8 -*-
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
-Statistical analysis of gust and wind speeds and extreme gust probabilities
+
+Read from a list of tasks defined by state and parameters.  
+1.  If the task appears in a file Done, or Running, then skip to the next task
+2.  When running, write the task
+
+
+File locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
 '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import os,sys
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,rint,where,\
     amin,amax,argmin,argmax,exp,mean,mod,int32,sum,log,log10,log1p,float32,transpose,savetxt,loadtxt

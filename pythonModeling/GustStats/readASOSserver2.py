@@ -77,7 +77,7 @@ def readStationsDone(outPath):
 
 #########  Main script #############
 #     outPath = 'C:\\Users\\owner\\Downloads\\'
-outPath = 'I:\\gustsDataRaw\\'
+
 os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)
 endts = datetime.datetime(2017, 12, 31)

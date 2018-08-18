@@ -224,7 +224,7 @@ close('all')
 # inPath = 'I:\\temp\\'
 inPath ='I:\\gustsDataRaw\\'
 outPath = inPath
-t1 = 5 #min 
+t1 = 30 #min 
 t2 = 5  #min
 dt = 5 #min; the data sampling period
 probFloor = 1e-9
