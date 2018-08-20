@@ -8,31 +8,8 @@ Read from a list of tasks (see taskGenerator.py) defined by state and parameters
 3. At end, append to Done or Failed
 
 
-File locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
+If we need more sophisticated file locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
 '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 import os,sys,time
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,rint,where,\
@@ -43,18 +20,18 @@ from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabe
    
 from datetime import datetime
 
-def readfileRetry(filepath):
-    ntry = 6
-    itry = 1
-    while itry <= ntry:
-        try:
-            with open(filepath) as f:
-                lines = f.read().splitlines() #strips the lines of \n
-                return lines
-        except:
-            time.sleep(0.5) 
-            itry += 1           
-    return 'failed'
+# def readfileRetry(filepath):
+#     ntry = 6
+#     itry = 1
+#     while itry <= ntry:
+#         try:
+#             with open(filepath) as f:
+#                 lines = f.read().splitlines() #strips the lines of \n
+#                 return lines
+#         except:
+#             time.sleep(0.5) 
+#             itry += 1           
+#     return 'failed'
 
 def readfile(filepath):
     with open(filepath) as f:
@@ -67,7 +44,33 @@ def writefile(lines,filepath): #need to have \n's inserted already
     file1.close()
     return
 
+# def readAnalysisTask(path):
+#     f = open('{}\\tasks.dat'.format(path),"r+")
+#     lines = f.readlines() #strips the lines of \n
+#     f.seek(0) #pointer to file statrt
+#     f.writelines(lines[1:],) #write all but first line
+#     f.truncate() #file is smaller now
+#     f.close()
+#     task = lines[0].strip().split() 
+#     return task
 
+def readAnalysisTask(path):
+    ntry = 6
+    itry = 1
+    while itry <= ntry:
+        try:
+            f = open('{}\\tasks.dat'.format(path),"r+")
+            lines = f.readlines() #strips the lines of \n
+            f.seek(0) #pointer to file statrt
+            f.writelines(lines[1:],) #write all but first line
+            f.truncate() #file is smaller now
+            f.close()
+            task = lines[0].strip().split() 
+            return task
+        except:
+            time.sleep(0.5) 
+            itry += 1           
+    return 'ReadFailed'
 
 class readData:
     '''Reads data from files downloaded from https://mesonet.agron.iastate.edu/request/download.phtml?network=AWOS.
@@ -263,37 +266,43 @@ class plots:
         show(block = holdOpen)
         return
 
-
 ### read data ###  
-close('all')         
+close('all') 
+OK = True        
 # inPath = 'I:\\temp\\temp2'
 # inPath = 'I:\\temp\\'
 inPath ='I:\\gustsDataRaw\\'
 outPath = inPath
-t1 = 5 #min 
-t2 = 5  #min
-vPastCap = 15
-dt = 5 #min; the data sampling period
-probFloor = 1e-9
-vmax = 100 #kts
-# verbose = True
-# redoPast = True
-verbose = False
-redoPast = False
-rdData = readData() #instance
-corr = correlate(probFloor) #instance
-# states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
-#           'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
-#           'WA','WI','WV','WY']
-# states = ['WY']
-# states = ['UT','WY']
-states = ['AL']
-analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap)
-if not os.path.exists(analysisDir):
-    os.mkdir(analysisDir)
-stationsAnalyzed = []
-for state in states:
-    print '==========',state,'=========='; sys.stdout.flush()
+donePath = '{}\\done.dat'.format(outPath)
+failedPath = '{}\\failed.dat'.format(outPath)
+if not os.path.exists(donePath): writefile([],donePath)
+if not os.path.exists(failedPath): writefile([],failedPath)
+loop = True
+while loop:
+    taskOut = readAnalysisTask(inPath)
+    if taskOut == 'ReadFailed':
+        print 'Failed to read task'
+        OK = False
+    else:
+        state = taskOut[0]; t1 = int(taskOut[1]); t2 = int(taskOut[2]); vPastCap = int(taskOut[3]);
+#     try: 
+    print 'Running task {}'.format(taskOut)
+#     f = open('{}\\running'.format(outPath,"a"))
+#     f.write('{}\n'.format(' '.join(taskOut)))
+#     f.close()
+    dt = 5 #min; the data sampling period
+    probFloor = 1e-9
+    vmax = 100 #kts
+    # verbose = True
+    # redoPast = True
+    verbose = False
+    redoPast = False
+    rdData = readData() #instance
+    corr = correlate(probFloor) #instance
+    analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap)
+    if not os.path.exists(analysisDir):
+        os.mkdir(analysisDir)
+    stationsAnalyzed = []
     analyzedFile = '{}\\{}_analyzed.dat'.format(analysisDir,state)
     if os.path.exists(analyzedFile):
         stationsAnalyzed += readfile(analyzedFile)
@@ -381,5 +390,18 @@ for state in states:
         # plot(probNextWindGTE); title('Wind probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
         # plot(probNextGustGTE); title('Gust probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}--minutes, v max >= speed (kts)'.format(t2)); 
         # plot(probNextWindGETcomb); title('Wind probability for {} kt mean intitial max v'.format(mean(rows))),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
+    
+    f = open(donePath,"a")
+    f.write('{}\n'.format(' '.join(taskOut)))
+    f.close()
+    print 'Done with task {}'.format(taskOut)
+#     except:
+#         print 'Task {} failed to finish'
+#         OK = False
+    
+    if not OK:   
+        f = open(failedPath,"a")
+        f.write('{}\n'.format(' '.join(taskOut)))
+        f.close()
+        print 'Task {}'.format(taskOut)
 
-print 'Done'

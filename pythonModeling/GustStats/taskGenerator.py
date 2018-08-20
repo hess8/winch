@@ -18,18 +18,18 @@ class tasks:
     inPath ='I:\\gustsDataRaw\\'
     outPath = inPath
     
-    
     states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
               'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
               'WA','WI','WV','WY']
     t1List = [5,30]
     t2List = [5]
-    vcapList = [15] #kts
+    vPastCapList = [15] #kts
     lines = []
     for state in states:
         for t1 in t1List:
             for t2 in t2List:
-                for vcap in vcapList:
-                    lines.append('{:2s} {:8d} {:8d} {:8d}\n'.format(state,t1,t2,vcap))
+                for vPastCap in vPastCapList:
+                    lines.append('{:2s} {:8d} {:8d} {:8d}\n'.format(state,t1,t2,vPastCap))
     writefile(lines,'{}//tasks.dat'.format(outPath))
+    writefile(lines,'{}//tasksCopy.dat'.format(outPath))
     print 'Done'
