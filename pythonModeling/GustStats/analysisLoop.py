@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 
-Read from a list of tasks defined by state and parameters.  
-1.  If the task appears in a file Done, or Running, then skip to the next task
-2.  When running, write the task
+Read from a list of tasks (see taskGenerator.py) defined by state and parameters. 
+0.  If a file read fails, wait a 0.5 sec...repeat x times or fail 
+1.  Read the list of tasks. Start the first task. Write to "Running". Delete the task from the list, and rewrite the list. 
+2.  When running, write the task to Running.  When done, read, remove from list and rewrite
+3. At end, append to Done or Failed
 
 
 File locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
@@ -32,7 +34,7 @@ File locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.p
 
 
 
-import os,sys
+import os,sys,time
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,rint,where,\
     amin,amax,argmin,argmax,exp,mean,mod,int32,sum,log,log10,log1p,float32,transpose,savetxt,loadtxt
 import matplotlib
@@ -40,7 +42,19 @@ from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabe
     legend,title,grid,matshow,colorbar
    
 from datetime import datetime
-import time
+
+def readfileRetry(filepath):
+    ntry = 6
+    itry = 1
+    while itry <= ntry:
+        try:
+            with open(filepath) as f:
+                lines = f.read().splitlines() #strips the lines of \n
+                return lines
+        except:
+            time.sleep(0.5) 
+            itry += 1           
+    return 'failed'
 
 def readfile(filepath):
     with open(filepath) as f:
@@ -52,6 +66,8 @@ def writefile(lines,filepath): #need to have \n's inserted already
     file1.writelines(lines) 
     file1.close()
     return
+
+
 
 class readData:
     '''Reads data from files downloaded from https://mesonet.agron.iastate.edu/request/download.phtml?network=AWOS.
@@ -256,6 +272,7 @@ inPath ='I:\\gustsDataRaw\\'
 outPath = inPath
 t1 = 5 #min 
 t2 = 5  #min
+vPastCap = 15
 dt = 5 #min; the data sampling period
 probFloor = 1e-9
 vmax = 100 #kts
@@ -271,7 +288,7 @@ corr = correlate(probFloor) #instance
 # states = ['WY']
 # states = ['UT','WY']
 states = ['AL']
-analysisDir = '{}\\analysis{},{}'.format(outPath,t1,t2)
+analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap)
 if not os.path.exists(analysisDir):
     os.mkdir(analysisDir)
 stationsAnalyzed = []
@@ -327,7 +344,6 @@ for state in states:
         probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,vmax)
         ### combined correlated probability 
         # Add initial max velocities from 0 to 15
-        vPastCap = 15
         rows = range(vPastCap+1)
         probNextWindGETcomb,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
         probNextGustGETcomb,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
