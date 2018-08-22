@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 
-Read from a list of tasks (see taskGenerator.py) defined by state and parameters. 
+Read a task from a file tasks.dat (see taskGenerator.py), defined by state and parameters. 
 0.  If a file read fails, wait a 0.5 sec...repeat x times or fail 
-1.  Read the list of tasks. Start the first task. Write to "Running". Delete the task from the list, and rewrite the list. 
-2.  When running, write the task to Running.  When done, read, remove from list and rewrite
-3. At end, append to Done or Failed
+1.  Read the list of tasks. Start the first task. Delete the task from the list, and rewrite the list. 
+2.  Task completion or failure is documented in each analysis folder (so there will be one tasks.dat file and multiple done.dat (which lists stations analyzed) or failed.dat
+3.  Don't do the task if it is in done.dat
+4.  done.dat is written to for each state analyzed for the same parameters (same analysis folder).  So we have to allow retries then.  
 
+python D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\analysisTaskLooper.py
 
 If we need more sophisticated file locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
 '''
@@ -55,7 +57,7 @@ def writefile(lines,filepath): #need to have \n's inserted already
 #     return task
 
 def readAnalysisTask(path):
-    ntry = 6
+    ntry = 100
     itry = 1
     while itry <= ntry:
         try:
@@ -71,6 +73,20 @@ def readAnalysisTask(path):
             time.sleep(0.5) 
             itry += 1           
     return 'ReadFailed'
+
+def writeDone(donePath,line):
+    ntry = 100
+    itry = 1
+    while itry <= ntry:
+        try:
+            fd = open(donePath,'a')
+            fd.write(line)
+            fd.close()
+            return 'OK'
+        except:
+            time.sleep(0.1) 
+            itry += 1           
+    return 'Failed'
 
 class readData:
     '''Reads data from files downloaded from https://mesonet.agron.iastate.edu/request/download.phtml?network=AWOS.
@@ -271,12 +287,8 @@ close('all')
 OK = True        
 # inPath = 'I:\\temp\\temp2'
 # inPath = 'I:\\temp\\'
-inPath ='I:\\gustsDataRaw\\'
+inPath ='I:\\gustsData\\'
 outPath = inPath
-donePath = '{}\\done.dat'.format(outPath)
-failedPath = '{}\\failed.dat'.format(outPath)
-if not os.path.exists(donePath): writefile([],donePath)
-if not os.path.exists(failedPath): writefile([],failedPath)
 loop = True
 while loop:
     taskOut = readAnalysisTask(inPath)
@@ -299,42 +311,40 @@ while loop:
     redoPast = False
     rdData = readData() #instance
     corr = correlate(probFloor) #instance
-    analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap)
-    if not os.path.exists(analysisDir):
-        os.mkdir(analysisDir)
-    stationsAnalyzed = []
-    analyzedFile = '{}\\{}_analyzed.dat'.format(analysisDir,state)
-    if os.path.exists(analyzedFile):
-        stationsAnalyzed += readfile(analyzedFile)
-    nWindFile = '{}\\{}_WindEvents.dat'.format(analysisDir,state)
-    nGustFile = '{}\\{}_GustEvents.dat'.format(analysisDir,state)
+    analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap) 
+    if not os.path.exists(analysisDir): os.mkdir(analysisDir)
+    donePath = '{}\\done.dat'.format(analysisDir)
+    done = []
+    if not os.path.exists(donePath): 
+        writefile([],donePath) #write empty file
+    else:
+        done = readfile(donePath) #read stations done with this analysis
+#     failedPath = '{}\\failed.dat'.format(analysisDir)
+#     if not os.path.exists(failedPath): writefile([],failedPath)       
+    nWindFile = '{}\\{}_windEvents.dat'.format(analysisDir,state)
+    nGustFile = '{}\\{}_gustEvents.dat'.format(analysisDir,state)
     if os.path.exists(nWindFile) and os.path.exists(nGustFile):
         nWindEvents = loadtxt(nWindFile, dtype=int32)
         nGustEvents = loadtxt(nGustFile, dtype=int32)
-#         nWindEvents = [int(i) for i in readfile(nWindFile)]
-#         nGustEvents = [int(i) for i in readfile(nGustFile)]
     else:
         nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
         nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
     statePaths = rdData.readStatePaths(inPath,state)
     for stationPath in statePaths:
         station = stationPath.split('_')[1]
-        if station not in stationsAnalyzed or redoPast:
+        if station not in done or redoPast:
             print station,stationPath; sys.stdout.flush()
             nData,data = rdData.readStationData('{}\\{}'.format(inPath,stationPath),verbose)
             newWindEvents, newGustEvents = corr.nEventsCount(t1,t2,dt,nData,data,vmax,verbose)
             nWindEvents += newWindEvents
             nGustEvents += newGustEvents
-            #record station as analyzed
-            line = '{}\n'.format(station)
-            if os.path.exists(analyzedFile):
-                fd = open(analyzedFile,'a')
-            else:
-                fd = open(analyzedFile,'w') #creates file
-            fd.write(line)
-            fd.close() 
             #write state events counter to file
             savetxt(nWindFile,nWindEvents,fmt='%10d')
+            savetxt(nGustFile,nGustEvents,fmt='%10d')
+            #record station as analyzed
+            status = writeDone(donePath,'{}\n'.format(station))
+            if status == 'failed':
+                print 'Failed to write to done.dat'
     ### correlations for each state ### 
     print 'Number of wind events: {}'.format(sum(nWindEvents))
     print 'Number of gust events: {}'.format(sum(nGustEvents))
@@ -391,17 +401,17 @@ while loop:
         # plot(probNextGustGTE); title('Gust probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}--minutes, v max >= speed (kts)'.format(t2)); 
         # plot(probNextWindGETcomb); title('Wind probability for {} kt mean intitial max v'.format(mean(rows))),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
     
-    f = open(donePath,"a")
-    f.write('{}\n'.format(' '.join(taskOut)))
-    f.close()
-    print 'Done with task {}'.format(taskOut)
+#     f = open(donePath,"a")
+#     f.write('{}\n'.format(' '.join(taskOut)))
+#     f.close()
+#     print 'Done with task {}'.format(taskOut)
 #     except:
 #         print 'Task {} failed to finish'
 #         OK = False
     
-    if not OK:   
-        f = open(failedPath,"a")
-        f.write('{}\n'.format(' '.join(taskOut)))
-        f.close()
-        print 'Task {}'.format(taskOut)
+#     if not OK:   
+#         f = open(failedPath,"a")
+#         f.write('{}\n'.format(' '.join(taskOut)))
+#         f.close()
+#         print 'Task {}'.format(taskOut)
 

@@ -222,7 +222,7 @@ class plots:
 close('all')         
 # inPath = 'I:\\temp\\temp2'
 # inPath = 'I:\\temp\\'
-inPath ='I:\\gustsDataRaw\\'
+inPath ='I:\\gustsData\\'
 outPath = inPath
 t1 = 5 #min 
 t2 = 5  #min

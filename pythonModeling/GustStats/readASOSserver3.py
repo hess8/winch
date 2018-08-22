@@ -72,13 +72,13 @@ def readStationsDone(outPath):
     dirList = os.listdir(outPath)
     stationsDone = []
     for dirTxt in dirList:
-        if not os.path.isdir(dirTxt):
+        if '_' in dirTxt:
             stationsDone.append(dirTxt.split('_')[1])
     return stationsDone
 
 #########  Main script #############
 #     outPath = 'C:\\Users\\owner\\Downloads\\'
-outPath = 'I:\\gustsDataRaw\\'
+outPath = 'I:\\gustsData\\'
 os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)
 endts = datetime.datetime(2017, 12, 31)
@@ -87,13 +87,13 @@ service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
 #     service = SERVICE + "data=sknt&data=drct&data=gust&tz=Etc/UTC&format=comma&latlon=no&"
 service += startts.strftime('year1=%Y&month1=%m&day1=%d&')
 service += endts.strftime('year2=%Y&month2=%m&day2=%d&')
-# states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
-#           'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
-#           'WA','WI','WV','WY']
+states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
+          'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
+          'WA','WI','WV','WY']
 # states = ['PA']
 # states = ['IA']
 # states = ['UT','WY']
-states = ['WA','WI','WV','WY']
+# states = ['WA','WI','WV','WY']
 stationsDone = readStationsDone(outPath)
 for state in states:
     print '==========',state,'=========='; sys.stdout.flush()
