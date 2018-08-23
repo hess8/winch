@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 ''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
 
+in one analysisDir, combines the events for wind and gusts into allWindEvents.dat and allGustEvents.dat, and makes plots
+
 Read a task from a file tasks.dat (see taskGenerator.py), defined by state and parameters. 
 0.  If a file read fails, wait a 0.5 sec...repeat x times or fail 
 1.  Read the list of tasks. Start the first task. Delete the task from the list, and rewrite the list. 
@@ -10,7 +12,6 @@ Read a task from a file tasks.dat (see taskGenerator.py), defined by state and p
 
 python D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\analysisTaskLooper.py
 
-If we need more sophisticated file locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
 '''
 
 import os,sys,time
@@ -21,19 +22,6 @@ from matplotlib.pyplot import ion,figure,plot,show,subplots,savefig,xlabel,ylabe
     legend,title,grid,matshow,colorbar
    
 from datetime import datetime
-
-# def readfileRetry(filepath):
-#     ntry = 6
-#     itry = 1
-#     while itry <= ntry:
-#         try:
-#             with open(filepath) as f:
-#                 lines = f.read().splitlines() #strips the lines of \n
-#                 return lines
-#         except:
-#             time.sleep(0.5) 
-#             itry += 1           
-#     return 'failed'
 
 def readfile(filepath):
     with open(filepath) as f:
@@ -51,9 +39,6 @@ def readAnalysisTask(path):
     itry = 1
     while itry <= ntry:
         try:
-            lines = readfile('{}\\tasks.dat'.format(path))
-            if len(lines) == 0:
-                return 'NoTasks'
             f = open('{}\\tasks.dat'.format(path),"r+")
             lines = f.readlines() #strips the lines of \n
             f.seek(0) #pointer to file statrt
@@ -289,8 +274,6 @@ while loop:
         print 'Failed to read task'
         time.sleep(1)
         OK = False
-    elif taskOut == 'NoTasks':
-        sys.exit('Done: no tasks remaining')
     else:
         state = taskOut[0]; t1 = int(taskOut[1]); t2 = int(taskOut[2]); vPastCap = int(taskOut[3]);
     analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap) 
