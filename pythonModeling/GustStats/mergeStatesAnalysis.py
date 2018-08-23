@@ -260,127 +260,81 @@ class plots:
         show(block = holdOpen)
         return
 
-### read data ###  
-OK = True        
-# inPath = 'I:\\temp\\temp2'
-# inPath = 'I:\\temp\\'
-inPath ='I:\\gustsData\\'
-outPath = inPath
-loop = True
-while loop:
-    close('all') 
-    taskOut = readAnalysisTask(inPath)
-    if taskOut == 'ReadFailed':
-        print 'Failed to read task'
-        time.sleep(1)
-        OK = False
-    else:
-        state = taskOut[0]; t1 = int(taskOut[1]); t2 = int(taskOut[2]); vPastCap = int(taskOut[3]);
-    analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap) 
-    if not os.path.exists(analysisDir): os.mkdir(analysisDir)
-    statesDonePath = '{}\\statesDone.dat'.format(analysisDir)
-    statesDone = [] #states that are done with all stations and plots
-    if not os.path.exists(statesDonePath): 
-        writefile([],statesDonePath) #write empty file
-    else:
-        statesDone = readfile(statesDonePath) #read stations done with this analysis
-    donePath = '{}\\done.dat'.format(analysisDir)
-    done = [] #stations from any state that are done with analysis
-    if not os.path.exists(donePath): 
-        writefile([],donePath) #write empty file
-    else:
-        done = readfile(donePath) 
-    if state not in statesDone:
-        print 'Running task {}'.format(taskOut)
-    #     f = open('{}\\running'.format(outPath,"a"))
-    #     f.write('{}\n'.format(' '.join(taskOut)))
-    #     f.close()
-        dt = 5 #min; the data sampling period
-        probFloor = 1e-9
-        vmax = 100 #kts
-        # verbose = True
-        # redoPast = True
-        verbose = False
-        redoPast = False
-        rdData = readData() #instance
-        corr = correlate(probFloor) #instance
-        nWindFile = '{}\\{}_windEvents.dat'.format(analysisDir,state)
-        nGustFile = '{}\\{}_gustEvents.dat'.format(analysisDir,state)
-        if os.path.exists(nWindFile) and os.path.exists(nGustFile):
-            nWindEvents = loadtxt(nWindFile, dtype=int32)
-            nGustEvents = loadtxt(nGustFile, dtype=int32)
-        else:
-            nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
-            nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
-        statePaths = rdData.readStatePaths(inPath,state)
-        for stationPath in statePaths:
-            station = stationPath.split('_')[1]
-            if station not in done or redoPast:
-                print station,stationPath; sys.stdout.flush()
-                nData,data = rdData.readStationData('{}\\{}'.format(inPath,stationPath),verbose)
-                newWindEvents, newGustEvents = corr.nEventsCount(t1,t2,dt,nData,data,vmax,verbose)
-                nWindEvents += newWindEvents
-                nGustEvents += newGustEvents
-                #write state events counter to file
-                savetxt(nWindFile,nWindEvents,fmt='%10d')
-                savetxt(nGustFile,nGustEvents,fmt='%10d')
-                #record station as analyzed
-                status = writeDone(donePath,'{}\n'.format(station))
-                if status == 'failed':
-                    print 'Failed to write to done.dat'
-        ### correlations for each state ### 
-        print 'Number of wind events: {}'.format(sum(nWindEvents))
-        print 'Number of gust events: {}'.format(sum(nGustEvents))
-    #     for i in range(vmax+1):
-    #         for j in range(vmax+1):
-    #             print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
-        if sum(nWindEvents)>0:
-            nWindEventsDispl = nWindEvents
-            nWindEventsDispl[0,0] = 0
-            nGustEventsDispl = nGustEvents
-            nGustEventsDispl[0,0] = 0
-            ### correlated probability ###
-            print 'probabilities:' 
-            #note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
-            probNextWindGTE,rowCountw = corr.probNextGTE(nWindEvents,vmax) 
-            probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,vmax)
-            ### combined correlated probability 
-            # Add initial max velocities from 0 to 15
-            rows = range(vPastCap+1)
-            probNextWindGETcomb,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
-            probNextGustGETcomb,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
-            # Independent probability...simply sum over all intial states
-            rows = range(vmax+1)
-            probNextWindInd,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
-            probNextGustInd,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
-            
-            ### plots ###
-            pl = plots(analysisDir) #instance
-            ## nEvents
-            #for display, log(1+arr) takes the log of 1+array to give contrast and avoid log(0)
-            titleStr='{} Wind Correlation (log N+1 events)'.format(state)
-            xlbl = 'Next {}-min max speed (kts)'.format(t2)
-            ylbl = 'last {}-min max speed (kts)'.format(t1)     
-            pl.matColor(False,log10(nWindEventsDispl+1),xlbl,ylbl,titleStr)
-            titleStr='{} Gust Correlation (log N+1 events)'.format(state)
-            pl.matColor(False,log10(nGustEventsDispl+1),xlbl,ylbl,titleStr)
-            ## Probabilities
-            titleStr='{} Wind probability (log10)'.format(state)
-            pl.matColor(False,log10(probNextWindGTE),xlbl,ylbl,titleStr)
-            titleStr='{} Gust probability (log10)'.format(state)
-            pl.matColor(False,log10(probNextGustGTE),xlbl,ylbl,titleStr)
-            # conditional
-            xs = [range(vmax+1)]*3
-            ys = [log10(probNextWindInd),log10(probNextWindGETcomb),log10(probNextGustInd),log10(probNextGustGETcomb)]
-            titlestr = '{} Probabilities of wind max in next {} minutes'.format(state,t2)
-            xlbl = 'Future wind speed (kts)'
-            ylbl = 'Probability (log10)'
-            strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
-            strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
-            legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG) ]
-            #don't set hold to True, because it will stop looping. 
-            pl.xy(False,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
-        #record state as analyzed
-        status = writeDone(statesDonePath,'{}\n'.format(state))
-        if status == 'failed':
-            print 'Failed to write to statesDone.dat'        
+### Main script ###  
+analysisDir = 'I:\\gustsData\\\\analysis5,5,15' 
+params = analysisDir.split('analysis')[1].split(',')
+t1 = int(params[0]); t2 = int(params[1]); vPastCap = int(params[2])
+dt = 5 #min; the data sampling period
+probFloor = 1e-9
+vmax = 100 #kts
+close('all') 
+corr = correlate(probFloor) #instance
+# get list of state files with analyzed events #  
+windEventsPaths = []
+gustEventsPaths = []
+dirList = os.listdir(analysisDir)
+for item in dirList:
+    if 'windEvents.dat' in item:
+        windEventsPaths.append('{}//{}'.format(analysisDir,item))
+    elif 'gustEvents.dat' in item:
+        gustEventsPaths.append('{}//{}'.format(analysisDir,item))
+nFiles = len(windEventsPaths)
+#collate events from state files
+nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
+nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
+for i,filename in enumerate(windEventsPaths):
+    newWindEvents = loadtxt(filename, dtype=int32)
+    newGustEvents = loadtxt(gustEventsPaths[i], dtype=int32)
+    nWindEvents += newWindEvents
+    nGustEvents += newGustEvents 
+nWindTot = sum(nWindEvents)
+print 'Total wind events:',nWindTot   
+nGustTot = sum(nGustEvents)
+print 'Total gust events:',nGustTot
+savetxt('{}//allWindEvents.dat'.format(analysisDir),nWindEvents,fmt='%10d')
+savetxt('{}//allGustEvents.dat'.format(analysisDir),nGustEvents,fmt='%10d')
+nWindEventsDispl = nWindEvents
+nWindEventsDispl[0,0] = 0
+nGustEventsDispl = nGustEvents
+nGustEventsDispl[0,0] = 0
+### correlated probability ###
+print 'probabilities:' 
+#note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
+probNextWindGTE,rowCountw = corr.probNextGTE(nWindEvents,vmax) 
+probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,vmax)
+### combined correlated probability 
+# Add initial max velocities from 0 to 15
+rows = range(vPastCap+1)
+probNextWindGETcomb,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
+probNextGustGETcomb,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
+# Independent probability...simply sum over all intial states
+rows = range(vmax+1)
+probNextWindInd,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
+probNextGustInd,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
+### plots ###
+pl = plots(analysisDir) #instance
+## nEvents
+#for display, log(1+arr) takes the log of 1+array to give contrast and avoid log(0)
+titleStr='Wind Correlation (log N+1 events, {} states)'.format(nFiles) 
+xlbl = 'Next {}-min max speed (kts)'.format(t2)
+ylbl = 'last {}-min max speed (kts)'.format(t1)     
+pl.matColor(False,log10(nWindEventsDispl+1),xlbl,ylbl,titleStr)
+titleStr='Gust Correlation (log N+1 events, {} states)'.format(nFiles)
+pl.matColor(False,log10(nGustEventsDispl+1),xlbl,ylbl,titleStr)
+## Probabilities
+titleStr='Wind probability (log10), {} states)'.format(nFiles) 
+pl.matColor(False,log10(probNextWindGTE),xlbl,ylbl,titleStr)
+titleStr='Gust probability (log10), {} states)'.format(nFiles) 
+pl.matColor(False,log10(probNextGustGTE),xlbl,ylbl,titleStr)
+# conditional
+xs = [range(vmax+1)]*3
+ys = [log10(probNextWindInd),log10(probNextWindGETcomb),log10(probNextGustInd),log10(probNextGustGETcomb)]
+titlestr = 'Probabilities of wind max in next {} minutes, {} states)'.format(t2,nFiles) 
+xlbl = 'Future wind speed (kts)'
+ylbl = 'Probability (log10)'
+strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
+strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
+legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG) ]
+#don't set hold to True, because it will stop looping. 
+pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
+print 'Done'
