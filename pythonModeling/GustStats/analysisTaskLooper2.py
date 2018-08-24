@@ -159,7 +159,7 @@ class readData:
         if verbose:print
         return idata,data[:idata] #don't pass zeros from skipped lines
 
-class correlate:   
+class correlate:
     def __init__(self,probFloor):
         self.probFloor = probFloor
      
@@ -167,8 +167,9 @@ class correlate:
         '''For each data point with time greater than t1, find vmax during the past t1 (label _l).  
         Then during the time t2 past this point, find vmax (label _k)'''
         if verbose: print 'Counting past and future wind and gust events'
-        nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
-        nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
+        nWindWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
+        nGustGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
+        nWindGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
         n1 = int(rint(t1/float(dt)))
         n2 = int(rint(t2/float(dt)))
         for i in range(nData):
@@ -187,11 +188,12 @@ class correlate:
                 elif len(data[index1:i+1]['wind'])>0 and len(data[i+1:index2+1]['wind'])>0 and len(data[index1:i+1]['gust'])>0 and len(data[i+1:index2+1]['gust'])>0:
                     maxWindpast = min(vmax,max(data[index1:i+1]['wind']))
                     maxWindfut =  min(vmax,max(data[i+1:index2+1]['wind']))
-                    nWindEvents[maxWindpast,maxWindfut] += 1
+                    nWindWindEvents[maxWindpast,maxWindfut] += 1
                     maxGustpast =  min(vmax,max(data[index1:i+1]['gust']))
                     maxGustfut =   min(vmax,max(data[i+1:index2+1]['gust']))
-                    nGustEvents[maxGustpast,maxGustfut] += 1                      
-        return nWindEvents,nGustEvents
+                    nGustGustEvents[maxGustpast,maxGustfut] += 1 
+                    nWindGustEvents[maxWindpast,maxGustfut] += 1                  
+        return nWindWindEvents,nGustGustEvents,nWindGustEvents
     
     def probNextGTE(self,nMat,vmax):
         '''Probability that maximum speed in the next t_2 minutes will be >= v_ (index j), given that the last t1 min had a max of v (index i)'''
@@ -293,7 +295,7 @@ while loop:
         sys.exit('Done: no tasks remaining')
     else:
         state = taskOut[0]; t1 = int(taskOut[1]); t2 = int(taskOut[2]); vPastCap = int(taskOut[3]);
-    analysisDir = '{}\\analysisWindGust{},{},{}'.format(outPath,t1,t2,vPastCap) 
+    analysisDir = '{}\\analysis{},{},{}'.format(outPath,t1,t2,vPastCap) 
     if not os.path.exists(analysisDir): os.mkdir(analysisDir)
     statesDonePath = '{}\\statesDone.dat'.format(analysisDir)
     statesDone = [] #states that are done with all stations and plots
@@ -321,56 +323,64 @@ while loop:
         redoPast = False
         rdData = readData() #instance
         corr = correlate(probFloor) #instance
-        nWindFile = '{}\\{}_windEvents.dat'.format(analysisDir,state)
-        nGustFile = '{}\\{}_gustEvents.dat'.format(analysisDir,state)
-        if os.path.exists(nWindFile) and os.path.exists(nGustFile):
-            nWindEvents = loadtxt(nWindFile, dtype=int32)
-            nGustEvents = loadtxt(nGustFile, dtype=int32)
+        nWindWindFile = '{}\\{}_windEvents.dat'.format(analysisDir,state)
+        nGustGustFile = '{}\\{}_gustEvents.dat'.format(analysisDir,state)
+        nWindGustFile = '{}\\{}_windgustEvents.dat'.format(analysisDir,state)
+        if os.path.exists(nWindWindFile) and os.path.exists(nGustGustFile) and os.path.exists(nWindGustFile):
+            nWindWindEvents = loadtxt(nWindWindFile, dtype=int32)
+            nGustGustEvents = loadtxt(nGustGustFile, dtype=int32)
+            nWindGustEvents = loadtxt(nWindGustFile, dtype=int32)
         else:
-            nWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
-            nGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
+            nWindWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
+            nGustGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
+            nWindGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
         statePaths = rdData.readStatePaths(inPath,state)
         for stationPath in statePaths:
             station = stationPath.split('_')[1]
             if station not in done or redoPast:
                 print station,stationPath; sys.stdout.flush()
                 nData,data = rdData.readStationData('{}\\{}'.format(inPath,stationPath),verbose)
-                newWindEvents, newGustEvents = corr.nEventsCount(t1,t2,dt,nData,data,vmax,verbose)
-                nWindEvents += newWindEvents
-                nGustEvents += newGustEvents
+                newWindEvents, newGustEvents, newWindGustEvents = corr.nEventsCount(t1,t2,dt,nData,data,vmax,verbose)
+                nWindWindEvents += newWindEvents
+                nGustGustEvents += newGustEvents
+                nWindGustEvents += newWindGustEvents
                 #write state events counter to file
-                savetxt(nWindFile,nWindEvents,fmt='%10d')
-                savetxt(nGustFile,nGustEvents,fmt='%10d')
+                savetxt(nWindWindFile,nWindWindEvents,fmt='%10d')
+                savetxt(nGustGustFile,nGustGustEvents,fmt='%10d')
+                savetxt(nWindGustFile,nWindGustEvents,fmt='%10d')
                 #record station as analyzed
                 status = writeDone(donePath,'{}\n'.format(station))
                 if status == 'failed':
                     print 'Failed to write to done.dat'
         ### correlations for each state ### 
-        print 'Number of wind events: {}'.format(sum(nWindEvents))
-        print 'Number of gust events: {}'.format(sum(nGustEvents))
+        print 'Number of wind events: {}'.format(sum(nWindWindEvents))
+        print 'Number of gust events: {}'.format(sum(nGustGustEvents))
     #     for i in range(vmax+1):
     #         for j in range(vmax+1):
-    #             print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
-        if sum(nWindEvents)>0:
-            nWindEventsDispl = nWindEvents
-            nWindEventsDispl[0,0] = 0
-            nGustEventsDispl = nGustEvents
-            nGustEventsDispl[0,0] = 0
+    #             print i,j,'\t',nWindWindEvents[i,j],'\t',nGustGustEvents[i,j]
+        if sum(nWindWindEvents)>0:
+            nWindWindEventsDispl = nWindWindEvents
+            nWindWindEventsDispl[0,0] = 0
+            nGustGustEventsDispl = nGustGustEvents
+            nGustGustEventsDispl[0,0] = 0
+            nWindGustEventsDispl = nWindGustEvents
+            nWindGustEventsDispl[0,0] = 0
             ### correlated probability ###
             print 'probabilities:' 
             #note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
-            probNextWindGTE,rowCountw = corr.probNextGTE(nWindEvents,vmax) 
-            probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,vmax)
+            probNextWindWindGTE,rowCountw = corr.probNextGTE(nWindWindEvents,vmax) 
+            probNextGustGustGTE,rowCountg = corr.probNextGTE(nGustGustEvents,vmax)
+            probNextWindGustGTE,rowCountg = corr.probNextGTE(nWindGustEvents,vmax)
             ### combined correlated probability 
             # Add initial max velocities from 0 to 15
             rows = range(vPastCap+1)
-            probNextWindGETcomb,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
-            probNextGustGETcomb,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
+            probNextWindWindGETcomb,rowsCount = corr.probNextGTECombine(nWindWindEvents,rows,vmax)
+            probNextGustGustGETcomb,rowsCount = corr.probNextGTECombine(nGustGustEvents,rows,vmax)
+            probNextWindGustGETcomb,rowsCount = corr.probNextGTECombine(nWindGustEvents,rows,vmax)
             # Independent probability...simply sum over all intial states
             rows = range(vmax+1)
-            probNextWindInd,rowsCount = corr.probNextGTECombine(nWindEvents,rows,vmax)
-            probNextGustInd,rowsCount = corr.probNextGTECombine(nGustEvents,rows,vmax)
-            
+            probNextWindInd,rowsCount = corr.probNextGTECombine(nWindWindEvents,rows,vmax)
+            probNextGustInd,rowsCount = corr.probNextGTECombine(nGustGustEvents,rows,vmax)
             ### plots ###
             pl = plots(analysisDir) #instance
             ## nEvents
@@ -378,23 +388,27 @@ while loop:
             titleStr='{} Wind Correlation (log N+1 events)'.format(state)
             xlbl = 'Next {}-min max speed (kts)'.format(t2)
             ylbl = 'last {}-min max speed (kts)'.format(t1)     
-            pl.matColor(False,log10(nWindEventsDispl+1),xlbl,ylbl,titleStr)
+            pl.matColor(False,log10(nWindWindEventsDispl+1),xlbl,ylbl,titleStr)
             titleStr='{} Gust Correlation (log N+1 events)'.format(state)
-            pl.matColor(False,log10(nGustEventsDispl+1),xlbl,ylbl,titleStr)
+            pl.matColor(False,log10(nGustGustEventsDispl+1),xlbl,ylbl,titleStr)
+            titleStr='{} Wind-Gust Correlation (log N+1 events)'.format(state)
+            pl.matColor(False,log10(nWindGustEventsDispl+1),xlbl,ylbl,titleStr)
             ## Probabilities
             titleStr='{} Wind probability (log10)'.format(state)
-            pl.matColor(False,log10(probNextWindGTE),xlbl,ylbl,titleStr)
+            pl.matColor(False,log10(probNextWindWindGTE),xlbl,ylbl,titleStr)
             titleStr='{} Gust probability (log10)'.format(state)
-            pl.matColor(False,log10(probNextGustGTE),xlbl,ylbl,titleStr)
+            pl.matColor(False,log10(probNextGustGustGTE),xlbl,ylbl,titleStr)
+            titleStr='{} Wind-Gust probability (log10)'.format(state)
+            pl.matColor(False,log10(probNextGustGustGTE),xlbl,ylbl,titleStr)
             # conditional
-            xs = [range(vmax+1)]*3
-            ys = [log10(probNextWindInd),log10(probNextWindGETcomb),log10(probNextGustInd),log10(probNextGustGETcomb)]
+            xs = [range(vmax+1)]*5
+            ys = [log10(probNextWindInd),log10(probNextWindWindGETcomb),log10(probNextGustInd),log10(probNextGustGustGETcomb),log10(probNextWindGustGETcomb)]
             titlestr = '{} Probabilities of wind max in next {} minutes'.format(state,t2)
             xlbl = 'Future wind speed (kts)'
             ylbl = 'Probability (log10)'
             strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
             strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
-            legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG) ]
+            legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG),'Gust: {}'.format(strConditionalW)  ]
             #don't set hold to True, because it will stop looping. 
             pl.xy(False,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
         #record state as analyzed
