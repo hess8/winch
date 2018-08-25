@@ -8,7 +8,7 @@ Read a task from a file tasks.dat (see taskGenerator.py), defined by state and p
 3.  Don't do the task if it is in done.dat
 4.  done.dat is written to for each state analyzed for the same parameters (same analysis folder).  So we have to allow retries then.  
 
-python D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\analysisTaskLooper.py
+python D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\analysisTaskLooper2.py
 
 If we need more sophisticated file locking: https://github.com/dmfrey/FileLock/blob/master/filelock/filelock.py
 '''
@@ -323,8 +323,8 @@ while loop:
         redoPast = False
         rdData = readData() #instance
         corr = correlate(probFloor) #instance
-        nWindWindFile = '{}\\{}_windEvents.dat'.format(analysisDir,state)
-        nGustGustFile = '{}\\{}_gustEvents.dat'.format(analysisDir,state)
+        nWindWindFile = '{}\\{}_windwindEvents.dat'.format(analysisDir,state)
+        nGustGustFile = '{}\\{}_gustgustEvents.dat'.format(analysisDir,state)
         nWindGustFile = '{}\\{}_windgustEvents.dat'.format(analysisDir,state)
         if os.path.exists(nWindWindFile) and os.path.exists(nGustGustFile) and os.path.exists(nWindGustFile):
             nWindWindEvents = loadtxt(nWindWindFile, dtype=int32)

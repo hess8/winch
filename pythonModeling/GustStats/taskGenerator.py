@@ -15,7 +15,8 @@ class tasks:
         return
     
     ### Main script ###
-    inPath ='I:\\gustsData\\'
+#     inPath ='I:\\temp'
+    inPath ='I:\\gustsData'
     outPath = inPath
     
     states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
