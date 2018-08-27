@@ -203,7 +203,7 @@ class plots:
         self.colorsList = ['palevioletred', 'dodgerblue','green', 'darkorange', 'darkviolet','blue', 'red','orange', 
                    'limegreen', 'brown','mediumaquamarine',  'violet','lightcoral', 'olive','tomato','teal','peru','mediumorchid','slateblue','crimson']
         return 
-    def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None):
+    def xy(self,holdOpen,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None,ymin=None,ymax=None):
         '''To allow different time (x) arrays, we require the xs to be a list'''
         matplotlib.rcParams.update({'font.size': 14})
         fig, ax0 = subplots(figsize=(14,7))
@@ -222,11 +222,12 @@ class plots:
         ax0.set_ylabel(ylbl)
         ax0.grid(color='lightgray', linestyle='-', linewidth=1)
         ax0.legend(loc ='upper right',framealpha=0.5)
-        ymin = min([min(y) for y in ys]); ymax = 1.1*max([max(y) for y in ys]);
+        #Set axis limits
+        if ymin is None: ymin = min([min(y) for y in ys]); 
+        if ymax is None: ymax = 1.1*max([max(y) for y in ys]);
         ax0.set_ylim([ymin,ymax])
-        #Set x limits
-        if xmin is None or xmax is None:
-            xmin = min(xs[0]); xmax = max(xs[0])
+        if xmin is None: xmin = min(xs[0]); 
+        if xmax is None: xmax = max(xs[0])
         ax0.set_xlim([xmin,xmax])
         #Draw zero line
         ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  

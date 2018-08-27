@@ -19,7 +19,7 @@ from matplotlib.pyplot import close
 from analysisRoutines import correlate,plots,readfile,writefile
 
 ### Main script ###  
-analysisDir = 'I:\\gustsData\\\\analysis30,5,15' 
+analysisDir = 'I:\\gustsData\\\\analysis5,5,15' 
 
 params = analysisDir.split('analysis')[1].split(',')
 t1 = int(params[0]); t2 = int(params[1]); vPastCap = int(params[2])
@@ -112,5 +112,5 @@ strConditionalW = 'after {} min with winds <= {} kts'.format(t1,vPastCap)
 strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
 legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG),'Gust: {}'.format(strConditionalW)  ]
 #don't set hold to True, because it will stop looping. 
-pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
+pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None,ymin=log10(probFloor),ymax=None)
 print 'Done'
