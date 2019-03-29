@@ -92,8 +92,8 @@ The maximum winch launch speed
 \begin_inset Formula $V_{w}$
 \end_inset
 
- for gliders and its determination by the manufacturer appears to be mostly
- arbitrary.
+ for gliders and its historical determination during certification appears
+ to be mostly arbitrary.
  Because of this, pilots often state that some overspeed vs 
 \begin_inset Formula $V_{w}$
 \end_inset
@@ -102,19 +102,15 @@ The maximum winch launch speed
 \begin_inset Formula $V_{w}$
 \end_inset
 
-, but have no guidance about the real upper limit is.
+, but have no guidance about what the real upper limit is.
  This ignorance is dangerous, because it might encourage overly aggressive
  speed control or early rotation, leading to rope break or stall at low
  altitude.
- We propose a winch maneuvering speed 
+ We calculate the winch maneuvering speed which we call 
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
- for safe maneuvering under winch launch, and a new maximum winch speed
-\begin_inset Formula $V_{w2}$
-\end_inset
-
-.
+ that protects the wings under winch launch.
 \end_layout
 
 \begin_layout Section
@@ -217,10 +213,10 @@ The relationship between speed and risk is complex because: 1) high speed
 \begin_layout Standard
 In the almost 900 accidents and 80 fatalities studied, 
 \emph on
-none were
+none 
 \emph default
- reported by Santel or Browning to be from the structural failure of the
- wings.
+were reported by Santel or Browning to be from the structural failure of
+ the wings.
  So the factors causing accidents are not exceeding structural limits: they
  are instead almost entirely stalls during rotation, rope breaks subsequent
 \end_layout
@@ -524,7 +520,7 @@ experienced
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics

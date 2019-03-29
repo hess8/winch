@@ -77,7 +77,7 @@ figs-within-sections
 \begin_body
 
 \begin_layout Title
-Safety margins in glider winch launches
+Maximum speeds in glider winch launches
 \end_layout
 
 \begin_layout Author
@@ -90,7 +90,7 @@ Physics Department, Brigham Young University, Provo, Utah
 
 \begin_layout Author Email
 
-bret_hess@byu.edu
+bret.hess@gmail.com
 \end_layout
 
 \begin_layout Abstract
@@ -109,12 +109,6 @@ We define structural, stall rope break and post-break recovery safety margins
 \end_inset
 
 (which in most cases appears to have been arbitrarily assigned).
- Using a new simulation, we plot the safety margins vs time in winch launches.
-\end_layout
-
-\begin_layout Abstract
-We also simulate dynamically the interaction of the glider with wind gusts
- while on the winch.
  
 \end_layout
 
@@ -147,7 +141,7 @@ cavalier
 
  launches where the pilot uses the elevator aggressively in the rotation
  and initial climb.
- This lowers the speed and reduced the stall margin, but with only a gain
+ This lowers the speed and reduces the stall margin, but with only a gain
  of 10 m (30 ft) of height for a 1000 m rope.
  In Santel's 2010 study 
 \begin_inset CommandInset citation
@@ -167,8 +161,8 @@ key "Browning2007SafetyBGA"
 \end_inset
 
  did a similar study of the 391 British winch accidents from 1987 to 2004.
- While winch launch accidents are rare (1.1 fatal or serious per 100,000),
- he reported that the accident rate 
+ While winch launch accidents are rare (1.1 fatal or serious per 100,000
+ launches), he reported that the accident rate 
 \emph on
 per flight
 \emph default
@@ -199,39 +193,27 @@ key "2010DanielsBGAWinchTraining"
  by Bill Daniels.
  Of the 18 deaths in Browning's study, 15 were attributed to stall, and
  one more possibly to stall.
- Eight of these fatal stalls were during rotation and the rest are due to
- 
-\begin_inset Quotes eld
-\end_inset
-
-power loss
-\begin_inset Quotes erd
-\end_inset
-
- which must include both rope break and perhaps engine failure.
- Most of these rotation failures must have been caused by too-rapid rotation
- from aggressive pilot elevator control.
- 
 \end_layout
 
 \begin_layout Standard
-The relationship between speed and risk is not simple because: 1) high speed
- makes the glider more susceptible to wing failure during maneuvering (rotation)
- and wind gusts; 2) high speed increases the risk of accelerated stall for
- a given pitch rate during the rotation phase; and 3) low speed makes stall
- and spin more likely and in some cases inevitable after a rope break.
- 
+Given the large role that early stall plays in winch launching, low speeds
+ on the winch are clearly a hazard during rotation and after a rope break.
+ But the relationship between speed and risk is not simple because high
+ speed makes the glider more susceptible to wing failure during maneuvering
+ (rotation) and wind gust, and also increases the risk of accelerated stall
+ for a given pitch rate during the rotation phase.
 \end_layout
 
 \begin_layout Standard
-In the almost 900 accidents and 80 fatalities studied, 
+In the almost 900 accidents and 80 fatalities studied by Santel or Browning,
+ 
 \emph on
-none were
+none 
 \emph default
- reported by Santel or Browning to be from the structural failure of the
- wings.
- So the factors causing accidents are not exceeding structural limits: they
- are instead almost entirely stalls during rotation and after rope breaks,
+were reported to be from the structural failure of the wings and were not
+ due to structural limits: they are instead almost entirely stalls during
+ rotation and after rope breaks.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -656,7 +638,7 @@ bending
 bending
 \emph default
  load limit.
- If the glider wing fails it's because it bent too much.
+ If the wing fails it's because it bent too much.
  In the Appendix (section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -664,9 +646,9 @@ reference "subsec:Wing-bending appendix"
 
 \end_inset
 
-) we show that the static loads create slightly more bending than for the
- same wing loading in inertial loads such as a turn or pullout, and that
- the maneuvering speed should be slightly lower for winch launching: 
+) we show that static loads create slightly more bending than for the same
+ wing loading in inertial loads such as a turn or pullout, and that the
+ maneuvering speed should be slightly lower for winch launching: 
 \end_layout
 
 \begin_layout Standard
@@ -882,7 +864,7 @@ reference "fig: VW over VA"
 \begin_inset Formula $V_{Aw}$
 \end_inset
 
-from eqn 
+ from eqn 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:VA_W"
@@ -949,7 +931,7 @@ name "fig: VW2, Vw vs VA"
 
 \end_inset
 
-Manufacturers' max winch speed 
+Manufacturers' max winch speeds 
 \begin_inset Formula $V_{W}$
 \end_inset
 
