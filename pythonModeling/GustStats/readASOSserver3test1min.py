@@ -17,7 +17,7 @@ except ImportError:
 # Number of attempts to download data
 MAX_ATTEMPTS = 6
 # HTTPS here can be problematic for installs that don't have Lets Encrypt CA
-SERVICE = "http://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?"
+SERVICE = "http://mesonet.agron.iastate.edu/cgi-bin/request/asos/1min.py?"
 
 def download_data(uri):
     """Fetch the data from the IEM
@@ -78,7 +78,7 @@ def readStationsDone(outPath):
 
 #########  Main script #############
 #     outPath = 'C:\\Users\\owner\\Downloads\\' 
-outPath = 'H:\gustsData'
+outPath = 'H:\gustsData1min'
 if not os.path.exists(outPath): os.mkdir(outPath)
 os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)

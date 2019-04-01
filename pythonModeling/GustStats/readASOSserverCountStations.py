@@ -29,9 +29,6 @@ def get_stations_from_network(network):
     return stations
 
 #########  Main script #############
-#     outPath = 'C:\\Users\\owner\\Downloads\\'
-outPath = 'F:\\gustsDataRaw\\'
-os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)
 endts = datetime.datetime(2017, 12, 31)
 #     endts = datetime.datetime(2017, 1, 2)
