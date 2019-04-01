@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 
 Read a task from a file tasks.dat (see taskGenerator.py), defined by state and parameters. 
 0.  If a file read fails, wait a 0.5 sec...repeat x times or fail 
@@ -106,31 +106,30 @@ class readData:
         for iline,line in enumerate(lines[nheaders:]):
             lineOK = True
             if mod(idata,10000)==0 and verbose:
-                print '{} '.format(idata),
+                print('{} '.format(idata),)
             if mod(idata,100000)==0 and verbose:
-                print
-            try:
+                print(            try:)
                 info = line.split(',')
             except:
-                print 'line {} could not be split'.format(iline),line
+                print('line {} could not be split'.format(iline),line)
                 lineOK = False
             try:
                 [date,hrmin] = info[1].split()       
                 d = datetime.strptime(date+' '+hrmin, dtFormat)
             except:
                 if verbose:
-                    print 'Date {} could not be parsed'.format(iline),info
+                    print('Date {} could not be parsed'.format(iline),info)
                 lineOK = False
             try:
                 totmin = floor(int(time.mktime(d.timetuple()))/60.0) #since beginning of epoch
             except:
-                print 'totmin {} could not be calculated'.format(iline),d
+                print('totmin {} could not be calculated'.format(iline),d)
                 lineOK = False                
             try:
                 wind = int(rint(float(info[8]))) #knots
             except:
                 if verbose:
-                    print 'wind {}, position 8 was not valid'.format(iline),line
+                    print('wind {}, position 8 was not valid'.format(iline),line)
                 lineOK = False
             try:
                 if info[13] =='M':
@@ -139,7 +138,7 @@ class readData:
                     gust = int(rint(float(info[13]))) #knots
             except:
                 if verbose:
-                    print 'gust {}, position 13 was not valid'.format(iline),line
+                    print('gust {}, position 13 was not valid'.format(iline),line)
                 lineOK = False    
             if lineOK:
                 #don't use the following that we aren't using in analysis
@@ -155,9 +154,8 @@ class readData:
                 data[idata]['gust'] = gust
                 idata += 1  
 #             except:
-#                 print 'Data line {} with length {} is incomplete; skipped'.format(iline,len(info)),info
-        if verbose:print
-        return idata,data[:idata] #don't pass zeros from skipped lines
+#                 print('Data line {} with length {} is incomplete; skipped'.format(iline,len(info)),info)
+        if verbose:print(        return idata,data[:idata] #don't pass zeros from skipped lines)
 
 class correlate:
     def __init__(self,probFloor):
@@ -166,7 +164,7 @@ class correlate:
     def nEventsCount(self,t1,t2,dt,nData,data,vmax,verbose):
         '''For each data point with time greater than t1, find vmax during the past t1 (label _l).  
         Then during the time t2 past this point, find vmax (label _k)'''
-        if verbose: print 'Counting past and future wind and gust events'
+        if verbose: print('Counting past and future wind and gust events')
         nWindWindEvents = zeros((vmax+1,vmax+1),dtype = int32)
         nGustGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
         nWindGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
@@ -174,17 +172,16 @@ class correlate:
         n2 = int(rint(t2/float(dt)))
         for i in range(nData):
             if mod(i,10000)==0 and verbose:
-                print '{} '.format(i),
+                print('{} '.format(i),)
             if mod(i,100000)==0 and verbose:
-                print
-            # check that there are no time skips in the region of t-t1 to t+t2:
+                print(            # check that there are no time skips in the region of t-t1 to t+t2:)
             index1 = i - n1
             index2 = i + n2
             if index1 >= 0 and index2 <= nData - 1:
                 if data[index1]['totmin'] != data[i]['totmin'] - t1:
-                    if verbose: print 'Skips near data point {}: initial time {} not equal to ti-t1:{}'.format(i,data[index1]['totmin'], data[i]['totmin'] - t1)  
+                    if verbose: print('Skips near data point {}: initial time {} not equal to ti-t1:{}'.format(i,data[index1]['totmin'], data[i]['totmin'] - t1)  )
                 elif data[index2]['totmin'] != data[i]['totmin'] + t2:
-                    if verbose: print 'Skips near data point {}: final time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  
+                    if verbose: print('Skips near data point {}: final time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  )
                 elif len(data[index1:i+1]['wind'])>0 and len(data[i+1:index2+1]['wind'])>0 and len(data[index1:i+1]['gust'])>0 and len(data[i+1:index2+1]['gust'])>0:
                     maxWindpast = min(vmax,max(data[index1:i+1]['wind']))
                     maxWindfut =  min(vmax,max(data[i+1:index2+1]['wind']))
@@ -258,7 +255,7 @@ class plots:
         ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
+        if holdOpen: print('Graphs ready...pausing after graph "{}"'.format(titlestr))
         show(block = holdOpen)
         return
     
@@ -273,22 +270,22 @@ class plots:
         ax.set_title(titlestr)
         ax.xaxis.tick_bottom()
         fig.savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
+        if holdOpen: print('Graphs ready...pausing after graph "{}"'.format(titlestr))
         show(block = holdOpen)
         return
 
 ### read data ###  
 OK = True        
-# inPath = 'I:\\temp\\temp2'
-# inPath = 'I:\\temp\\'
-inPath ='I:\\gustsData\\'
+# inPath = 'F:\\temp\\temp2'
+# inPath = 'F:\\temp\\'
+inPath ='F:\\gustsData\\'
 outPath = inPath
 loop = True
 while loop:
     close('all') 
     taskOut = readAnalysisTask(inPath)
     if taskOut == 'ReadFailed':
-        print 'Failed to read task'
+        print('Failed to read task')
         time.sleep(1)
         OK = False
     elif taskOut == 'NoTasks':
@@ -310,7 +307,7 @@ while loop:
     else:
         done = readfile(donePath) 
     if state not in statesDone:
-        print 'Running task {}'.format(taskOut)
+        print('Running task {}'.format(taskOut))
     #     f = open('{}\\running'.format(outPath,"a"))
     #     f.write('{}\n'.format(' '.join(taskOut)))
     #     f.close()
@@ -338,7 +335,7 @@ while loop:
         for stationPath in statePaths:
             station = stationPath.split('_')[1]
             if station not in done or redoPast:
-                print station,stationPath; sys.stdout.flush()
+                print(station,stationPath); sys.stdout.flush()
                 nData,data = rdData.readStationData('{}\\{}'.format(inPath,stationPath),verbose)
                 newWindEvents, newGustEvents, newWindGustEvents = corr.nEventsCount(t1,t2,dt,nData,data,vmax,verbose)
                 nWindWindEvents += newWindEvents
@@ -351,13 +348,13 @@ while loop:
                 #record station as analyzed
                 status = writeDone(donePath,'{}\n'.format(station))
                 if status == 'failed':
-                    print 'Failed to write to done.dat'
+                    print('Failed to write to done.dat')
         ### correlations for each state ### 
-        print 'Number of wind events: {}'.format(sum(nWindWindEvents))
-        print 'Number of gust events: {}'.format(sum(nGustGustEvents))
+        print('Number of wind events: {}'.format(sum(nWindWindEvents)))
+        print('Number of gust events: {}'.format(sum(nGustGustEvents)))
     #     for i in range(vmax+1):
     #         for j in range(vmax+1):
-    #             print i,j,'\t',nWindWindEvents[i,j],'\t',nGustGustEvents[i,j]
+    #             print(i,j,'\t',nWindWindEvents[i,j],'\t',nGustGustEvents[i,j])
         if sum(nWindWindEvents)>0:
             nWindWindEventsDispl = nWindWindEvents
             nWindWindEventsDispl[0,0] = 0
@@ -366,7 +363,7 @@ while loop:
             nWindGustEventsDispl = nWindGustEvents
             nWindGustEventsDispl[0,0] = 0
             ### correlated probability ###
-            print 'probabilities:' 
+            print('probabilities:' )
             #note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
             probNextWindWindGTE,rowCountw = corr.probNextGTE(nWindWindEvents,vmax) 
             probNextGustGustGTE,rowCountg = corr.probNextGTE(nGustGustEvents,vmax)
@@ -414,4 +411,4 @@ while loop:
         #record state as analyzed
         status = writeDone(statesDonePath,'{}\n'.format(state))
         if status == 'failed':
-            print 'Failed to write to statesDone.dat'        
+            print('Failed to write to statesDone.dat'        )

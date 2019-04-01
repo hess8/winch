@@ -8,10 +8,10 @@ except ImportError:
     from urllib2 import urlopen
 
 for i in range(10):
-    print i
+    print(i)
     
 #     saveDir = 'C:\\Users\\owner\\Downloads\\'
-saveDir = 'I:\\gustsDataRaw\\'
+saveDir = 'F:\\gustsDataRaw\\'
 # os.chdir(saveDir)
 # startts = datetime.datetime(2000, 1, 1)
 # endts = datetime.datetime(2000, 1, 31)
@@ -27,7 +27,7 @@ states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL',
 #     states = ['IA']
 #     states = ['UT']
 for state in states:
-    print state; sys.stdout.flush()
+    print(state; sys.stdout.flush())
     stations = get_stations_from_network(state)
 # stations = get_stations_from_filelist("mystations.txt")
     for station in stations:

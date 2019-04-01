@@ -69,7 +69,7 @@ def get_stations_from_networks():
 #     networks = ['AWOS']
     networks = []
     for state in states.split():
-        print (state,),
+        print((state,),)
         networks.append("%s_ASOS" % (state,))
 
     for network in networks:
@@ -87,7 +87,7 @@ def main():
     """Our main method"""
     # timestamps in UTC to request data for
 #     saveDir = 'C:\\Users\\owner\\Downloads\\'
-    saveDir = 'I:\\gustsDataRaw\\'
+    saveDir = 'F:\\gustsDataRaw\\'
     os.chdir(saveDir)
     startts = datetime.datetime(2000, 1, 1)
     endts = datetime.datetime(2017, 12, 31)

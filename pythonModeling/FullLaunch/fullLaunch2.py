@@ -1,4 +1,4 @@
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 Solves for the motion of a glider launched by a winch with a springy rope. 
 The winch is connected to an engine through a torque converter. 
 
@@ -222,7 +222,7 @@ t = linspace(0,20)
 
 # solve ODE
 y = odeint(model,y0,t)
-#print y[0]
+#print(y[0])
 # plot results
 plot(t,y[:,0])
 plot(t,y[:,1])

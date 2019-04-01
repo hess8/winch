@@ -1,4 +1,4 @@
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 Generates the tasks from loops over parameters and writes to '''
 def writefile(lines,filepath): #need to have \n's inserted already
     file1 = open(filepath,'w')
@@ -15,8 +15,8 @@ class tasks:
         return
     
     ### Main script ###
-    inPath ='I:\\temp'
-#     inPath ='I:\\gustsData'
+    inPath ='F:\\temp'
+#     inPath ='F:\\gustsData'
     outPath = inPath
     
     states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
@@ -33,4 +33,4 @@ class tasks:
                     lines.append('{:2s} {:8d} {:8d} {:8d}\n'.format(state,t1,t2,vPastCap))
     writefile(lines,'{}//tasks.dat'.format(outPath))
     writefile(lines,'{}//tasksCopy.dat'.format(outPath))
-    print 'Done'
+    print('Done')

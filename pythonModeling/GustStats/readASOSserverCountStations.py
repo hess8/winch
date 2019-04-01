@@ -30,7 +30,7 @@ def get_stations_from_network(network):
 
 #########  Main script #############
 #     outPath = 'C:\\Users\\owner\\Downloads\\'
-outPath = 'I:\\gustsDataRaw\\'
+outPath = 'F:\\gustsDataRaw\\'
 os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)
 endts = datetime.datetime(2017, 12, 31)
@@ -43,9 +43,9 @@ states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL',
 # states = ['UT']
 nstations = 0
 for state in states:
-    print '==========',state,'=========='; sys.stdout.flush()
+    print('==========',state,'=========='); sys.stdout.flush()
     stations = get_stations_from_network(state)
-    print len(stations)
+    print(len(stations))
     nstations += len(stations)
-print 'Total:', nstations
+print('Total:', nstations)
 print("Done")

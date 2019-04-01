@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 
 Read a task from a file tasks.dat (see taskGenerator.py), defined by state and parameters. 
 0.  If a file read fails, wait a 0.5 sec...repeat x times or fail 
@@ -20,16 +20,16 @@ from analysisRoutines import correlate,plots,readAnalysisTask,readfile,writefile
 
 ### Main script ###  
 OK = True        
-# inPath = 'I:\\temp\\temp2'
-inPath = 'I:\\temp\\'
-# inPath ='I:\\gustsData\\'
+# inPath = 'F:\\temp\\temp2'
+inPath = 'F:\\temp\\'
+# inPath ='F:\\gustsData\\'
 outPath = inPath
 loop = True
 while loop:
     close('all') 
     taskOut = readAnalysisTask(inPath)
     if taskOut == 'ReadFailed':
-        print 'Failed to read task'
+        print('Failed to read task')
         time.sleep(1)
         OK = False
     elif taskOut == 'NoTasks':
@@ -51,7 +51,7 @@ while loop:
     else:
         done = readfile(donePath) 
     if state not in statesDone:
-        print 'Running task {}'.format(taskOut)
+        print('Running task {}'.format(taskOut))
     #     f = open('{}\\running'.format(outPath,"a"))
     #     f.write('{}\n'.format(' '.join(taskOut)))
     #     f.close()
@@ -77,12 +77,12 @@ while loop:
             nWindGustEvents = zeros((vmax+1,vmax+1),dtype = int32)
         statePaths = rdData.readStatePaths(inPath,state)
         if len(statePaths) == 0:
-            print 'There are no data files matching state {}'.format(state)
+            print('There are no data files matching state {}'.format(state))
         else:
             for stationPath in statePaths:
                 station = stationPath.split('_')[1]
                 if station not in done or redoPast:
-                    print station,stationPath; sys.stdout.flush()
+                    print(station,stationPath); sys.stdout.flush()
                     nData,data = rdData.readStationData('{}\\{}'.format(inPath,stationPath),verbose)
                     newWindEvents, newGustEvents, newWindGustEvents = corr.nEventsCount(t1,t2,dt,nData,data,vmax,verbose)
                     nWindWindEvents += newWindEvents
@@ -95,13 +95,13 @@ while loop:
                     #record station as analyzed
                     status = writeDone(donePath,'{}\n'.format(station))
                     if status == 'failed':
-                        print 'Failed to write to done.dat'
+                        print('Failed to write to done.dat')
             ### correlations for each state ### 
-            print 'Number of wind events: {}'.format(sum(nWindWindEvents))
-            print 'Number of gust events: {}'.format(sum(nGustGustEvents))
+            print('Number of wind events: {}'.format(sum(nWindWindEvents)))
+            print('Number of gust events: {}'.format(sum(nGustGustEvents)))
         #     for i in range(vmax+1):
         #         for j in range(vmax+1):
-        #             print i,j,'\t',nWindWindEvents[i,j],'\t',nGustGustEvents[i,j]
+        #             print(i,j,'\t',nWindWindEvents[i,j],'\t',nGustGustEvents[i,j])
             if sum(nWindWindEvents)>0:
                 nWindWindEventsDispl = nWindWindEvents
                 nWindWindEventsDispl[0,0] = 0
@@ -110,7 +110,7 @@ while loop:
                 nWindGustEventsDispl = nWindGustEvents
                 nWindGustEventsDispl[0,0] = 0
                 ### correlated probability ###
-                print 'probabilities:' 
+                print('probabilities:' )
                 #note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
                 probNextWindWindGTE,rowCountw = corr.probNextGTE(nWindWindEvents,vmax) 
                 probNextGustGustGTE,rowCountg = corr.probNextGTE(nGustGustEvents,vmax)
@@ -158,4 +158,4 @@ while loop:
         #record state as analyzed
         status = writeDone(statesDonePath,'{}\n'.format(state))
         if status == 'failed':
-            print 'Failed to write to statesDone.dat'        
+            print('Failed to write to statesDone.dat'        )

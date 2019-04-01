@@ -27,7 +27,7 @@ def invK(v):
 
 # solve ODE
 
-#print y[0]
+#print(y[0])
 # plot results
 clf;close()
 #plot(v,K(v))

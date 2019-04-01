@@ -1,7 +1,7 @@
 # from IPython import get_ipython  
 # get_ipython().magic('reset -sf') #comment out this line if not running in Ipython; resets all variables to zero
 
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 Solves for the motion of a glider launched by a winch with a springy rope. 
 The winch is connected to an engine through a torque converter. 
 
@@ -85,9 +85,9 @@ def pid(var,time,setpoint,c,j,Nint):
     else:
         interr = 0        
 #    interr = sum(var[:j+1])/(j+1) - setpoint
-#    print 'interr',interr
+#    print('interr',interr)
     
-#    print 't,varj,err,derr,interr',time[j],var[j],err,derr,interr
+#    print('t,varj,err,derr,interr',time[j],var[j],err,derr,interr)
 
     return c[0]*err + c[1]*derr + c[2]*interr
     
@@ -342,7 +342,7 @@ class rope:
         tint = 4*self.tau         
         Nint = min(0,ti.i,ceil(tint/ti.dt))
         if ti.i >= 0:
-            print ti.i,sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
+            print(ti.i,sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1))
             return sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)       
         else:
             return 0
@@ -366,7 +366,7 @@ class rope:
 #        if ti.i >=2 and rp.hystRate > 0:
 #            dotT = (self.data[ti.i-1]['T'] - self.data[ti.i-2]['T'])/ (ti.data[ti.i-1]['t']  - ti.data[ti.i-2]['t'])
 #            Y = rp.Ys*(1 + abs(dotT/rp.Ys/rp.A/rp.hystRate))#**2)
-#            print 'Y',Y/rp.Ys
+#            print('Y',Y/rp.Ys)
 #            return rp.Ys*(1 + (dotT/rp.Ys/rp.A/rp.hystRate)**2)
 #        else:
 #            return rp.Ys
@@ -374,7 +374,7 @@ class rope:
     def chgT(self,vrad,vgw,lenrope):
         '''RHS of diff equation for tension change in terms of rope and glider speeds.  Allows hysteresis'''         
         p = 1    
-#        print 'hyst', 1/(1- (abs(vrad - vgw)/self.hystRate/lenrope)**p)
+#        print('hyst', 1/(1- (abs(vrad - vgw)/self.hystRate/lenrope)**p))
         return rp.Ys*rp.A*(vrad - vgw)/lenrope/(1- (abs(vrad - vgw)/self.hystRate/lenrope)**p)       
             
 class winch:
@@ -566,7 +566,7 @@ class pilot:
             if self.currCntrl == 0 and gamma > crossAngle:  #switch to 2nd control
                 self.currCntrl = 1 #switches only once
                 self.tSwitch = t          
-                print 'Turned on second control at {:3.1f} sec'.format(t)
+                print('Turned on second control at {:3.1f} sec'.format(t))
             ctype = self.ctrltype[self.currCntrl]
             setpoint = self.setpoint[self.currCntrl]
             # determine the moment demanded by the control            
@@ -594,7 +594,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         ti.Nprobed +=1
         ti.tprobed[ti.Nprobed-1] = t
         gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
-    #    print 't,e,eset,M ',t,pl.elev,pl.elevTarget,pl.Me
+    #    print('t,e,eset,M ',t,pl.elev,pl.elevTarget,pl.Me)
         if gl.xD < 1e-6:
             gl.xD = 1e-6 #to handle v = 0 initial
         if en.v < 1e-6:
@@ -630,7 +630,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         ropetorq = Tg*sqrt(rp.a**2 + rp.b**2)*sin(arctan(rp.b/float(rp.a))-gl.data[ti.i-1]['theta']-thetaRG) #torque of rope on glider
     
     #     if t>0.126362685837:
-    #         print 'ropetorq',ropetorq
+    #         print('ropetorq',ropetorq)
         #winch-engine
         vrel = wi.v/en.v
         Fee = tc.invK(vrel) * en.v**2 / float(wi.rdrum)**3     
@@ -659,12 +659,12 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
         if t - ti.oldt > 2.0*ti.dt: 
             ti.i += 1 
     #         if t > 15 and gl.yD<0:
-#             print 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state)
-    #             print 'pause'
-    #        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-    #        print 't,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta
+#             print('t:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f} state {}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L,gl.state))
+    #             print('pause')
+    #        print(t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D))
+    #        print('t,Fmain+Ftail,gndTorq,atorq,rtorq,theta',t,Fmain+Ftail,gndTorq,alphatorq,ropetorq,gl.theta)
     #         if rp.T > 10:
-    #             print 'pause'
+    #             print('pause')
             # store data from this time step for use /in controls or plotting.  
             ti.data[ti.i]['t']  = t
             gl.data[ti.i]['x']  = gl.x
@@ -694,7 +694,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl,negvyTrigger):
             rp.data[ti.i]['T'] = rp.T
             rp.data[ti.i]['torq'] = ropetorq
     #         if gl.y > 1:
-    #             print 'pause'
+    #             print('pause')
             rp.data[ti.i]['theta'] = thetarope
             wi.data[ti.i]['Pdeliv'] = Few * wi.v
             wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
@@ -743,7 +743,7 @@ setpoint = [30,30, 90]  # deg,speed, deg last one is climb angle to transition t
 #setpoint = [4 ,33, 20]  #deg,speed, deg last one is climb angle to transition to final control
 #control = ['','']
 #setpoint = [0 , 0, 30]  # deg,speed, deglast one is climb angle to transition to final control
-print 'Controls', control
+print('Controls', control)
 ropetau = 0.0 #oscillation damping in rope, artificial
 pilotType = 'momentControl'  # simpler model bypasses elevator...just creates the moments demanded
 # pilotType = 'elevControl' # includes elevator and response time, and necessary ground roll evolution of elevator
@@ -807,11 +807,11 @@ for iloop,tRampUp in enumerate(tRampUpList):
     rData = rp.data[:ti.i]
 
     #define smoothed data arrays before plotting
-    print 'Smoothing data'
+    print('Smoothing data')
     xD = smooth(gData['xD'],tData)
-    print '1'
+    print('1')
     yD = smooth(gData['yD'],tData)
-    print '2'
+    print('2')
     v = smooth(gData['v'],tData)
     y = smooth(gData['y'],tData)
     alpha = smooth(gData['alpha'],tData)
@@ -866,20 +866,20 @@ for iloop,tRampUp in enumerate(tRampUpList):
     gammaMax = max(gamma)
     
     # Comments to user
-    print 'Throttle ramp up time (after slack is out)', tRampUp
-    print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
-    print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(v),deg(max(theta)))
-    print 'Maximum Tension factor: {:3.1f}'.format(Tmax)
-    print 'Average Tension factor: {:3.1f}'.format(Tavg)
-    print 'Ground roll: {:5.0f} m, {:5.1f} sec (includes about 1 sec of slack removal)'.format(xRoll,tRoll)
-    print 'Final vy: {:5.1f} m/s'.format(yDfinal)
+    print('Throttle ramp up time (after slack is out)', tRampUp)
+    print('Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo)))
+    print('Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(v),deg(max(theta))))
+    print('Maximum Tension factor: {:3.1f}'.format(Tmax))
+    print('Average Tension factor: {:3.1f}'.format(Tavg))
+    print('Ground roll: {:5.0f} m, {:5.1f} sec (includes about 1 sec of slack removal)'.format(xRoll,tRoll))
+    print('Final vy: {:5.1f} m/s'.format(yDfinal))
     if abs(t[-1] - ti.data[ti.i]['t']) > 5*dt:
-        print '\nWarning...the integrator struggled with this model.'
-        print '\tIf some of the plots have a time axis that is too short vs others, '
-        print '\t...try making smoother controls.'
+        print('\nWarning...the integrator struggled with this model.')
+        print('\tIf some of the plots have a time axis that is too short vs others, ')
+        print('\t...try making smoother controls.')
     # check whether to keep this run as loop data
     if yfinal < yminLoop and iloop >0:
-        print 'Bad run, not saving data'
+        print('Bad run, not saving data')
         data[iloop] = data[iloop-1] #write over this data point with the last one. 
     else:
         # Store loop results
@@ -951,4 +951,4 @@ plts.i = 0 #restart color cycle
 plts.xyy([data['tRampUp']],[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
         [0,0,0,0,0,1,1,1,1,0,0,0],'throttle ramp-up time (sec) ',['Velocity (m/s), Angles (deg), m, sec %',"Relative forces,g's"],\
         ['x gnd roll', 't gnd roll x 10','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
-print 'Done'
+print('Done')

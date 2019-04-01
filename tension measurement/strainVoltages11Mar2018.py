@@ -56,6 +56,6 @@ if not os.path.exists(path): os.mkdir(path)
 plts = plots(path)
 plts.xy([Tinside,Toutside,Toutside2],[Vinside,Voutside,Voutside2],' Tension (lbs)','Signal (mV)',['Inside','Outside','Outside run 2'],'Amplfied tension signal 10 Mar 2018')
 
-print 'Done'
+print('Done')
         
         

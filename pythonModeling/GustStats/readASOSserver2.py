@@ -36,11 +36,11 @@ def download_data(uri):
             if data is not None and not data.startswith('ERROR'):
                 return data
         except Exception as exp:
-            print "download_data({}) failed with{}".format(uri, exp)
+            print("download_data({}) failed with{}".format(uri, exp))
             time.sleep(5)
         attempt += 1
 
-    print "Exhausted attempts to download, returning empty data" 
+    print("Exhausted attempts to download, returning empty data" )
     return ""
 
 
@@ -77,7 +77,7 @@ def readStationsDone(outPath):
 
 #########  Main script #############
 #     outPath = 'C:\\Users\\owner\\Downloads\\'
-outPath = 'I:\\gustsDataRaw'
+outPath = 'F:\\gustsDataRaw'
 os.chdir(outPath)
 os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)
@@ -96,13 +96,13 @@ states = ['WV','WY']
 # states = ['UT']
 stationsDone = readStationsDone(outPath)
 for state in states:
-    print '==========',state,'=========='; sys.stdout.flush()
+    print('==========',state,'=========='); sys.stdout.flush()
     stations = get_stations_from_network(state)
 # stations = get_stations_from_filelist("mystations.txt")
     for station in stations:
         if station not in stationsDone:
             uri = '%s&station=%s' % (service, station)
-            print 'Downloading:', state, station; sys.stdout.flush()
+            print('Downloading:', state, station; sys.stdout.flush())
             data = download_data(uri)
             outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
                                       endts.strftime("%Y%m%d%H%M"))

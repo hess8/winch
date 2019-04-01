@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 Statistical analysis of gust and wind speeds and extreme gust probabilities
 '''
 import os,sys
@@ -35,35 +35,35 @@ class readData:
         dtFormat = "%Y-%m-%d %H:%M"
         out = []
         lines = readfile(inPath)
-        print 'Reading {}s from raw data'.format(type)
+        print('Reading {}s from raw data'.format(type))
         for i,line in enumerate(lines[1:]):
             if mod(i,10000)==0:
-                print '{} '.format(i),
+                print('{} '.format(i),)
             if mod(i,100000)==0:
-                print
+                print()
             info = line.split()
             if len(info) >=5:
-#             if i>5120000: print 'info',i,info
+#             if i>5120000: print('info',i,info)
                 date = info[3]
                 hrmin = info[4]
                 if len(info) >= 6:
                     var = info[5]
                 else:
                     var = ''
-                    print 'Line {} in type {} has a length of only {}.'.format(i,type,len(info)),info
+                    print('Line {} in type {} has a length of only {}.'.format(i,type,len(info)),info)
                 d = datetime.strptime(date+' '+hrmin, dtFormat)
                 secs = int(time.mktime(d.timetuple()))
                 out.append([date,hrmin,secs,var])
             else:
-                print 'Line {} in type {} does not have complete time and date:'.format(i,type),info
+                print('Line {} in type {} does not have complete time and date:'.format(i,type),info)
                 sys.exit('Stop!')
-        print
+        print()
         return out
     
     def collateData(self,windList,gustList,outPath=None):
         '''Writes data into structured array, and writes to a file if outPath exists'''
-        print 'Length of wind List:',len(windList) 
-        print 'Length of gust List:',len(gustList)
+        print('Length of wind List:',len(windList) )
+        print('Length of gust List:',len(gustList))
         if len(windList) != len(gustList):
             sys.exit('Stop: the two lengths are not equal!')
         data = zeros(len(windList),dtype = [('year', int),('month', int),('day', int),('hour', int),('min', int),('totsecs', int32),('wind',int),('gust', int)])
@@ -90,13 +90,13 @@ class readData:
                 if not outPath is None:   
                     out.append('{}  {}  {}  {:4s}  {:4s}\n'.format(date,hrmin,secs,wind.rjust(4),gust.rjust(4)))  
             else:
-                print 'Line {} the date or times do not match:'.format(i+2,),item[:2],gustList[i][:2]  
+                print('Line {} the date or times do not match:'.format(i+2,),item[:2],gustList[i][:2]  )
             idata += 1              
         if not outPath is None: writefile(out,outPath)
         
     def readCollatedData(self,inPath):
         '''Reads my saved data into structured array'''
-        print 'Reading from collated data file',inPath
+        print('Reading from collated data file',inPath)
         if len(windList) != len(gustList):
             sys.exit('Stop: the two lengths are not equal!')
         data = zeros(len(windList),dtype = [('year', int),('month', int),('day', int),('hour', int),('min', int),('totsecs', int32),('wind',int),('gust', int)])
@@ -123,7 +123,7 @@ class readData:
                 if not outPath is None:   
                     out.append('{}  {}  {}  {:4s}  {:4s}\n'.format(date,hrmin,secs,wind.rjust(4),gust.rjust(4)))  
             else:
-                print 'Line {} the date or times do not match:'.format(i+2,),item[:2],gustList[i][:2]  
+                print('Line {} the date or times do not match:'.format(i+2,),item[:2],gustList[i][:2]  )
             idata += 1              
         if not outPath is None: writefile(out,outPath)
 
@@ -149,7 +149,7 @@ windList = rdData.readVar(windPath,'wind')
 gustList = rdData.readVar(gustPath, 'gust')
 rdData.collateData(windList,gustList,outPath)
 
-print 'Done'
+print('Done')
         
 #         'D:\\Winch launch physics\\results\\testSpy'
 

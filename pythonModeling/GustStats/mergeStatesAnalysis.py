@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 
 in one analysisDir, combines the events for wind and gusts into allWindEvents.dat and allGustEvents.dat, and makes plots
 
@@ -19,7 +19,7 @@ from matplotlib.pyplot import close
 from analysisRoutines import correlate,plots,readfile,writefile
 
 ### Main script ###  
-analysisDir = 'I:\\gustsData\\\\analysis5,5,15' 
+analysisDir = 'F:\\gustsData\\\\analysis5,5,15' 
 
 params = analysisDir.split('analysis')[1].split(',')
 t1 = int(params[0]); t2 = int(params[1]); vPastCap = int(params[2])
@@ -53,11 +53,11 @@ for i,filename in enumerate(windWindEventsPaths):
     nGustGustEvents += newgustGustEvents 
     nWindGustEvents += newwindGustEvents 
 nWindTot = sum(nWindWindEvents)
-print 'Total wind events:',nWindTot   
+print('Total wind events:',nWindTot   )
 nGustTot = sum(nGustGustEvents)
-print 'Total gust events:',nGustTot
+print('Total gust events:',nGustTot)
 nwindGustTot = sum(nWindGustEvents)
-print 'Total wind-gust events:',nwindGustTot
+print('Total wind-gust events:',nwindGustTot)
 savetxt('{}//allWindWindEvents.dat'.format(analysisDir),nWindWindEvents,fmt='%10d')
 savetxt('{}//allGustGustEvents.dat'.format(analysisDir),nGustGustEvents,fmt='%10d')
 savetxt('{}//allWindGustEvents.dat'.format(analysisDir),nWindGustEvents,fmt='%10d')
@@ -68,7 +68,7 @@ nGustGustEventsDispl[0,0] = 0
 nWindGustEventsDispl = nWindGustEvents
 nWindGustEventsDispl[0,0] = 0
 ### correlated probability ###
-print 'probabilities:' 
+print('probabilities:' )
 #note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor used when calculating logs
 probNextWindWindGTE,rowCountw = corr.probNextGTE(nWindWindEvents,vmax) 
 probNextGustGustGTE,rowCountg = corr.probNextGTE(nGustGustEvents,vmax)
@@ -113,4 +113,4 @@ strConditionalG = 'after {} min with gusts <= {} kts'.format(t1,vPastCap)
 legendLabels = ['Wind: independent','Wind: {}'.format(strConditionalW),'Gust: independent', 'Gust: {}'.format(strConditionalG),'Gust: {}'.format(strConditionalW)  ]
 #don't set hold to True, because it will stop looping. 
 pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None,ymin=log10(probFloor),ymax=None)
-print 'Done'
+print('Done')

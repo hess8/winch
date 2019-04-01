@@ -1,5 +1,5 @@
 """
-Example script that scrapes data from the IEM ASOS download service
+Modified example script that scrapes data from the IEM ASOS download service
 
 D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\readASOSserver3.py
 
@@ -36,11 +36,11 @@ def download_data(uri):
             if data is not None and not data.startswith('ERROR'):
                 return data
         except Exception as exp:
-            print "download_data({}) failed with{}".format(uri, exp)
+            print("download_data({}) failed with{}".format(uri, exp))
             time.sleep(5)
         attempt += 1
 
-    print "Exhausted attempts to download, returning empty data" 
+    print("Exhausted attempts to download, returning empty data" )
     return ""
 
 
@@ -77,11 +77,12 @@ def readStationsDone(outPath):
     return stationsDone
 
 #########  Main script #############
-#     outPath = 'C:\\Users\\owner\\Downloads\\'
-outPath = 'I:\\gustsData\\'
+#     outPath = 'C:\\Users\\owner\\Downloads\\' 
+outPath = 'K:\gustsData'
+if not os.path.exists(outPath): os.mkdir(outPath)
 os.chdir(outPath)
 startts = datetime.datetime(1980, 1, 1)
-endts = datetime.datetime(2017, 12, 31)
+endts = datetime.datetime(2018, 12, 31)
 #     endts = datetime.datetime(2017, 1, 2)
 service = SERVICE + "data=all&tz=Etc/UTC&format=comma&latlon=yes&"
 #     service = SERVICE + "data=sknt&data=drct&data=gust&tz=Etc/UTC&format=comma&latlon=no&"
@@ -96,13 +97,13 @@ states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL',
 # states = ['WA','WI','WV','WY']
 stationsDone = readStationsDone(outPath)
 for state in states:
-    print '==========',state,'=========='; sys.stdout.flush()
+    print('==========',state,'=========='); sys.stdout.flush()
     stations = get_stations_from_network(state)
 # stations = get_stations_from_filelist("mystations.txt")
     for station in stations:
         if station not in stationsDone:
             uri = '%s&station=%s' % (service, station)
-            print 'Downloading:', state, station; sys.stdout.flush()
+            print('Downloading:', state, station); sys.stdout.flush()
             data = download_data(uri)
             outfn = '%s_%s_%s_%s.txt' % (state,station, startts.strftime("%Y%m%d%H%M"),
                                       endts.strftime("%Y%m%d%H%M"))

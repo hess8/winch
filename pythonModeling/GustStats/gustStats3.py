@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 Statistical analysis of gust and wind speeds and extreme gust probabilities
 '''
 import os,sys
@@ -49,17 +49,17 @@ class readData:
         totmin1 = floor(int(time.mktime(d1.timetuple()))/60.0)        
         for inPath in inPaths:
             nLines += len(readfile(inPath))-1
-        print 'Total number of lines in {} files: {}'.format(len(inPaths),nLines)
+        print('Total number of lines in {} files: {}'.format(len(inPaths),nLines))
         data = zeros(nLines,dtype = [('year', int),('month', int),('day', int),('hour', int),('min', int),('totmin', int32),('wind',int),('direc', int),('gust', int)])
         for inPath in inPaths:
-            print 'Reading from file {}'.format(inPath)
-#             print 'Gust defined by max(wind,gust) reported'
+            print('Reading from file {}'.format(inPath))
+#             print('Gust defined by max(wind,gust) reported')
             lines = readfile(inPath)
             for i,line in enumerate(lines[1:]):
                 if mod(idata,10000)==0:
-                    print '{} '.format(idata),
+                    print('{} '.format(idata),)
                 if mod(idata,100000)==0:
-                    print
+                    print()
                 info = line.split()
                 if len(info) == 7 + iAdd:
                     date = info[2+iAdd]
@@ -83,9 +83,9 @@ class readData:
                     data[idata]['gust'] = gust
                     idata += 1 
                 else:
-                    print 'Data line {} has a length of only {}; skipped'.format(idata,len(info)),info
+                    print('Data line {} has a length of only {}; skipped'.format(idata,len(info)),info)
                    # sys.exit('Stop!')
-        print
+        print()
         return idata,data
 
 class correlate:   
@@ -95,7 +95,7 @@ class correlate:
     def nEventsCount(self,t1,t2,dt,nData,data):
         '''For each data point with time greater than t1, find vmax during the past t1 (label _l).  
         Then during the time t2 past this point, find vmax (label _k)'''
-        print 'Counting past and future wind and gust events'
+        print('Counting past and future wind and gust events')
         gustmaxInData = max(data['gust'])
         gustmaxInFut = 0
         nWindEvents = zeros((gustmaxInData+1,gustmaxInData+1),dtype = int32)
@@ -104,17 +104,17 @@ class correlate:
         n2 = int(rint(t2/float(dt)))
         for i in range(nData):
             if mod(i,10000)==0:
-                print '{} '.format(i),
+                print('{} '.format(i),)
             if mod(i,100000)==0:
-                print
+                print()
             # check that there are no time skips in the region of t-t1 to t+t2:
             index1 = i - n1
             index2 = i + n2
             if index1 >= 0 and index2 <= nData - 1:
                 if data[index1]['totmin'] != data[i]['totmin'] - t1:
-                    print 'Skips near data point {}: initial time {} not equal to ti-t1:{}'.format(i,data[index1]['totmin'], data[i]['totmin'] - t1)  
+                    print('Skips near data point {}: initial time {} not equal to ti-t1:{}'.format(i,data[index1]['totmin'], data[i]['totmin'] - t1)  )
                 elif data[index2]['totmin'] != data[i]['totmin'] + t2:
-                    print 'Skips near data point {}: final time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  
+                    print('Skips near data point {}: final time {} not equal to ti+t2:{}'.format(i,data[index2]['totmin'], data[i]['totmin'] + t2)  )
                 else: #all OK
                     maxWindpast = max(data[index1:i]['wind'])
                     maxWindfut =  max(data[i+1:index2]['wind'])
@@ -187,7 +187,7 @@ class plots:
         ax0.plot([xmin,xmax],[0,0],color='k',linewidth=self.linew)  
         title(titlestr)
         savefig('{}{}{}.pdf'.format(self.path,os.sep,titlestr))
-        if holdOpen: print 'Graphs ready...pausing after graph "{}"'.format(titlestr)
+        if holdOpen: print('Graphs ready...pausing after graph "{}"'.format(titlestr))
         show(block = holdOpen)
         return
     
@@ -204,7 +204,7 @@ inPaths = ['C:\\Users\\owner\\Downloads\\knx01-05onemin.txt']
 outPath = 'C:\\Users\\owner\\Downloads\\'
 rdData = readData() #instance
 nData,data = rdData.readAll(inPaths)
-print 'number of complete datapoints',nData
+print('number of complete datapoints',nData)
 
 t1 = 30 #min 
 t2 = 30  #min
@@ -214,11 +214,11 @@ probFloor = 1e-9
 ### correlations ### 
 corr = correlate(probFloor) #instance
 nWindEvents,nGustEvents,gustmax = corr.nEventsCount(t1,t2,dt,nData,data)
-print 'Number of wind events {}; skipped {}'.format(sum(nWindEvents), nData - sum(nWindEvents))
-print 'Number of gust events: {}'.format(sum(nWindEvents))
+print('Number of wind events {}; skipped {}'.format(sum(nWindEvents), nData - sum(nWindEvents)))
+print('Number of gust events: {}'.format(sum(nWindEvents)))
 for i in range(gustmax+1):
     for j in range(gustmax+1):
-        print i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j]
+        print(i,j,'\t',nWindEvents[i,j],'\t',nGustEvents[i,j])
 nWindEventsDispl = nWindEvents
 nWindEventsDispl[0,0] = 0
 nGustEventsDispl = nGustEvents
@@ -228,7 +228,7 @@ fig1 = matshow(log10(nWindEventsDispl+1));colorbar();title('Wind Correlation (lo
 fig2 = matshow(log10(nGustEventsDispl+1));colorbar();title('Gust Correlation (log N+1 events)'),ylabel('last {}-min max speed (kts)'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)) 
 
 ### correlated probability ###
-print 'probabilities:' 
+print('probabilities:' )
 #note if an (i,j) element in the end has no events in it, it's given probability of probFloor, a display floor useful when calculating logs
 probNextWindGTE,rowCountw = corr.probNextGTE(nWindEvents,gustmax) 
 probNextGustGTE,rowCountg = corr.probNextGTE(nGustEvents,gustmax)
@@ -261,4 +261,4 @@ pl.xy(True,xs,ys,xlbl,ylbl,legendLabels,titlestr,xmin=None,xmax=None)
 # plot(probNextGustGTE); title('Gust probability (independent)'),ylabel('Probability'.format(t1)),xlabel('Next {}--minutes, v max >= speed (kts)'.format(t2)); 
 # plot(probNextWindGETcomb); title('Wind probability for {} kt mean intitial max v'.format(mean(rows))),ylabel('Probability'.format(t1)),xlabel('Next {}-minutes, v max >= speed (kts)'.format(t2)); 
 
-print 'Done'
+print('Done')

@@ -1,7 +1,7 @@
 # from IPython import get_ipython  
 # get_ipython().magic('reset -sf') #comment out this line if not running in Ipython; resets all variables to zero
 
-''' Bret Hess, bret.hess@gmail.com or bret_hess@byu.edu
+''' Bret Hess, bret.hess@gmail.com 
 Solves for the motion of a glider launched by a winch with a springy rope. 
 The winch is connected to an engine through a torque converter. 
 
@@ -82,9 +82,9 @@ def pid(var,time,setpoint,c,j,Nint):
     else:
         interr = 0        
 #    interr = sum(var[:j+1])/(j+1) - setpoint
-#    print 'interr',interr
+#    print('interr',interr)
     
-#    print 't,varj,err,derr,interr',time[j],var[j],err,derr,interr
+#    print('t,varj,err,derr,interr',time[j],var[j],err,derr,interr)
 
     return c[0]*err + c[1]*derr + c[2]*interr
 
@@ -258,7 +258,7 @@ class rope:
         tint = 4*self.tau         
         Nint = min(0,ti.i,ceil(tint/ti.dt))
         if ti.i >= 0:
-            print ti.i,sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
+            print(ti.i,sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1))
             return sum(self.data[ti.i-Nint:ti.i+1]['T'])/(Nint + 1)
             
         else:
@@ -391,7 +391,7 @@ class operator:
             else:
                 self.currvTarget = target
             vsmooth = target +  (self.oldvTarget - target) *exp(-(t-self.tSwitch)/tauOp)
-#            print 'vsmooth',vsmooth
+#            print('vsmooth',vsmooth)
             return vsmooth
 
 #        angleMax = self.angleMax         
@@ -401,7 +401,7 @@ class operator:
         tint = tauOp 
         Nint = min(ti.i,ceil(tint/ti.dt))                  
         #throttle control
-#         print 'thetarope,angleSwitch',thetarope,angleSwitch
+#         print('thetarope,angleSwitch',thetarope,angleSwitch)
 #        if thetarope < angleSwitch:
 #            pp = -0.1; pd = -.0; pint = -.2
 #            c = array([pp,pd,pint]) 
@@ -495,21 +495,21 @@ class pilot:
                 if L < minLift: #set Me to give zero rotation
                     self.MeSet = -otherTorques
                     self.elevSet = limiter(self.Me/Mdelev,gl.maxElev)
-#                     print 'elev',t,self.elev, otherTorques
-#                     print 'test'
+#                     print('elev',t,self.elev, otherTorques)
+#                     print('test')
                 else: #control alpha
                     self.elevSet = limiter(alphaControl(time,self.setpoint[0],ti,Nint)/Mdelev,gl.maxElev)
 #                    if abs(self.elevSet)>1e-3:
-#                        print 'pause1'
+#                        print('pause1')
 #                    if abs(self.elev)>1e-3:
-#                        print 'pause2'
+#                        print('pause2')
                     self.Me = Mdelev * self.elev
             else: # in flight'
-#                print 't,currCntrl',self.currCntrl
+#                print('t,currCntrl',self.currCntrl)
                 if self.currCntrl == 0 and gamma > crossAngle:  #switch to 2nd control
                     self.currCntrl = 1 #switches only once
                     self.tSwitch = t          
-                    print 'Turned on second control at {:3.1f} sec'.format(t)
+                    print('Turned on second control at {:3.1f} sec'.format(t))
                 ctype = self.ctrltype[self.currCntrl]
                 setpoint = self.setpoint[self.currCntrl]
                 if ctype == 'vDdamp': # speed derivative control only (damps phugoid) 
@@ -536,7 +536,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     ti.Nprobed +=1
     ti.tprobed[ti.Nprobed-1] = t
     gl,rp,wi,tc,en,op,pl = stateSplitVec(S,gl,rp,wi,tc,en,op,pl)
-#    print 't,e,eset,M ',t,pl.elev,pl.elevSet,pl.Me
+#    print('t,e,eset,M ',t,pl.elev,pl.elevSet,pl.Me)
     if gl.xD < 1e-6:
         gl.xD = 1e-6 #to handle v = 0 initial
     if en.v < 1e-6:
@@ -602,9 +602,9 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
     # by close to a nominal time step    
     if t - ti.oldt > 2.0*ti.dt: 
         ti.i += 1 
-#        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L)
-#        print t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D)
-#        print 't,state',t,gl.state
+#        print(t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} T:{:8.3f} L:{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,rp.T,L))
+#        print(t, 't:{:8.3f} x:{:8.3f} xD:{:8.3f} y:{:8.3f} yD:{:8.3f} D/L:{:8.3f}, L/D :{:8.3f}'.format(t,gl.x,gl.xD,gl.y,gl.yD,D/L,L/D))
+#        print('t,state',t,gl.state)
         # store data from this time step for use /in controls or plotting.  
         gl.data[ti.i]['t']  = t
         gl.data[ti.i]['x']  = gl.x
@@ -632,7 +632,7 @@ def stateDer(S,t,gl,rp,wi,tc,en,op,pl):
         rp.data[ti.i]['T'] = rp.T
         rp.data[ti.i]['torq'] = ropetorq
 #         if gl.y > 1:
-#             print 'pause'
+#             print('pause')
         rp.data[ti.i]['theta'] = thetarope
         wi.data[ti.i]['Pdeliv'] = Few * wi.v
         wi.data[ti.i]['Edeliv'] = wi.data[ti.i - 1]['Edeliv'] + wi.data[ti.i]['Pdeliv'] * (t-ti.oldt) #integrate
@@ -691,7 +691,7 @@ data = zeros(len(tRampUpList),dtype = [('tRampUp', float),('xRoll', float),('tRo
                                     ('alphaMax', float),('gammaMax', float),('thetaDmax', float),('Tmax', float),('yDfinal', float),('Lmax', float)])
 yminLoop = 100 #if yfinal is less than this, the run failed, so ignore this time point
 for iloop,tRampUp in enumerate(tRampUpList):
-    print '\nThrottle ramp up time', tRampUp    
+    print('\nThrottle ramp up time', tRampUp    )
     # create the objects we need from classes
     t = linspace(tStart,tEnd,num=ntime)    
     ti = timeinfo(tStart,tEnd,ntime) 
@@ -769,18 +769,18 @@ for iloop,tRampUp in enumerate(tRampUpList):
     
     
     # Comments to user
-    print 'Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo))
-    print 'Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr]))
-    print 'Maximum Tension factor: {:3.1f}'.format(Tmax)
-    print 'Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll)
-    print 'Final vy: {:5.1f} m/s'.format(yDfinal)
+    print('Final height reached: {:5.0f} m, {:5.0f} ft.  Fraction of rope length: {:4.1f}%'.format(yfinal,yfinal/0.305,100*yfinal/float(rp.lo)))
+    print('Maximum speed: {:3.0f} m/s, maximum rotation rate: {:3.1f} deg/s'.format(max(gData['v']),180/pi*max(gl.thetaD[:itr])))
+    print('Maximum Tension factor: {:3.1f}'.format(Tmax))
+    print('Ground roll: {:5.0f} m, {:5.1f} sec'.format(xRoll,tRoll))
+    print('Final vy: {:5.1f} m/s'.format(yDfinal))
     if abs(t[-1] - gl.data[ti.i]['t']) > 5*dt:
-        print '\nWarning...the integrator had a harder time with this model.'
-        print '\tIf some of the plots have a time axis that is too short vs others, '
-        print '\t...try making smoother controls.'
+        print('\nWarning...the integrator had a harder time with this model.')
+        print('\tIf some of the plots have a time axis that is too short vs others, ')
+        print('\t...try making smoother controls.')
     # check whether to keep this run as loop data
     if yfinal < yminLoop and iloop >0:
-        print 'Bad run, not saving data'
+        print('Bad run, not saving data')
         data[iloop] = data[iloop-1] #write over this data point with the last one. 
     else:
         # Store loop results
@@ -836,4 +836,4 @@ plts.i = 0 #restart color cycle
 plts.xyy([data['tRampUp']],[data['xRoll'],10*data['tRoll'],data['yfinal']/rp.lo*100,heightLoss,data['vmax'],data['vDmax']/g,data['Sthmax'],data['Tmax'],data['Lmax'],data['alphaMax'],data['gammaMax'],data['thetaDmax']],\
         [0,0,0,0,0,1,1,1,1,0,0,0],'throttle ramp-up time (sec)',['Velocity (m/s), Angles (deg), m, sec %',"Relative forces,g's"],\
         ['x gnd roll', 't gnd roll x 10','height/'+ r'$\l_o $%','Height diff',r'$v_{max}$',"max g's",'max throttle',r'$T_{max}/W$', r'$L_{max}/W$', r'$\alpha_{max}$',r'$\gamma_{max}$','rot. max (deg/sec)'],'Flight results vs throttle ramp-up time')
-print 'Done'
+print('Done')
