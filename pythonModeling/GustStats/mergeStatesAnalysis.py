@@ -16,6 +16,7 @@ python D:\\WinchLaunchPhysics\\winchrep\\pythonModeling\\GustStats\\analysisTask
 import os,sys,time
 from numpy import log10,savetxt,loadtxt,zeros,int32,sum
 from matplotlib.pyplot import close
+from copy import deepcopy
 from analysisRoutines import correlate,plots,readfile,writefile
 
 ### Main script ###  
@@ -61,11 +62,11 @@ print('Total wind-gust events:',nwindGustTot)
 savetxt('{}//allWindWindEvents.dat'.format(analysisDir),nWindWindEvents,fmt='%10d')
 savetxt('{}//allGustGustEvents.dat'.format(analysisDir),nGustGustEvents,fmt='%10d')
 savetxt('{}//allWindGustEvents.dat'.format(analysisDir),nWindGustEvents,fmt='%10d')
-nWindWindEventsDispl = nWindWindEvents
+nWindWindEventsDispl = deepcopy(nWindWindEvents)
 nWindWindEventsDispl[0,0] = 0
-nGustGustEventsDispl = nGustGustEvents
+nGustGustEventsDispl = deepcopy(nGustGustEvents)
 nGustGustEventsDispl[0,0] = 0
-nWindGustEventsDispl = nWindGustEvents
+nWindGustEventsDispl = deepcopy(nWindGustEvents)
 nWindGustEventsDispl[0,0] = 0
 ### correlated probability ###
 print('probabilities:' )

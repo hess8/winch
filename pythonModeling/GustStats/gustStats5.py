@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ''' Bret Hess, bret.hess@gmail.com 
 Statistical analysis of gust and wind speeds and extreme gust probabilities
+----------REPLACED by analysisTaskLooper, and then mergeStatesAnalysis for multi-state results----------
 '''
 import os,sys
 from numpy import pi, array, zeros,linspace,sqrt,arctan,sin,cos,tan,tanh,ceil,floor,rint,where,\

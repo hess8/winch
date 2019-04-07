@@ -1,5 +1,6 @@
 ''' Bret Hess, bret.hess@gmail.com 
 Generates the tasks from loops over parameters and writes to '''
+import os
 def writefile(lines,filepath): #need to have \n's inserted already
     file1 = open(filepath,'w')
     file1.writelines(lines) 
@@ -17,11 +18,13 @@ class tasks:
     ### Main script ###
     inPath ='F:\\temp'
 #     inPath ='F:\\gustsData'
-    outPath = inPath
-    
-    states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
-              'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
-              'WA','WI','WV','WY']
+    inPath ='H:\\gustsData\\'
+    outPath = 'F:\\gustsAnalysis\\'
+    if not os.path.exists(outPath): os.mkdir(outPath)
+    states = ['UT']    
+#     states = ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME',
+#               'MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT',
+#               'WA','WI','WV','WY']
     t1List = [5,30]
     t2List = [5]
     vPastCapList = [15] #kts

@@ -171,7 +171,7 @@ class correlate:
         return nWindWindEvents,nGustGustEvents,nWindGustEvents
     
     def probNextGTE(self,nMat,vmax):
-        '''Probability that maximum speed in the next t_2 minutes will be >= v_ (index j), given that the last t1 min had a max of v (index i)'''
+        '''Probability that maximum speed in the next t_2 minutes will be >= v_ (index j), given that the last t1 min was v (index i)'''
         prob = zeros((vmax+1,vmax+1),dtype = float32)
         rowCounts = zeros(vmax+1,dtype = int32)
         for i in range(vmax+1):
