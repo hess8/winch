@@ -78,6 +78,7 @@ class readData:
         data = zeros(len(lines),dtype = [('year', int),('month', int),('day', int),('hour', int),('min', int),('totmin', int32),('wind',int),('direc', int),('gust', int)])        
         idata = 0
         nheaders = 6
+        myEpoch = datetime(1950, 1, 1)
         for iline,line in enumerate(lines[nheaders:]):
             lineOK = True
             if mod(idata,10000)==0 and verbose:
@@ -92,12 +93,13 @@ class readData:
             try:
                 [date,hrmin] = info[1].split()       
                 d = datetime.strptime(date+' '+hrmin, dtFormat)
+                diff = d - myEpoch
             except:
                 if verbose:
                     print('Date {} could not be parsed'.format(iline),info)
                 lineOK = False
             try:
-                totmin = floor(int(time.mktime(d.timetuple()))/60.0) #since beginning of epoch
+                totmin = floor(int((diff.days* 24 * 3600 + diff.seconds))/60.0) #minutes since myEpoch
             except:
                 print('totmin {} could not be calculated'.format(iline),d)
                 lineOK = False                

@@ -36,7 +36,7 @@ loop = True
 while loop:
     #find a state with task not done
     close('all') 
-    taskOut = readAnalysisTask(inPath)
+    taskOut = readAnalysisTask(outPath)
     if taskOut == 'ReadFailed':
         print('Failed to read task')
         time.sleep(1)
