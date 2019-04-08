@@ -110,7 +110,7 @@ class readData:
                     print('wind {}, position 8 was not valid'.format(iline),line)
                 lineOK = False
             try:
-                if info[13] =='M':
+                if info[13] =='M' or float(info[13])<0:
                     gust = 0
                 else:
                     gust = int(rint(float(info[13]))) #knots
